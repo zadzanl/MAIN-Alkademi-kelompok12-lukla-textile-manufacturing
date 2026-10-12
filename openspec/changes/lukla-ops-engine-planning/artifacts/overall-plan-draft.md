@@ -15,7 +15,6 @@ Production agreements are structured into three distinct commercial maklon schem
 (*) **CMT + Bahan (Full Package):** Lukla procures all fabrics and trims while executing end-to-end cutting, manufacturing, and finishing. This scheme is also standard for internal Snøhund production.
 
 
-
 ### 1.2 Core Business Problems & Impact
 
 The facility encounters three operational bottlenecks that threaten profitability and client trust:
@@ -27,7 +26,6 @@ The facility encounters three operational bottlenecks that threaten profitabilit
 (*) **Loss of Revision Lineage & R&D Drift:** Physical garment prototyping currently lacks centralized digital tracking. Critical technical parameters—fabric yields, component-level time studies, operator rate cards, and defect logs—are scattered across paper logs, resulting in unversioned discrepancies when transitioning from approved sample prototypes to mass factory runs.
 
 
-
 ### 1.3 Strategic Business Objectives
 
 * **Absolute Multi-Tenant Inventory Segregation:** Programmatically eliminate physical stock mix-ups by establishing mandatory owner-tagging across all raw materials, WIP bundles, and finished SKUs(.)
@@ -37,53 +35,20 @@ The facility encounters three operational bottlenecks that threaten profitabilit
 (*) **Transparent Multi-Tier Commercial Settlement:** Support automated invoice and weekly payroll generation across CMT, Semi-CMT, and Full-Package agreements without manual spreadsheet reconciliation.
 
 
-
 ### 1.4 Stakeholder & Governance Matrix (RBAC)
 
 System operations are governed across eight strict operational roles:
 
 | Role | Operational Scope & Permissions | System Enforced Boundaries & Constraints |
 | --- | --- | --- |
-| **Owner / Internal Executive** | High-level business intelligence analytics, system configurations, and dynamic rate-card overrides.
-
- | Barred from altering locked or reconciled historical financial/inventory ledger records.
-
- |
-| **Sample Team / Adis Sample** | Logs sample consumption, records component-level time studies, approves sample version iterations.
-
- | Cannot convert or approve mass production orders without executive sign-off.
-
- |
-| **Warehouse / Stock Manager** | Ingests multi-client raw materials, processes consignment stock, issues bundles to cutting, runs stock opname.
-
- | Programmatically blocked from issuing materials if Client ID or Order ID fails validation.
-
- |
-| **Production Head / Line Foreperson** | Allocates operators to parallel lines, configures component rate cards, logs 30-minute station outputs.
-
- | Prohibited from modifying payroll calculation formulas or altering final QC disposition states.
-
- |
-| **Tailor / Operator** | Views assigned component assembly queues, inputs completed piece tallies.
-
- | Read-only access to completed records once verified and locked by the foreperson.
-
- |
-| **QC Inspector** | Inspects assembled garments, logs specific defect taxonomies, categorizes units into Pass, Repair, or Reject.
-
- | Barred from modifying order commercial terms or piece-rate wage configurations.
-
- |
-| **Finance & Payroll Officer** | Approves vendor POs, issues client commercial invoices, calculates weekly piece-rate wages and monthly overhead allocations.
-
- | Strictly prohibited from manually adjusting physical inventory stock balances.
-
- |
-| **Maklon Client (External Portal)** | Monitors order progress, tracks manufacturing milestones, inspects real-time balances of consigned raw materials.
-
- | Data isolated by multi-tenant security rules; can only view records matching their explicit `client_id`.
-
- |
+| **Owner / Internal Executive** | High-level business intelligence analytics, system configurations, and dynamic rate-card overrides. | Barred from altering locked or reconciled historical financial/inventory ledger records. |
+| **Sample Team / Adis Sample** | Logs sample consumption, records component-level time studies, approves sample version iterations. | Cannot convert or approve mass production orders without executive sign-off. |
+| **Warehouse / Stock Manager** | Ingests multi-client raw materials, processes consignment stock, issues bundles to cutting, runs stock opname. | Programmatically blocked from issuing materials if Client ID or Order ID fails validation. |
+| **Production Head / Line Foreperson** | Allocates operators to parallel lines, configures component rate cards, logs 30-minute station outputs. | Prohibited from modifying payroll calculation formulas or altering final QC disposition states. |
+| **Tailor / Operator** | Views assigned component assembly queues, inputs completed piece tallies. | Read-only access to completed records once verified and locked by the foreperson. |
+| **QC Inspector** | Inspects assembled garments, logs specific defect taxonomies, categorizes units into Pass, Repair, or Reject. | Barred from modifying order commercial terms or piece-rate wage configurations. |
+| **Finance & Payroll Officer** | Approves vendor POs, issues client commercial invoices, calculates weekly piece-rate wages and monthly overhead allocations. | Strictly prohibited from manually adjusting physical inventory stock balances. |
+| **Maklon Client (External Portal)** | Monitors order progress, tracks manufacturing milestones, inspects real-time balances of consigned raw materials. | Data isolated by multi-tenant security rules; can only view records matching their explicit `client_id`. |
 
 ---
 
@@ -134,7 +99,6 @@ Fabrics provided directly by a client are not assets of Lukla Manufacturing; the
 * Credit: `Inventory:Custodial:RawMaterial [Client_ID]`
 
 
-
 #### 2. Owned Inventory (Full Package / Snøhund Scheme)
 
 Materials procured directly by Lukla represent company assets and operational liabilities.
@@ -148,7 +112,6 @@ Materials procured directly by Lukla represent company assets and operational li
 * Credit: `Inventory:Asset:RawMaterials`
 
 
-
 #### 3. Labor & Piece-Rate Transformation
 
 As garments progress through 30-minute intervals and final verification, labor costs are capitalized directly into inventory value:
@@ -156,7 +119,6 @@ As garments progress through 30-minute intervals and final verification, labor c
 * **Assembly Verification:**
 * Debit: `Inventory:WIP:DirectLaborApplied [Order_ID]`
 * Credit: `Payroll:AccruedWagesPayable [Operator_ID]`
-
 
 
 ### 2.3 Multi-Tenant Inventory Isolation & Anti-Cross Contamination
@@ -268,70 +230,14 @@ Garment manufacturing flows through sequential, state-dependent stages:
 
 This matrix maps the 6 operational phases of the facility to functional requirements, user access roles, and platform views.
 
-| Phase
-
- | Requirement ID | Requirement Scope
-
- | Authorized Roles
-
- | Target UI View
-
- | Core System Deliverable |
+| Phase | Requirement ID | Requirement Scope | Authorized Roles | Target UI View | Core System Deliverable |
 | --- | --- | --- | --- | --- | --- |
-| **01. Sample Phase**<br> | FR-1 to FR-4 | Prototype tracking, versioning (v1, v2), digital time study stopwatch per component, consumption logs.
-
- | Sample Team, Owner
-
- | View 02: Sample & Time Study Tracker
-
- | Immutable Master Spec & Component Target Matrix.
-
- |
-| **02. Approval & Order**<br> | FR-4.1 | Commercial contract classification (CMT, Semi-CMT, Full Package), conversion of sample spec to mass work orders.
-
- | Owner, Finance, Client Portal
-
- | View 01: Executive Operations Dashboard
-
- | Production Work Order & Custodial Asset Ledger Accounts.
-
- |
-| **03. Warehouse & Cutting**<br> | FR-5, FR-6.1, FR-6.2, FR-6.3 | Mandatory client-tag intake, cross-contamination dispatch block, fabric waste/scrap tracking.
-
- | Warehouse Team, Production Head
-
- | View 03: Multi-Client Warehouse Grid
-
- | Tagged Cut Bundle Receipts & Material Efficiency Ledger.
-
- |
-| **04. Production Line**<br> | FR-7.1, FR-7.2, FR-7.3, FR-7.4 | Fluid floor layout ($\pm70$ machines), article rate cards, touch terminal 30-min output collection, bundle assembly.
-
- | Foreperson, Tailor Operator
-
- | View 04: 30-Minute Floor Terminal
-
- | Verified Component Output Feed & Accrued Piece Wages.
-
- |
-| **05. QC & Finished Goods**<br> | FR-8, FR-9 | Final inspections, classification (Pass, Repair, Reject), defect taxonomy tagging, bonus pool accruals.
-
- | QC Inspector, Foreperson
-
- | View 05: QC Inspection Terminal
-
- | Disposition Certificates & Locked QC Output Units.
-
- |
-| **06. Payroll & Financials**<br> | FR-10.1, FR-10.2, FR-10.3, FR-10.4 | Saturday piece-rate payout, 10–15% floating meal allowance, 3-way QC bonus split, monthly overhead division.
-
- | Finance & Payroll, Owner
-
- | View 06: Payroll & Cost Workspace
-
- | Weekly Disbursements, COGS Reconciliations, Invoices.
-
- |
+| **01. Sample Phase**<br> | FR-1 to FR-4 | Prototype tracking, versioning (v1, v2), digital time study stopwatch per component, consumption logs. | Sample Team, Owner | View 02: Sample & Time Study Tracker | Immutable Master Spec & Component Target Matrix. |
+| **02. Approval & Order**<br> | FR-4.1 | Commercial contract classification (CMT, Semi-CMT, Full Package), conversion of sample spec to mass work orders. | Owner, Finance, Client Portal | View 01: Executive Operations Dashboard | Production Work Order & Custodial Asset Ledger Accounts. |
+| **03. Warehouse & Cutting**<br> | FR-5, FR-6.1, FR-6.2, FR-6.3 | Mandatory client-tag intake, cross-contamination dispatch block, fabric waste/scrap tracking. | Warehouse Team, Production Head | View 03: Multi-Client Warehouse Grid | Tagged Cut Bundle Receipts & Material Efficiency Ledger. |
+| **04. Production Line**<br> | FR-7.1, FR-7.2, FR-7.3, FR-7.4 | Fluid floor layout ($\pm70$ machines), article rate cards, touch terminal 30-min output collection, bundle assembly. | Foreperson, Tailor Operator | View 04: 30-Minute Floor Terminal | Verified Component Output Feed & Accrued Piece Wages. |
+| **05. QC & Finished Goods**<br> | FR-8, FR-9 | Final inspections, classification (Pass, Repair, Reject), defect taxonomy tagging, bonus pool accruals. | QC Inspector, Foreperson | View 05: QC Inspection Terminal | Disposition Certificates & Locked QC Output Units. |
+| **06. Payroll & Financials**<br> | FR-10.1, FR-10.2, FR-10.3, FR-10.4 | Saturday piece-rate payout, 10–15% floating meal allowance, 3-way QC bonus split, monthly overhead division. | Finance & Payroll, Owner | View 06: Payroll & Cost Workspace | Weekly Disbursements, COGS Reconciliations, Invoices. |
 
 ---
 
@@ -340,7 +246,6 @@ This matrix maps the 6 operational phases of the facility to functional requirem
 ### 4.1 System Computation Specifications & Formulations
 
 #### 1. Weekly Tailor Piece-Rate Wage ($\text{Borongan}$)
-
 
 
 Calculated every Saturday without hard limits on operator count ($N \le 70+$):
@@ -352,13 +257,11 @@ Where $Q_{i, c, \text{verified}}$ is the sum of verified 30-minute interval outp
 #### 2. Floating Meal Allowance Pool ($\text{Uang Makan}$)
 
 
-
 A percentage $\mu \in [10\%, 15\%]$ configured manually by finance per production cycle:
 
 $$\text{Pool}_{\text{meal}} = \mu \times \sum_{i=1}^{N} \text{Wage}_i$$
 
 #### 3. Three-Way Quality Control Bonus Pool ($\text{Bonus QC}$)
-
 
 
 Triggered by all garments passing final QC inspection across all active orders and clients:
@@ -370,7 +273,6 @@ The disbursement is distributed equally across leadership roles:
 $$\text{Bonus}_{\text{Foreperson 1}} = \text{Bonus}_{\text{Foreperson 2}} = \text{Bonus}_{\text{Head Ops}} = \frac{\text{Pool}_{\text{QC}}}{3}$$
 
 #### 4. Unit Factory Overhead Allocation ($\text{Overhead per Unit}$)
-
 
 
 Calculated monthly by aggregating fixed and variable operational costs (power, water, internet, facility rent) divided by actual production volume:
@@ -433,13 +335,11 @@ Implementation success is evaluated against four end-to-end integration scenario
 (*) **System Expected Behavior:** The system aborts the database transaction before persistence, logs an access warning, and displays an error indicating an ownership mismatch.
 
 
-
 #### Scenario 02: Dynamic Headcount Mid-Week Addition
 
 * **Action:** On Thursday, five new contract tailors are registered on the factory floor without restarting operational cycles. The foreperson records their completed units through the 30-minute terminal on Thursday and Friday. The Saturday payroll run is initiated(.)
 
 (*) **System Expected Behavior:** The system incorporates the 5 new tailors into the batch without schema locks, calculates their piece-rate earnings based on verified output logs, and incorporates their base pay into the 10–15% meal allowance pool calculation.
-
 
 
 #### Scenario 03: QC Bonus Pool 3-Way Split
@@ -449,13 +349,11 @@ Implementation success is evaluated against four end-to-end integration scenario
 (*) **System Expected Behavior:** The platform calculates the consolidated bonus pool ($3{,}000 \times R_{\text{bonus}}$) and splits it into three equal disbursements (Foreperson 1, Foreperson 2, and Operations Head). Calculations must handle integer division rounding down to the nearest integer currency unit, allocating remainders to the operational reserve.
 
 
-
 #### Scenario 04: Sample Revision to Mass Order Transition
 
 * **Action:** The design team creates prototype "Windbreaker Jacket v1", records time studies, modifies seam parameters to generate "v2", locks "v2", and converts it into a commercial order under the Semi-CMT scheme(.)
 
 (*) **System Expected Behavior:** The system establishes an order record inheriting v2 specifications and target rates. The system generates custodial inventory records for the client-supplied shell fabric, while scheduling internal purchase orders for internal trims and accessories.
-
 
 
 ---
@@ -487,10 +385,7 @@ Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           No
 (*) REST/gRPC endpoints to ingest, balance, and lock immutable transactions.
 
 
-
-
 * **Definition of Done (DoD):** System passes unit testing for concurrent ledger writes and rejects invalid balances and unauthorized role mutations.
-
 
 
 ### Sprint 2: Multi-Tenant Inventory Control & Material Tracking
@@ -506,10 +401,7 @@ Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           No
 (*) Raw material waste logging tracking fabric utilization efficiency (FR-6.3).
 
 
-
-
 * **Definition of Done (DoD):** Test Scenario 01 passes; attempting to cross-issue fabric across clients throws a database-level abort.
-
 
 
 ### Sprint 3: Sample Lifecycle, Orders, & Shop Floor Execution (MES)
@@ -525,10 +417,7 @@ Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           No
 (*) High-frequency 30-minute interval logging endpoint (FR-7.3).
 
 
-
-
 * **Definition of Done (DoD):** Test Scenario 04 passes; Sample v2 converts into a production order carrying inherited rate profiles and time studies.
-
 
 
 ### Sprint 4: Dynamic Piece-Rate Payroll & Quality Control Engine
@@ -546,10 +435,7 @@ Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           No
 (*) Monthly operational overhead allocation calculator dividing facility utility overhead across finished units (FR-10.4).
 
 
-
-
 * **Definition of Done (DoD):** Test Scenarios 02 and 03 pass with correct calculations verified against manual accounting runs.
-
 
 
 ### Sprint 5: UI Interfaces & System Integration
@@ -571,11 +457,7 @@ Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           No
 (*) View 06: Payroll & Costing Workspace
 
 
-
-
 * Integration testing validating UI operations against back-end double-entry assertions and RBAC permissions.
-
-
 
 
 * **Definition of Done (DoD):** Complete automated and user-acceptance test runs succeed across all four primary acceptance test scenarios. Clean technical and domain architecture documentation published for the system portfolio.
