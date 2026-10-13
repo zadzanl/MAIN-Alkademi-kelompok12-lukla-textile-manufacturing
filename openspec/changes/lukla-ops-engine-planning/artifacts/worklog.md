@@ -1,5 +1,18 @@
 # Worklog: lukla-ops-engine-planning
 
+## 2026-10-13 — Phase 2 formal review completion (review-005-phase2)
+
+Conducted independent review of Phase 2 structural deliverables (`04-rbac-matrix.md` and `06-acceptance-tests.md`) against authoritative register revision 4, BRD internal version 2.3.0, and source slides 04, 05, 06, 07, 09.
+Inspected parent review inquiries: AT-04 fixture linkage verified consistent with slide 06 FR-7.4 gate; AT-09/AT-10 confirmation dependency verified ring-fenced without unstated actor invention. All 8 roles transcribed verbatim; all 4 closing scenarios translated to executable test specifications with arithmetic verification. Relative cross-links and trailing whitespace verified clean. Authored `review/review-005-phase2.md` with verdict APPROVED. Bumped `task-record.md` to revision 10. Phase 2 is closed. Preserved pause boundary prior to Phase 3.
+
+## 2026-10-13 — Phase 2 implementation; independent review blocked
+
+Delegated RBAC and manual acceptance specifications to separate Assistants. Outputs: `04-rbac-matrix.md`, `06-acceptance-tests.md`, `implementation/impl-006-rbac.md`, `implementation/impl-007-tests.md`. Added navigation-only links in BRD sections 3.1 and 11.1. Authoritative register revision 4 unchanged by this phase.
+
+Parent checked fixture arithmetic (60000 total wages, 21000 bonus pool, 7000 per recipient, 12 for two Pass units), both new-file whitespace checks (no diagnostics; no-index exits 1 for differences), and tracked `git diff --check` (pass). No runtime test executed. New files are ignored by the existing artifacts/ rule; no staging or ignore changes performed.
+
+Review Orchestrator requests `206a8271-882d-4fb2-8848-62379807bd64` and `d0f5f3c0-3fcf-44e2-b7a7-9d3ae4bc02c1`, then Assistant fallback `5f2210bb-ebd4-4886-82ba-9c8bf98adb86`, failed with provider errors. Rechecked disk: no Phase 2 review record exists. Phase 2 is implemented but NOT approved. Future review should inspect AT-04 fixture linkage and AT-09 confirmation dependency. No Phase 3 files created; user pause boundary preserved. Recovery inspection reports remain evidence of file existence only, not acceptance quality.
+
 ## 2026-10-12 — Phase 0-R: verbatim re-transcription of slides 02, 02b, 05, 06 (orchestrator-direct)
 
 **Why:** Review 2 (task-record rev 5) found critical transcription errors C-01..C-04 in `00-deconstruction.md`; the final revision loop was dispatched by the previous session but never landed before it disconnected. Subagent dispatch was attempted twice in this session and failed both times (OpenAI provider overloaded, request IDs 5ca3e264…, c9b5519d…). Per the delegation-failure precedent in task-record rev 5, the orchestrator executed directly.
@@ -58,3 +71,46 @@ Read task-record.md revision 7 and docs-conversion-plan-v2-pickup.md Phase 1-A. 
 **Verification:** Exact §16.5 count remained 20 with `Sumber`; one `Versi 2.3.0` history entry; source-tag audit returned zero untagged rows in targeted §3.1, §7/§8, Sprint, gaps, and UI/acceptance ranges; canonical-token audit returned zero doubled/noncanonical affected tokens; `<IMAGE_OMITTED_DUE_TO_SIZE>`, `pembulatan ke bawah`, `rekening cadangan`, and `insiden keamanan` each returned zero; shared-rule note count was 2; Sprint 4 contained one FR-8.2; `git diff --check` exited 0. Protected SHA256 values matched the pre-loop values at their current `artifacts\review\` / `artifacts\implementation\` locations. Full evidence is in `impl-005.md`.
 
 **Scope:** Only the BRD and this worklog were modified; `impl-005.md` was added. No register, review, prior report, source image, task record, OpenSpec artifact, cleanup, Phase 2 artifact, RBAC matrix, tests, or verification script was created or modified by this loop. No subagents were dispatched per user instruction.
+
+## 2026-10-13 — Phase 5: Automated traceability verification script and OpenSpec apply-ready transition
+
+**Why:** Fulfill Phase 5 final planning milestone per `ORIGINAL_REQUEST.md`: provide an automated traceability check over approved planning documents, and complete OpenSpec change artifacts (`proposal.md`, `design.md`, `specs/`, `tasks.md`) to bring `lukla-ops-engine-planning` to apply-ready status.
+
+**What was implemented:**
+- Authored `openspec/changes/lukla-ops-engine-planning/artifacts/verify-traceability.ps1` with PowerShell 7 (`pwsh`), checking:
+  - Check (a): Five core documents exist (`00-deconstruction.md`, `04-rbac-matrix.md`, `06-acceptance-tests.md`, `07-glossary.md`, `Lukla Operations Engine - BRD v2.2.1 - FINAL.md`).
+  - Check (b): All 20 observed FR IDs (`FR-1.1, FR-1.4, FR-2.1, FR-3.1, FR-4.1, FR-5, FR-6, FR-6.2, FR-7.1, FR-7.2, FR-7.3, FR-7.4, FR-8.1, FR-8.2, FR-9.1, FR-9.2, FR-10.1, FR-10.2, FR-10.3, FR-10.4`) appear in `00-deconstruction.md` and BRD §16.5; evaluated acceptance test coverage in `06-acceptance-tests.md` (FR-8.2 mapped via compound slash `FR-8.1/8.2`; FR-10.4 noted as coverage warning).
+  - Check (c): All 8 role names (`Owner/Eksekutif`, `Tim Sample/Adis`, `Gudang/Warehouse`, `Kepala Produksi/Mandor`, `Penjahit/Tailor`, `QC Inspector`, `Finance & Payroll`, `Klien Maklon/Ext`) confirmed present in `04-rbac-matrix.md`.
+  - Check (d): All 4 closing scenarios (cross-client material rejection, midweek +5 sewers & Saturday payroll, 3,000 Pass QC units & bonus pool ÷3, sample v1 → v2 revision) confirmed present in `06-acceptance-tests.md`.
+  - Check (e): All 7 UNRESOLVED items in `00-deconstruction.md` confirmed echoed in BRD §13.3.
+- Authored OpenSpec spec-driven artifacts in change root `openspec/changes/lukla-ops-engine-planning/`:
+  - `proposal.md`: Context, problem statement, scope of changes across 6 capabilities, impact analysis.
+  - `design.md`: Architectural decisions (immutable double-entry ledger, DB-level contamination trigger, 8-role RLS model, 6 capability structure), goals/non-goals, risk mitigations.
+  - `specs/multi-tenant-platform/spec.md`: Multi-tenant isolation, onboarding, 8-role RBAC governance (FR-1.1, FR-1.4, FR-2.1).
+  - `specs/audit-and-sample-tracking/spec.md`: Immutable audit trail logging, sample revision lineage v1 to v2 (FR-3.1, FR-4.1).
+  - `specs/warehouse-and-cutting-controls/spec.md`: Consignment inventory, cutting room controls, cross-client contamination rejection guardrail (FR-5, FR-6, FR-6.2).
+  - `specs/production-output-tracking/spec.md`: Dynamic line capacity, rate cards, 30-minute touch logging, assembly to QC staging (FR-7.1, FR-7.2, FR-7.3, FR-7.4).
+  - `specs/quality-control-and-inspection/spec.md`: Pass/Repair/Reject triage, non-duplicate repair pay, QC bonus pool accrual, 3-way equal distribution (FR-8.1, FR-8.2, FR-9.1, FR-9.2).
+  - `specs/payroll-and-costing-engine/spec.md`: Saturday piece-rate payroll, floating meal allowance (10–15%), bonus pool settlement, monthly overhead allocation (FR-10.1, FR-10.2, FR-10.3, FR-10.4).
+  - `tasks.md`: Structured implementation checklist with Phases 0–4 marked complete and Phase 5 transition tasks.
+
+**Verification results:**
+- `pwsh -NoProfile -File openspec/changes/lukla-ops-engine-planning/artifacts/verify-traceability.ps1` exited 0 with all checks PASS and 1 explicit warning (FR-10.4 test coverage gap in acceptance tests).
+- Negative check harness: executed against isolated copy in `$env:TEMP`; verified removing `FR-7.1` caused exit 1 naming `Check (b) FAIL: Register (00-deconstruction.md) missing FR-7.1`; removing `Tim Sample/Adis` caused exit 1 naming `Check (c) FAIL: RBAC Matrix (04-rbac-matrix.md) missing role: Tim Sample/Adis`.
+- `openspec status --change lukla-ops-engine-planning` reported 4/4 artifacts complete (`proposal [x]`, `design [x]`, `specs [x]`, `tasks [x]`).
+- `openspec validate lukla-ops-engine-planning` passed with exit code 0 (`Change 'lukla-ops-engine-planning' is valid`).
+- `openspec show lukla-ops-engine-planning --json --deltas-only` parsed 20 added requirements across 6 capabilities.
+- SHA256 hashes of all 5 frozen files verified against baseline (zero edits to frozen documents).
+- `git diff --check` passed cleanly.
+
+**BLOCKED items recorded & boundaries preserved:**
+- Slide 02c unavailable from all disk sources.
+- Slide 07 available as chat attachment only.
+- FR-5 (Gudang detail) and FR-6 (Cutting detail) remain UNRESOLVED (no business rules invented).
+- FR-6.2 module ownership (Gudang vs Cutting vs both) remains UNRESOLVED.
+- QC Bonus pool integer remainder handling (AT-08) remains BLOCKED / decision needed.
+- Mass-order confirmation actor and mechanics (AT-10) remain BLOCKED / decision needed.
+- Meal base computation vs ongkos potong (FR-10.2) remains BLOCKED / decision needed.
+
+**Not run:**
+- Application code runtime execution (planning/documentation phase only; no application source code exists).
