@@ -145,7 +145,7 @@ Berikut adalah pembagian tugas berdasarkan kesepakatan sprint (Berdasarkan acuan
 
 #### **Catatan Penting untuk Eksekusi**
 
-1. **Frontend (Dev 1 & Dev 2):** Jangan lupa terapkan desain ala Apple. Gunakan sudut membulat, pastikan kontras jelas, dan optimalkan efek glassmorphism tanpa mengorbankan performa (jangan sampai lag di tablet pabrik).  
+1. **Frontend (Dev 1 & Dev 2):** Jangan lupa terapkan desain ala Apple. Gunakan sudut membulat, pastikan kontras jelas, dan optimalkan ekfek glassmorphism tanpa mengorbankan performa (jangan sampai lag di tablet pabrik).  
 2. **Backend (Dev 3):** Integritas data adalah harga mati. Pastikan Trigger validate\_material\_dispatch() yang memblokir kontaminasi silang tidak bisa di-bypass oleh siapapun.  
 3. **Logic (Dev 4):** Perhatikan pembulatan nilai pecahan saat membagi bonus QC 3 arah. Sisa pembulatan (walau Rp 1\) harus masuk ke cadangan pabrik, bukan mematahkan aplikasi.
 

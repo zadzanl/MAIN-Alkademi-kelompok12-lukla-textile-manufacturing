@@ -1,0 +1,37 @@
+{
+  "name": "Lukla Operations Engine",
+  "version": "1.0.0",
+  "description": "OpenCode repository untuk Vibe Coding - Lukla Operations Engine",
+  "type": "vibecoding",
+  "structure": {
+    "components": "Reusable components - React, Utils, DB Helpers, Hooks (copy-paste ready)",
+    "snippets": "Quick reference patterns - API, React, DB, Error handling",
+    "examples": "Full implementations - complete feature examples",
+    "conventions": "Naming conventions, structure standards, best practices"
+  },
+  "created": "2026-10-13",
+  "updated": "2026-10-13",
+  "maintainers": ["Team Alkademi Hackathon"],
+  "tags": ["operations", "engine", "backend", "frontend", "vibe-coding"],
+  "aiAgent": {
+    "name": "OpenCode Vibe Coding Agent",
+    "path": ".kiro/agents/opencode-vibecoding-agent.md",
+    "active": true,
+    "autoLoad": true
+  },
+  "steering": {
+    "main": ".kiro/steering/opencode-vibecoding.md",
+    "quickRef": ".kiro/steering/opencode-quick-reference.md"
+  },
+  "guidelines": {
+    "inventory": "INVENTORY.md - Always update saat add/modify items",
+    "conventions": "conventions/NAMING_CONVENTIONS.md - Follow naming patterns",
+    "bestPractices": [
+      "Cek OpenCode INVENTORY.md dulu sebelum bikin baru",
+      "Ikuti NAMING_CONVENTIONS.md untuk consistency",
+      "Add JSDoc comments saat coding",
+      "Save hasil ke OpenCode untuk reuse",
+      "Update INVENTORY.md setelah add/modify"
+    ]
+  }
+}

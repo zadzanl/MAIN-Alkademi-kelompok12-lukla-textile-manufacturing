@@ -1,0 +1,157 @@
+/**
+ * Type definitions for Sampling & Spec R&D
+ */
+
+export interface TimeSample {
+  sample_id: string;
+  timestamp: string;
+  cycle_time_ms: number;
+  element_name: string;
+  observations: Record<string, any>;
+  operator_id: string | null;
+  machine_id: string | null;
+  is_abnormal: boolean;
+  notes: string;
+}
+
+export interface TimeStudy {
+  study_id: string;
+  tenant_id: string;
+  process_id: string;
+  process_name: string;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  status: 'draft' | 'in_progress' | 'paused' | 'completed' | 'archived';
+  target_sample_size: number;
+  samples: TimeSample[];
+  confidence_level: number;
+  allowance_percent: number;
+  operator_id: string;
+  department_id: string;
+  shift: string;
+  product_id: string;
+  notes: string;
+  total_cycles: number;
+  mean_cycle_time: number;
+  std_dev_cycle_time: number;
+  min_cycle_time: number;
+  max_cycle_time: number;
+}
+
+export interface TimeStudyStats {
+  total_samples: number;
+  normal_samples: number;
+  abnormal_samples: number;
+  mean_cycle_time_ms: number;
+  std_dev: number;
+  min_cycle_time_ms: number;
+  max_cycle_time_ms: number;
+  coeff_of_variation: number;
+  confidence_level: number;
+  allowance_percent: number;
+}
+
+export interface SpecChange {
+  change_id: string;
+  timestamp: string;
+  change_type: string;
+  parameter_name: string;
+  old_value: string;
+  new_value: string;
+  changed_by: string;
+  reason: string;
+  impact_assessment: string;
+}
+
+export interface SpecDrift {
+  drift_id: string;
+  timestamp: string;
+  parameter_name: string;
+  specification_limit: number;
+  measured_value: number;
+  deviation_percent: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  corrective_action: string;
+  resolved: boolean;
+  resolved_at: string | null;
+}
+
+export interface SpecVersion {
+  version_id: string;
+  tenant_id: string;
+  spec_id: string;
+  spec_name: string;
+  version_number: string;
+  created_at: string;
+  updated_at: string;
+  status: 'draft' | 'review' | 'approved' | 'active' | 'superseded' | 'archived';
+  parameters: Record<string, any>;
+  tolerances: Record<string, { min: number; max: number }>;
+  materials: string[];
+  process_steps: string[];
+  changes: SpecChange[];
+  drifts: SpecDrift[];
+  total_drifts: number;
+  critical_drifts: number;
+  created_by: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  notes: string;
+  parent_version_id: string | null;
+  supersedes_version_id: string | null;
+}
+
+export interface DriftAnalysis {
+  total_drifts: number;
+  severity_distribution: Record<string, number>;
+  by_parameter: Record<string, { count: number; critical: number }>;
+  critical_parameters: string[];
+  critical_rate_percent: number;
+  trend: 'stable' | 'concerning' | 'worsening' | 'critical';
+  parameters_with_drift: number;
+}
+
+export interface WorkflowSummary {
+  active_studies: number;
+  completed_studies: number;
+  active_specs: number;
+  specs_in_review: number;
+  total_drifts: number;
+  critical_drifts: number;
+}
+
+// Component Props
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+  children: React.ReactNode;
+}
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'glass' | 'outlined';
+  children: React.ReactNode;
+}
+
+export interface ModalProps {
+  isOpen: boolean;
+  title: string;
+  children: React.ReactNode;
+  onClose: () => void;
+  footer?: React.ReactNode;
+}
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  variant?: 'outlined' | 'filled';
+}
+
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  options: Array<{ label: string; value: string | number }>;
+}
