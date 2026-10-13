@@ -156,8 +156,8 @@ def create_api_router() -> APIRouter:
         version_id: str,
         change_type: str = Query(...),
         parameter_name: str = Query(...),
-        old_value: Any = Body(...),
-        new_value: Any = Body(...),
+        old_value: str = Query(...),
+        new_value: str = Query(...),
         changed_by: str = Query(...),
         reason: str = Query(""),
         impact_assessment: str = Query(""),
@@ -166,14 +166,24 @@ def create_api_router() -> APIRouter:
         try:
             change_type_enum = ChangeType[change_type.upper()]
         except KeyError:
-            raise HTTPException(status_code=400, detail=f"Invalid change type: {change_type}")
+            raise HTTPException(status_code=400, detail=f"Invalid change type: {change_type}. Valid: {[e.name for e in ChangeType]}")
+
+        # Try to parse as number, fallback to string
+        def parse_value(v: str) -> Any:
+            try:
+                return int(v)
+            except ValueError:
+                try:
+                    return float(v)
+                except ValueError:
+                    return v
 
         success, message = workflow.add_spec_change(
             version_id=version_id,
             change_type=change_type_enum,
             parameter_name=parameter_name,
-            old_value=old_value,
-            new_value=new_value,
+            old_value=parse_value(old_value),
+            new_value=parse_value(new_value),
             changed_by=changed_by,
             reason=reason,
             impact_assessment=impact_assessment,
