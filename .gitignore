@@ -1,0 +1,122 @@
+# ==========================================
+# Next.js / Node.js
+# Source: https://github.com/github/gitignore/blob/main/Nextjs.gitignore
+# ==========================================
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files (Crucial for DB strings)
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# ==========================================
+# Python (Backend / Scripts)
+# Source: https://github.com/github/gitignore/blob/main/Python.gitignore
+# ==========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.sved
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mypy, ruff, and type checkers
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.typeguard/
+
+# ==========================================
+# PostgreSQL (Local Development)
+# ==========================================
+# Ignore local database data directories (e.g., used by Docker volumes)
+pgdata/
+postgres-data/
+.pgdata/
+db-data/
+
+# ==========================================
+# IDEs and Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==========================================
+# Documentation Clutter
+# ==========================================
+artifacts/
+DEPRECATED/
