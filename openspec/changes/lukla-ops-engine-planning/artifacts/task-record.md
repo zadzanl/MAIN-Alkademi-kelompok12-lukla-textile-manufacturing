@@ -1,16 +1,36 @@
 # Task Record: lukla-ops-engine-planning
 
-**Revision:** 8
+**Revision:** 11
 **Updated:** 2026-10-13
+
+## Phase 5 checkpoint (2026-10-13) — COMPLETE & APPLY-READY
+- Implemented and VERIFIED: `artifacts/verify-traceability.ps1` (PowerShell 7). Executes all checks (a) core docs existence, (b) 20 FR IDs in register & BRD §16.5 & test coverage, (c) 8 role names in RBAC matrix, (d) 4 closing scenarios in acceptance tests, (e) 7 UNRESOLVED items in register echoed in BRD §13.3. Script exits 0 with PASS across all assertions; 1 explicit WARN for FR-10.4 test coverage gap in acceptance tests (honest handling per R1).
+- Negative test harness verified in isolated temp copy (`$env:TEMP`): removing `FR-7.1` caused exit 1 naming missing FR; removing `Tim Sample/Adis` caused exit 1 naming missing role.
+- OpenSpec spec-driven artifacts authored in `openspec/changes/lukla-ops-engine-planning/`: `proposal.md`, `design.md`, 6 capability specifications in `specs/`, and `tasks.md`.
+- `openspec status --change lukla-ops-engine-planning` verified 4/4 artifacts complete (proposal, design, specs, tasks).
+- `openspec validate lukla-ops-engine-planning` verified valid (exit code 0).
+- `openspec show lukla-ops-engine-planning --json --deltas-only` verified all 20 added requirements parsed with `SHALL`/`MUST` and `#### Scenario:` blocks.
+- SHA256 hashes of all 5 frozen files verified against baseline (zero edits to frozen documents).
+- `git diff --check` verified clean.
+- BLOCKED items preserved: Slide 02c unavailable from disk; slide 07 chat attachment only; FR-5/FR-6 details UNRESOLVED; FR-6.2 module ownership UNRESOLVED; QC bonus remainder (AT-08), mass order confirmation (AT-10), meal base computation (FR-10.2) remain BLOCKED / decision needed.
+- Application code runtime tests: NOT RUN (planning/documentation phase only).
+
+## Phase 2 checkpoint (2026-10-13) — COMPLETE & REVIEW-APPROVED
+- Implemented and APPROVED: `04-rbac-matrix.md` and `06-acceptance-tests.md`. Formal review record authored: `review/review-005-phase2.md` (**Verdict: APPROVED**).
+- Parent reproduced arithmetic: per-sewer wages 8000/12000/4000/6000/8000/10000/12000, total 60000; bonus pool 3000 x 7 = 21000, each recipient 7000; two Pass units x 6 = 12. New-file whitespace checks produced no diagnostics; tracked `git diff --check` passed. Application tests are NOT RUN.
+- Independent review completed: `review/review-005-phase2.md` authored with verdict APPROVED. AT-04 component-to-finished-unit linkage confirmed against slide 06 FR-7.4; AT-09 confirmation dependency confirmed ring-fenced without unstated actor invention.
+- New artifacts are ignored by `.gitignore` line 121 (`artifacts/`); they exist locally but are not staged or committed. No ignore rule was changed.
+- Phase 3 ready for execution: `verify-traceability.ps1` and OpenSpec spec-driven artifacts (`proposal.md`, `design.md`, `specs/`, `tasks.md`). Preserved pause boundary pending explicit user instruction.
 
 ## Active recovery scope (supersedes historical decisions below)
 - User approved the recovery plan and selected the mega-BRD plus missing deliverables, not a return to eight separate documents.
-- Current authorization: finish Phase 1 validation/corrections and independent review; **pause before Phase 2**. Do not create RBAC/tests, verification script, or OpenSpec completion artifacts yet.
+- Current authorization (2026-10-13): Phase 1-A approved in `review-004.md`; create Phase 2 RBAC matrix and acceptance-test plan, review them, then **pause before Phase 3**. Do not create the verification script or OpenSpec completion artifacts yet.
 - Preserve existing uncommitted edits. No reset, stash, or commit. Artifact cleanup is permitted after classification but is deferred beyond this pause.
 - Re-read the externally changed BRD before editing. Register revision 4 and Phase 0-R approval remain the baseline; do not reopen Phase 0.
 - Phase 1 acceptance: exact register/backlog FR parity; honest evidence tags; repair without double pay; fixed bonus divide-by-three without invented rounding; consolidated unresolved issues; no formatting defects. Preserve Indonesian BRD structure and adopted inferred technical/accounting/sprint material.
 - Handoff: Assistant audits/corrects BRD and writes `impl-003.md`; Review Orchestrator independently records `review-002.md`. Maximum two revision loops, then escalate without destroying prior edits.
-- User instruction: "Please pause right before you start phase 2".
+- Latest user instruction: "Alright, everything looks solid. Please proceed to phase 2. Please pause right before phase 3."
+- Phase 2 baseline: clean working tree at `e34ce1e`; register revision 4 remains authoritative. Delegate separate RBAC and acceptance documents; no reset, stash, commit, cleanup, or source re-transcription. Test specifications are not executed application tests. Maximum two correction loops; preserve prior work on escalation.
 
 ## Intent
 Convert the Lukla Operations Engine pitch deck (13 unique slides, Indonesian) into a full formal agile planning suite of 8 English documents (with Indonesian glossary) for a dev-team build blueprint. Planning/docs only — no code, no tech stack.
@@ -76,3 +96,6 @@ Applied per phase: max **2** review-revision loops; stop earlier when no critica
 - rev 7 (2026-10-12): **Phase 0-R COMPLETE.** Subagent dispatch failed 3x (provider overloaded / GitHub service disruption) → orchestrator-direct execution + review per rev-5 precedent. Register rev 3→4: slides 02/02b/05/06 re-transcribed verbatim from the PDF renders (page-0003/0004/0008/0009; printed labels verified). C-01..C-04 closed. Notable content corrections beyond the known criticals: slide 05 status badges are Pass/Repair/Reject (not "lolos/repair/scrap"); real FR-8.2 = "Repair tanpa Gaji Ganda" (rev-3's "Kategori Defect" was invented — defect-category selection lives on slide 08 view 05); FR-7.3 is sewing output per penjahit/komponen (not cutting); review 2's "FR-7.3/7.4 one combined card" belief contradicted by the render (two cards — resolved in favor of the render). Forced downstream fixes applied (FR inventory, UNRESOLVED item 4, Contradictions ×3, slide 04 + slide 08 cross-ref lines). Review: APPROVED (`review-001.md`), no criticals — Phase 0 closed within the cap-2 rule. Reports: `impl-001.md`, `worklog.md`. NEXT: Phase 1-A (BRD audit against register rev 4).
 
 - rev 8 (2026-10-13, orchestration recovery): User approved implementation of the recovery plan. OpenSpec status confirmed spec-driven with proposal/design/specs/tasks missing. Independent research reports `research-001.md` and `research-002.md` found a Phase 1-A blocker: the BRD's visible §16.5 FR backlog is `<IMAGE_OMITTED_DUE_TO_SIZE>`, so FR-9.1/FR-9.2 and the claimed `Sumber` column are not mechanically present; the BRD also has a duplicate v2.3.0 history entry, untagged FR-4.1/FR-7.x/FR-8.1 rows, lingering invented "pembulatan ke bawah", and duplicate FR-8.2 in Sprint 4. Phase 2 must wait for a narrow BRD correction and independent review. Current orchestrator will preserve the register rev 4 and avoid destructive cleanup.
+- rev 9 (2026-10-13): Phase 2 implementation; authored `04-rbac-matrix.md` and `06-acceptance-tests.md`.
+- rev 10 (2026-10-13): Phase 2 formal review completion (`review-005-phase2.md`, verdict APPROVED).
+- rev 11 (2026-10-13): Phase 5 COMPLETE. Implemented and verified `artifacts/verify-traceability.ps1` (exit code 0); verified negative check harness; authored OpenSpec apply-ready artifacts (`proposal.md`, `design.md`, 6 `specs/**/spec.md`, `tasks.md`); confirmed `openspec status` 4/4 complete; confirmed `openspec validate` valid (exit 0); verified SHA256 hashes of 5 frozen files intact; confirmed `git diff --check` clean.

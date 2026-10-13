@@ -362,7 +362,6 @@ Implementation success is evaluated against four end-to-end integration scenario
 
 ```
 SPRINT 1                  SPRINT 2                  SPRINT 3                  SPRINT 4                  SPRINT 5
-Oct 13 - Oct 26           Oct 27 - Nov 09           Nov 10 - Nov 23           Nov 24 - Dec 07           Dec 08 - Dec 21
 +-------------------+     +-------------------+     +-------------------+     +-------------------+     +-------------------+
 | Double-Entry Core |     | Multi-Tenant      |     | Manufacturing     |     | Dynamic Payroll   |     | Full UI & End-    |
 | & RBAC Engine     |────►| Inventory Engine  |────►| Execution (MES)   |────►| & QC Bonus Engine |────►| to-End Validation |

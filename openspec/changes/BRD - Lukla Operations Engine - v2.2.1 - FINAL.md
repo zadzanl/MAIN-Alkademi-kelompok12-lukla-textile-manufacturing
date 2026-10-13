@@ -18,7 +18,7 @@ Lokasi Fasilitas: Ciwidey, Kabupaten Bandung, Jawa Barat
 
 Versi Dokumen: 2.3.0
 
-Tanggal Rilis: 12 Oktober 2026
+Tanggal Rilis: (diisi saat persetujuan)
 
 Status Dokumen: Draft \- Menunggu Persetujuan
 
@@ -26,14 +26,14 @@ Klasifikasi: Internal Confidential / Restricted Enterprise Blueprint
 
 # **RIWAYAT REVISI DOKUMEN**
 
-*Versi 0.1.0 (12/10/2026) | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Draft dekonstruksi awal dari slide presentasi pitch deck.*
+*Versi 0.1.0 | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Draft dekonstruksi awal dari slide presentasi pitch deck.*
 
-*Versi 1.0.0 (12/10/2026) | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Peringkasan dokumen*
+*Versi 1.0.0 | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Peringkasan dokumen*
 
-*Versi 2.0.0 (12/10/2026) | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Adversarial review, kemudian revisi. Integrasi akuntansi double-entry, dampak neraca/pembukuan, pemetaan alur As-Is vs To-Be, matriks prioritas kebutuhan fungsional, skema anti-kontaminasi silang, kalkulasi upah borongan (piece-rate), pembagian bonus QC 3 arah, dan biaya overhead per unit.*
+*Versi 2.0.0 | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Adversarial review, kemudian revisi. Integrasi akuntansi double-entry, dampak neraca/pembukuan, pemetaan alur As-Is vs To-Be, matriks prioritas kebutuhan fungsional, skema anti-kontaminasi silang, kalkulasi upah borongan (piece-rate), pembagian bonus QC 3 arah, dan biaya overhead per unit.*
 
-*Versi 2.2.0 (12/10/2026) | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Update komprehensif menindaklanjuti Approval Gate, Matriks Peran & Akuntabilitas, Alur Kerja To-Be & Diagram Mermaid, Resequencing Sprint & Scrum Cadence, Product Backlog 22 FR, dan Acceptance Criteria Test Scenarios.*
-*Versi 2.3.0 (12/10/2026) | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Audit traceability terhadap 00-deconstruction.md rev 4; koreksi inventaris FR, pemulihan FR-9.1/FR-9.2, penandaan sumber, dan konsolidasi pertanyaan UNRESOLVED.*
+*Versi 2.2.0 | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Update komprehensif menindaklanjuti Approval Gate, Matriks Peran & Akuntabilitas, Alur Kerja To-Be & Diagram Mermaid, Resequencing Sprint & Scrum Cadence, Product Backlog 22 FR, dan Acceptance Criteria Test Scenarios.*
+*Versi 2.3.0 | Disetujui Oleh: Engineering Team | Penulis: Engineering Team | Deskripsi: Audit traceability terhadap 00-deconstruction.md rev 4; koreksi inventaris FR, pemulihan FR-9.1/FR-9.2, penandaan sumber, dan konsolidasi pertanyaan UNRESOLVED.*
 
 # **DAFTAR ISI**
 
@@ -79,6 +79,8 @@ Platform ini menggantikan catatan kertas dan spreadsheet dengan satu sistem terp
 # **3\. RUANG LINGKUP PROYEK**
 
 ##   **3.1 Dalam Ruang Lingkup (In Scope)**
+
+System permissions: [RBAC matrix](04-rbac-matrix.md). Manual acceptance scenarios: [acceptance-test plan](06-acceptance-tests.md). [inferred] (document navigation; no additional requirements)
 
 * Manajemen Multi-Tenant & Identitas Kepemilikan Material: Penandaan wajib pasangan client\_id dan order\_id pada setiap lot bahan baku, rol kain, bundel potongan, dan barang jadi. [inferred] (adopted planning detail; source concept: slide 02b)
 * Validasi Anti-Kontaminasi Silang: Pembatasan sistemik setingkat basis data (database-level trigger) yang menolak penerbitan material milik Klien X untuk pesanan Klien Y. [inferred] (planning mechanism not in source; source-backed behavior is rejection)
@@ -238,6 +240,8 @@ Skala Prioritas Kebutuhan
 
 ## **11.1 Matriks Peran Proyek, Tanggung Jawab & Akuntabilitas (project-delivery governance/RACI)**
 
+See [04-rbac-matrix.md](04-rbac-matrix.md) for the eight system roles and their source permissions/restrictions. [inferred] (document navigation)
+
 This is a project-delivery governance/RACI matrix, distinct from the 8 system RBAC roles defined by the source on slide 04. It must not be used as the system permission matrix. The future RBAC matrix must cross-link to the complete slide-04 role set, including Gudang/Warehouse, Penjahit/Tailor, QC Inspector, Finance & Payroll, and Klien Maklon/Ext.
 
 | Peran Proyek | Nama Pejabat | Entitas | Tanggung Jawab Utama | Tingkat Akuntabilitas |
@@ -274,35 +278,35 @@ This is a project-delivery governance/RACI matrix, distinct from the 8 system RB
 | MOD-04 | Shop Floor MES & Terminal QC | MOD-02, MOD-03 | Pencatatan jahit 30 menit & QC membutuhkan Rate Card dan Data Order |
 | MOD-05 | Payroll Borongan & COGS Costing | MOD-04 | Penggajian dan COGS membutuhkan data unit Pass dari Terminal QC |
 
-## **12.2 Rencana 5 Sprint Vertical-Slice (13 Oktober \- 21 Desember 2026\)**
+## **12.2 Rencana 5 Sprint Vertical-Slice**
 
-### **Sprint 1: Core Double-Entry Ledger, RBAC & Tenant Isolation (13 \- 26 Okt 2026\)**
+### **Sprint 1: Core Double-Entry Ledger, RBAC & Tenant Isolation**
 
 * Ruang Lingkup: Membangun schema database append-only ledger, autentikasi RBAC 8 peran, dan predikat isolasi multi-tenant (FR-1.1, FR-2.1, FR-3.1). [inferred] (sprint packaging; cited FR meanings retain their individual status)
 
-### **Sprint 2: Multi-Tenant Warehouse, Off-Balance Sheet & Anti-Cross Contamination Guardrail (27 Okt \- 09 Nov 2026\)**
+### **Sprint 2: Multi-Tenant Warehouse, Off-Balance Sheet & Anti-Cross Contamination Guardrail**
 
 * Ruang Lingkup: Penerimaan bahan dengan tag client\_id/order\_id, perlakuan akuntansi kustodial, dan database trigger pemblokir kontaminasi silang [inferred] (planning detail not in source) (FR-5.1 [inferred], FR-5.2 [inferred], FR-6.1 [inferred], FR-6.2, FR-6.3 [inferred]).
 
-### **Sprint 3: Sample Lifecycle, Time Study, Master Spec & Shop Floor MES (10 \- 23 Nov 2026\)**
+### **Sprint 3: Sample Lifecycle, Time Study, Master Spec & Shop Floor MES**
 
 * Ruang Lingkup: Pengelolaan versi sampel, stopwatch time study, penguncian Rate Card, penataan lini jahit, dan terminal touch 30 menit (FR-4.1, FR-4.2 [inferred], FR-4.3 [inferred], FR-7.1, FR-7.2, FR-7.3, FR-7.4). Sprint packaging detail is [inferred] (not source-backed).
 
-### **Sprint 4: QC Terminal, Defect Taxonomy & Automated Payroll Engine (24 Nov \- 07 Des 2026\)**
+### **Sprint 4: QC Terminal, Defect Taxonomy & Automated Payroll Engine**
 
 * Ruang Lingkup: Terminal QC (Pass/Repair/Reject), alur perbaikan tanpa gaji ganda, rekap borongan Sabtu, pool uang makan, bonus QC 3 arah, dan COGS overhead (FR-8.1, FR-8.2, FR-10.1, FR-10.2, FR-10.3, FR-10.4). [slide 05; slide 07] (the sprint packaging and dates are [inferred]; the cited FR meanings remain source-statused individually)
 
-### **Sprint 5: B2B Client Portal, End-to-End Integration & UAT Readiness (08 \- 21 Des 2026\)**
+### **Sprint 5: B2B Client Portal, End-to-End Integration & UAT Readiness**
 
 * Ruang Lingkup: Portal mandiri klien B2B, pengujian integrasi 6 antarmuka UI, validasi NFR performance, dan persiapan peluncuran Go-Live (Portal B2B & E2E UI Suite).
 
 ## **12.3 Tonggak Pencapaian Berdampak Pengguna (User-Facing Milestones)**
 
-* Milestone M1 (26 Okt 2026): 'Fondasi Data Sehat' \- Sistem RBAC & Buku Besar Terverifikasi Audit.
-* Milestone M2 (09 Nov 2026): 'Gudang Bebas Salah Kain' \- Fitur Anti-Kontaminasi Silang Lulus Uji Coba Lapangan.
-* Milestone M3 (23 Nov 2026): 'Digital Touch Floor' \- Terminal Jahit 30 Menit & Rate Card Aktif di Lini Produksi.
-* Milestone M4 (07 Des 2026): 'Gaji Sabtu Otomatis' \- Eksekusi Formula Borongan, Uang Makan & Bonus QC Tepat Presisi.
-* Milestone M5 (21 Des 2026): 'Sistem Siap Go-Live' \- Portal B2B Aktif & UAT End-to-End Disetujui Manajemen.
+* Milestone M1: 'Fondasi Data Sehat' \- Sistem RBAC & Buku Besar Terverifikasi Audit.
+* Milestone M2: 'Gudang Bebas Salah Kain' \- Fitur Anti-Kontaminasi Silang Lulus Uji Coba Lapangan.
+* Milestone M3: 'Digital Touch Floor' \- Terminal Jahit 30 Menit & Rate Card Aktif di Lini Produksi.
+* Milestone M4: 'Gaji Sabtu Otomatis' \- Eksekusi Formula Borongan, Uang Makan & Bonus QC Tepat Presisi.
+* Milestone M5: 'Sistem Siap Go-Live' \- Portal B2B Aktif & UAT End-to-End Disetujui Manajemen.
 
 ## **12.4 Tata Kelola & Kadensi Agil / Scrum**
 
@@ -312,23 +316,23 @@ This is a project-delivery governance/RACI matrix, distinct from the 8 system RB
 
 # **Sprint Retrospective: Evaluasi internal tim teknis setelah Sprint Review untuk perbaikan proses berkelanjutan.**
 
-## **Sprint 1: Double-Entry Core & RBAC Engine ( \- 2026\)**
+## **Sprint 1: Double-Entry Core & RBAC Engine**
 
-## **Sprint 2: Multi-Tenant Inventory & Guardrail ( \- 2026\)**
+## **Sprint 2: Multi-Tenant Inventory & Guardrail**
 
-## **Sprint 3: Sample Lifecycle, Order & MES Floor ( \- 2026\)**
+## **Sprint 3: Sample Lifecycle, Order & MES Floor**
 
-## **Sprint 4: Payroll Borongan & QC Bonus Engine ( \- 2026\)**
+## **Sprint 4: Payroll Borongan & QC Bonus Engine**
 
-## **Sprint 5: UI Suite & Validasi End-to-End ( \- 2026\)**
+## **Sprint 5: UI Suite & Validasi End-to-End**
 
 ## **Tonggak Pencapaian Kritis (Major Milestones)**
 
-* Milestone 1 (26 Okt): Fondasi basis data double-entry dan RBAC 8 peran teruji.
-* Milestone 2 (09 Nov): Pengujian Skenario Pencegahan Kontaminasi Silang lulus validasi.
-* Milestone 3 (23 Nov): Transisi spesifikasi sampel ke pesanan massal berhasil.
-* Milestone 4 (07 Des): Eksekusi formula payroll hari Sabtu terverifikasi presisi.
-* Milestone 5 (21 Des): Uji coba menyeluruh 6 antarmuka; sistem siap Go-Live.
+* Milestone 1: Fondasi basis data double-entry dan RBAC 8 peran teruji.
+* Milestone 2: Pengujian Skenario Pencegahan Kontaminasi Silang lulus validasi.
+* Milestone 3: Transisi spesifikasi sampel ke pesanan massal berhasil.
+* Milestone 4: Eksekusi formula payroll hari Sabtu terverifikasi presisi.
+* Milestone 5: Uji coba menyeluruh 6 antarmuka; sistem siap Go-Live.
 
 # **13\. ASUMSI & BATASAN BISNIS**
 
