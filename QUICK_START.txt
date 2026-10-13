@@ -1,0 +1,189 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                  SAMPLING & SPEC R&D - QUICK START                          ║
+║                          Untuk Tim Development                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📍 REPOSITORY
+  URL: https://github.com/zadzanl/MAIN-Alkademi-hackathon-project1-amiga-textile.git
+  Branch: master
+  Clone: git clone https://github.com/zadzanl/MAIN-Alkademi-hackathon-project1-amiga-textile.git
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 QUICK START (Copy-Paste Commands)
+
+TERMINAL 1 - BACKEND:
+  cd backend/sampling-spec-rnd
+  python -m venv venv
+  .\venv\Scripts\activate
+  pip install -r requirements.txt
+  uvicorn src.main:app --reload --port 8007
+
+TERMINAL 2 - FRONTEND:
+  cd frontend/sampling-spec-rnd
+  npm install
+  npm run dev
+
+✅ DONE! Open:
+  Frontend: http://localhost:3007
+  API Docs: http://127.0.0.1:8007/docs
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION FILES
+
+  RUN_APPLICATION.md          ← START HERE (Detailed step-by-step)
+  TEAM_SETUP_GUIDE.md         ← Complete team guide
+  DEPLOYMENT_READY.md         ← Status & checklist
+  REPOSITORY_STATUS.md        ← Repository info
+  INTEGRATION_STATUS.md       ← Integration details
+  QUICK_START.txt             ← This file
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 VERIFY EVERYTHING WORKS
+
+1. Backend Health Check:
+   http://127.0.0.1:8007/api/sampling-spec-rnd/health
+   Should see: {"status":"healthy","module":"sampling-spec-rnd"}
+
+2. Frontend Check:
+   http://localhost:3007
+   Should see: Green checkmark "🟢 Backend Connected"
+
+3. Create Time Study:
+   - Input name in text field
+   - Click "Create Study" button
+   - Should see study in list
+   - Check backend terminal for logs
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🆘 TROUBLESHOOTING
+
+Port Already in Use?
+  Backend:  Change port in command: --port 8008
+  Frontend: Edit vite.config.ts, change port: 3008
+
+Backend not found?
+  - Check: http://127.0.0.1:8007/api/sampling-spec-rnd/health
+  - Restart backend
+  - Check virtual environment is activated
+
+npm install stuck?
+  Try: npm install --legacy-peer-deps
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✨ KEY FEATURES
+
+  ✅ Apple Design System (glasmorphism, rounded corners)
+  ✅ WCAG AA+ Contrast
+  ✅ Tablet Optimized (60 FPS)
+  ✅ Frontend ↔ Backend Integrated
+  ✅ TypeScript Type Safe
+  ✅ Auto-reload in Dev Mode
+  ✅ API Documentation (Swagger)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📞 USEFUL COMMANDS
+
+Backend:
+  pip list                    ← Show installed packages
+  pip install -r requirements.txt  ← Reinstall dependencies
+  Ctrl+C                      ← Stop server
+
+Frontend:
+  npm list                    ← Show installed packages
+  npm install                 ← Install all dependencies
+  npm run build               ← Build for production
+  npm run preview             ← Preview production build
+  npm run lint (if available) ← Check code
+  Ctrl+C                      ← Stop dev server
+
+Git:
+  git pull origin master      ← Get latest code
+  git add .                   ← Stage all changes
+  git commit -m "message"     ← Commit
+  git push origin master      ← Push to remote
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 PROJECT STRUCTURE
+
+backend/sampling-spec-rnd/
+  ├── src/main.py            ← FastAPI app entry point
+  ├── src/api/routes.py       ← API endpoints
+  ├── src/models/             ← Data models
+  ├── src/services/           ← Business logic
+  └── requirements.txt        ← Python dependencies
+
+frontend/sampling-spec-rnd/
+  ├── src/main.tsx            ← React entry point
+  ├── src/pages/TimeStudyPage.tsx  ← Main page
+  ├── src/components/         ← React components
+  ├── src/services/api.ts     ← API client
+  ├── src/styles/             ← Design system
+  └── package.json            ← NPM dependencies
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🌐 URLS
+
+Frontend:           http://localhost:3007
+Backend API:        http://127.0.0.1:8007/api/sampling-spec-rnd
+Swagger UI:         http://127.0.0.1:8007/docs
+ReDoc:              http://127.0.0.1:8007/redoc
+Health Check:       http://127.0.0.1:8007/api/sampling-spec-rnd/health
+GitHub Repo:        https://github.com/zadzanl/MAIN-Alkademi-hackathon-project1-amiga-textile.git
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ REQUIREMENTS (Install First)
+
+  Python 3.8+     → python.org or Windows Store
+  Node.js 18+     → nodejs.org
+  Git             → git-scm.com
+
+Verify:
+  python --version
+  node --version
+  npm --version
+  git --version
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 CHECKLIST
+
+  [ ] Prerequisites installed (Python, Node, Git)
+  [ ] Repository cloned
+  [ ] Backend venv created and activated
+  [ ] Backend dependencies installed
+  [ ] Backend running on port 8007
+  [ ] Frontend dependencies installed
+  [ ] Frontend running on port 3007
+  [ ] Frontend shows "🟢 Backend Connected"
+  [ ] Can create time study
+  [ ] Backend logs show API calls
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎓 GIT WORKFLOW
+
+For each feature:
+  git pull origin master          ← Get latest
+  git checkout -b feature/name    ← Create branch
+  (make changes)
+  git add .
+  git commit -m "feat: description"
+  git push origin feature/name
+  (create pull request on GitHub)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Last Updated: October 13, 2026
+Status: ✅ Ready for Team Development
+Questions? Read RUN_APPLICATION.md for detailed instructions
+
+═══════════════════════════════════════════════════════════════════════════════
