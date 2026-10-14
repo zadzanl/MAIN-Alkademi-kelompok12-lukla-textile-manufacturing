@@ -23,3 +23,15 @@ class Forbidden(DomainError):
     """The authenticated role does not hold the capability the operation requires."""
 
     code = ErrorCode.FORBIDDEN
+
+
+class InvalidState(DomainError):
+    """The requested transition is not reachable from the current state."""
+
+    code = ErrorCode.INVALID_STATE
+
+
+class ValidationFailed(DomainError):
+    """The request is well-formed but violates a domain invariant."""
+
+    code = ErrorCode.VALIDATION_ERROR
