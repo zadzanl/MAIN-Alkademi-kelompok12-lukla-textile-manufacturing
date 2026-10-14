@@ -70,12 +70,15 @@ prototypes/sampling-spec-rnd/
 - **Base URL:** `/api/sampling-spec-rnd`
 - **Proxy Dev Server:** Vite development server pada port `3009` meneruskan panggilan `/api/*` langsung ke server backend di `http://localhost:8009`.
 - **Endpoints Utama:**
-  - `GET /health` dan `GET /api/sampling-spec-rnd/health`: Health status.
-  - `POST /api/sampling-spec-rnd/time-studies`: Inisialisasi sesi time study baru.
-  - `POST /api/sampling-spec-rnd/time-studies/{id}/samples`: Mencatat satu observasi sampel durasi.
-  - `GET /api/sampling-spec-rnd/time-studies/{id}/stats`: Mengambil statistik (mean, std dev, outliers).
-  - `POST /api/sampling-spec-rnd/spec-versions`: Membuat draft spesifikasi baru.
-  - `POST /api/sampling-spec-rnd/spec-versions/{id}/drift`: Menghitung deviasi parameter terhadap baseline.
+  - `GET /health` & `GET /api/sampling-spec-rnd/health`: Health check status.
+  - `POST /api/sampling-spec-rnd/studies/create`: Inisialisasi sesi time study baru.
+  - `POST /api/sampling-spec-rnd/studies/{study_id}/start`: Memulai perekaman sesi time study.
+  - `POST /api/sampling-spec-rnd/studies/{study_id}/add-sample`: Mencatat satu observasi sampel durasi siklus.
+  - `GET /api/sampling-spec-rnd/studies/{study_id}/stats`: Mengambil kalkulasi statistik (mean, std dev, outlier count).
+  - `POST /api/sampling-spec-rnd/studies/{study_id}/complete`: Menyelesaikan dan mengunci sesi time study.
+  - `POST /api/sampling-spec-rnd/specs/create`: Membuat entri versi spesifikasi baru.
+  - `POST /api/sampling-spec-rnd/specs/{version_id}/record-change`: Mencatat modifikasi parameter spesifikasi.
+  - `GET /api/sampling-spec-rnd/specs/{version_id}/drift-analysis`: Menghitung deviasi parameter dan risk score terhadap baseline.
 
 ---
 

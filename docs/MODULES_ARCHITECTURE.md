@@ -8,8 +8,8 @@
 
 ### 1. SAMPLING & SPEC R&D (ACTIVE)
 
-**Status**: ✅ Ready  
-**Location**: `backend/sampling-spec-rnd/`
+**Status**: ✅ Ready (Prototype Spike Active)  
+**Location**: `prototypes/sampling-spec-rnd/backend/` (Target Enterprise: `backend/sampling-spec-rnd/`)
 
 **Purpose**: 
 - Record time studies for production phases
@@ -29,12 +29,14 @@
 - Finance Ledger (cost variance)
 - Inventory (multi-tenant filtering)
 
-**API Base**: `/api/v1/time-studies`, `/api/v1/spec-versions`
+**API Base**: 
+- Prototype Spike: `/api/sampling-spec-rnd/studies`, `/api/sampling-spec-rnd/specs`
+- Target Enterprise Contract: `/api/v1/time-studies`, `/api/v1/spec-versions`
 
 **Documentation**:
-- API Contracts: `backend/sampling-spec-rnd/API_CONTRACTS.md`
-- Integration: `backend/INTEGRATION_ANALYSIS.md`
-- Models: `backend/sampling-spec-rnd/src/models/`
+- API Integration: `prototypes/sampling-spec-rnd/backend/INTEGRATION_ANALYSIS.md`
+- Module Reference: `prototypes/sampling-spec-rnd/backend/MODULES_REFERENCE.md`
+- Models: `prototypes/sampling-spec-rnd/backend/src/models/`
 
 ---
 
@@ -248,16 +250,18 @@
 
 ### Critical Rules (ALWAYS enforce)
 
-1. **Client_ID Filtering**
-```python
-# WRONG
-SELECT * FROM specs WHERE product_id = X
+1. **Multi-Tenant Isolation via PostgreSQL RLS (ADR 10)**
+Instead of relying solely on error-prone application-level `WHERE client_id = ...` clauses, enforce transaction-local Row-Level Security (RLS) via PostgreSQL session settings:
+```sql
+-- Set transaction-scoped tenant context (FastAPI middleware per-request)
+SET LOCAL app.current_tenant_id = 'tenant_123';
 
-# RIGHT - filter by client_id first
-SELECT * FROM specs 
-WHERE client_id = auth_client_id 
-  AND product_id = X
+-- PostgreSQL RLS policy automatically filters rows at the database engine level
+CREATE POLICY tenant_isolation_policy ON specs
+  FOR ALL
+  USING (tenant_id = current_setting('app.current_tenant_id', true));
 ```
+In queries, ensure `tenant_id` context is always attached to the database connection/session before executing transactions.
 
 2. **Immutable Ledger**
 ```python
@@ -323,28 +327,29 @@ For each new module, ensure:
 
 5. **Document API contracts** → `API_CONTRACTS.md`
 
-6. **Register in main app**
+6. **Register in main app (FastAPI)**
    ```python
-   from backend.new_module.src.api import register_blueprints
-   register_blueprints(app)
+   from .api.routes import create_api_router
+   router = create_api_router()
+   app.include_router(router)
    ```
 
 7. **Write tests** → `tests/`
 
-8. **Add to MODULES_REFERENCE.md** (this file)
+8. **Add to MODULES_ARCHITECTURE.md** (this file)
 
 ---
 
 ## 📞 Integration Support
 
 **For questions about**:
-- **Module structure**: See `backend/README.md`
-- **Cross-module integration**: See `backend/INTEGRATION_ANALYSIS.md`
-- **API contracts**: See `backend/[module]/API_CONTRACTS.md`
-- **Code patterns**: See `backend/[module]/src/`
+- **Prototype structure**: See `prototypes/sampling-spec-rnd/backend/README.md`
+- **Cross-module integration**: See `prototypes/sampling-spec-rnd/backend/INTEGRATION_ANALYSIS.md`
+- **API routes & contracts**: See `prototypes/sampling-spec-rnd/backend/src/api/routes.py`
+- **Code patterns**: See `prototypes/sampling-spec-rnd/backend/src/`
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2026-10-13  
-**Status**: ✅ Reference Ready
+**Document Version**: 1.1  
+**Last Updated**: 2026-10-14  
+**Status**: ✅ Reference Aligned

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!--
+    Sources: openspec/changes/lukla-ops-engine-planning/research/research-005-swiss-design-references.md;
+    artifacts/design_guideline.md; archive/Overall Plan Draft.md §4.2.
+    Layout structure derives from §4.2; all data values (orders, rates, figures, tailor names)
+    are illustrative design-candidate copy, not plan-sourced figures.
+    Design candidate mock — not production code. Upgrade path: React+Vite views per 14-frontend-architecture.md.
+  -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lukla Operations Engine — UI/UX Mock</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f2f2f7;
+      --panel: #ffffff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0, 0, 0, .08);
+      --accent: #007aff;
+      --success: #34c759;
+      --warning: #ff9500;
+      --danger: #ff3b30;
+      --surface-hover: #f7f7f9;
+      --surface-active: #eef6ff;
+      --surface-sunken: #fbfbfc;
+      --track: #e8e8ed;
+      --accent-hover: #006fe6;
+      --accent-soft: #f5f9ff;
+      --on-accent: #ffffff;
+      --radius: 14px;
+      font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--page); }
+    body { margin: 0; color: var(--ink); background: var(--page); line-height: 1.45; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(0, 122, 255, .3); outline-offset: 2px; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 240px minmax(0, 1fr); }
+    .sidebar { padding: 32px 20px 24px; background: var(--panel); border-right: 1px solid var(--line); }
+    .wordmark { margin: 0 0 48px; max-width: 170px; font-size: 18px; line-height: 1.15; letter-spacing: -.03em; }
+    .wordmark span { display: block; margin-top: 10px; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .nav-button { width: 100%; min-height: 48px; padding: 11px 10px; display: grid; grid-template-columns: 32px 1fr; gap: 8px; align-items: center; color: var(--muted); text-align: left; border: 0; border-radius: 12px; background: transparent; }
+    .nav-button:hover { color: var(--ink); background: var(--surface-hover); }
+    .nav-button[aria-current="page"] { color: var(--accent); background: var(--surface-active); }
+    .nav-index { font: 600 12px ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .nav-label { font-size: 13px; font-weight: 600; line-height: 1.2; }
+    main { min-width: 0; padding: 48px clamp(24px, 5vw, 72px) 80px; }
+    .view { max-width: 1220px; margin: 0 auto; }
+    .view[hidden] { display: none; }
+    .view-header { padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 12px; color: var(--muted); font: 600 11px ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: 1.04; letter-spacing: -.055em; font-weight: 700; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    h3 { margin: 0; font-size: 15px; }
+    p { margin: 0; }
+    .subhead { margin-top: 14px; color: var(--muted); font-size: 14px; }
+    .content-stack { display: grid; gap: 24px; padding-top: 28px; }
+    .panel { min-width: 0; padding: 24px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+    .panel-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 22px; }
+    .panel-kicker { color: var(--muted); font-size: 12px; }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 24px; }
+    .status-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .status-item { min-height: 96px; padding: 20px; background: var(--panel); }
+    .status-label { display: block; color: var(--muted); font-size: 12px; }
+    .status-value { display: block; margin-top: 8px; font-size: 20px; font-weight: 700; letter-spacing: -.025em; }
+    .mono, .numeric, td.numeric, .figure-value { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .numeric { letter-spacing: -.02em; }
+    .chart-wrap { min-height: 250px; padding-top: 4px; }
+    .chart { width: 100%; height: 220px; overflow: visible; }
+    .chart text { fill: var(--muted); font: 11px ui-monospace, "SF Mono", Consolas, monospace; }
+    .chart .axis, .chart .gridline { stroke: var(--line); stroke-width: 1; }
+    .chart .gridline { stroke-dasharray: 2 5; }
+    .chart .bar { fill: rgba(0, 122, 255, .18); }
+    .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .chart .point { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .progress-cell { min-width: 140px; }
+    .progress-track { height: 6px; margin-top: 5px; overflow: hidden; border-radius: 99px; background: var(--track); }
+    .progress-bar { height: 100%; border-radius: inherit; background: var(--accent); }
+    .toolbar, .context-bar, .spec-line { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-sunken); }
+    .toolbar-group { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .toolbar { justify-content: space-between; }
+    .field { min-height: 44px; padding: 0 12px; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+    .field-search { min-width: 210px; }
+    .button { min-height: 48px; padding: 10px 16px; color: var(--ink); font-weight: 650; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); transition: transform 100ms ease-out, background 100ms ease-out; }
+    .button:hover { background: var(--surface-hover); }
+    .button:active { transform: scale(.98); }
+    .button-primary { color: var(--on-accent); border-color: var(--accent); background: var(--accent); }
+    .button-primary:hover { background: var(--accent-hover); }
+    .button-wide { width: 100%; min-height: 56px; letter-spacing: .04em; }
+    .button-success { color: var(--success); border-color: rgba(52, 199, 89, .35); }
+    .button-warning { color: var(--warning); border-color: rgba(255, 149, 0, .35); }
+    .button-danger { color: var(--danger); border-color: rgba(255, 59, 48, .35); }
+    .button-dismiss { width: 100%; color: var(--ink); background: var(--page); }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .metric { padding: 16px; border-top: 1px solid var(--line); }
+    .metric-label { display: block; color: var(--muted); font-size: 12px; }
+    .metric-value { display: block; margin-top: 6px; font-size: 20px; font-weight: 700; }
+    .stopwatch { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
+    .stopwatch-time { margin-top: 8px; font: 700 clamp(30px, 5vw, 48px) ui-monospace, "SF Mono", Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.06em; }
+    .time-note { margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .spec-line { color: var(--muted); font-size: 13px; }
+    .spec-line strong { color: var(--ink); }
+    .terminal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .tailor-card { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .tailor-name { font-weight: 700; }
+    .tailor-role { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .stepper { display: flex; align-items: center; gap: 10px; }
+    .stepper-button { width: 48px; height: 48px; padding: 0; color: var(--accent); font-size: 24px; line-height: 1; border: 1px solid rgba(0, 122, 255, .25); border-radius: 12px; background: var(--accent-soft); }
+    .stepper-button:active { transform: scale(.95); }
+    .stepper-count { min-width: 45px; text-align: center; font: 700 25px ui-monospace, "SF Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .terminal-submit { margin-top: 12px; }
+    .context-bar { justify-content: space-between; color: var(--muted); }
+    .context-bar strong { color: var(--ink); }
+    .qc-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .qc-button { min-height: 72px; font-size: 15px; font-weight: 750; border-width: 1px; }
+    .checkbox-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .checkbox { display: flex; min-height: 48px; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; }
+    .checkbox input { width: 18px; height: 18px; accent-color: var(--accent); }
+    .figures { display: grid; gap: 0; }
+    .figure-row { display: flex; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+    .figure-row:last-child { border-bottom: 0; }
+    .figure-label { color: var(--muted); }
+    .figure-value { text-align: right; font-weight: 650; }
+    .ledger { margin-top: 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+    .ledger h3 { margin-bottom: 10px; }
+    .ledger-note { margin-bottom: 14px; color: var(--muted); font-size: 12px; }
+    .modal-layer { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: rgba(29, 29, 31, .28); }
+    .modal-layer[hidden] { display: none; }
+    .modal { width: min(460px, 100%); padding: 28px; border: 1px solid rgba(0, 0, 0, .12); border-radius: 16px; background: rgba(255, 255, 255, .94); box-shadow: 0 24px 70px rgba(0, 0, 0, .18); backdrop-filter: blur(18px) saturate(140%); }
+    .modal-label { margin-bottom: 12px; color: var(--danger); font: 700 11px ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .modal h2 { font-size: 24px; letter-spacing: -.04em; }
+    .modal p { margin: 14px 0 22px; color: var(--muted); font-size: 14px; }
+    @media (max-width: 840px) {
+      .app-shell { display: block; }
+      .sidebar { padding: 20px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .wordmark { margin: 0 0 20px; }
+      .nav-list { grid-template-columns: repeat(3, 1fr); }
+      main { padding: 32px 20px 64px; }
+      .panel-grid, .terminal-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .nav-list { grid-template-columns: repeat(2, 1fr); }
+      .status-strip, .metric-row, .qc-actions, .checkbox-list { grid-template-columns: 1fr; }
+      .stopwatch, .figure-row { display: block; }
+      .stopwatch .button { width: 100%; margin-top: 20px; }
+      .figure-value { margin-top: 6px; text-align: left; }
+      .tailor-card { grid-template-columns: 1fr; }
+      .stepper { justify-content: space-between; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <p class="wordmark">Lukla Operations Engine<span>Manufacturing ERP</span></p>
+      <nav>
+        <ol class="nav-list">
+          <li><button class="nav-button" type="button" data-view="view-01" aria-current="page"><span class="nav-index">01</span><span class="nav-label">Operations Dashboard</span></button></li>
+          <li><button class="nav-button" type="button" data-view="view-02"><span class="nav-index">02</span><span class="nav-label">Sample &amp; Time Study</span></button></li>
+          <li><button class="nav-button" type="button" data-view="view-03"><span class="nav-index">03</span><span class="nav-label">Warehouse Inventory</span></button></li>
+          <li><button class="nav-button" type="button" data-view="view-04"><span class="nav-index">04</span><span class="nav-label">Floor Terminal</span></button></li>
+          <li><button class="nav-button" type="button" data-view="view-05"><span class="nav-index">05</span><span class="nav-label">QC Inspection</span></button></li>
+          <li><button class="nav-button" type="button" data-view="view-06"><span class="nav-index">06</span><span class="nav-label">Payroll &amp; Costing</span></button></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="view" id="view-01" aria-labelledby="title-01">
+        <header class="view-header"><p class="eyebrow">01 — Executive Operations Dashboard</p><h1 id="title-01">Executive Operations Dashboard</h1><p class="subhead">/app/overview · Operational position across active lines and client orders.</p></header>
+        <div class="content-stack">
+          <div class="status-strip"><div class="status-item"><span class="status-label">Line Status</span><strong class="status-value">62/70 Active</strong></div><div class="status-item"><span class="status-label">Active Clients</span><strong class="status-value">Snøhund, Brand-X</strong></div><div class="status-item"><span class="status-label">Run-Rate</span><strong class="status-value">94%</strong></div></div>
+          <div class="panel-grid"><article class="panel"><div class="panel-header"><div><h2>30-Min Interval Factory Speed Output Graph</h2><p class="panel-kicker">Completed units by interval · Line 03</p></div><span class="mono panel-kicker">14:00 today</span></div><div class="chart-wrap"><svg class="chart" viewBox="0 0 700 230" role="img" aria-label="Factory speed output line chart from 08:00 to 14:00"><line class="axis" x1="48" y1="190" x2="680" y2="190"/><line class="axis" x1="48" y1="20" x2="48" y2="190"/><line class="gridline" x1="48" y1="105" x2="680" y2="105"/><line class="gridline" x1="48" y1="62" x2="680" y2="62"/><rect class="bar" x="75" y="136" width="42" height="54"/><rect class="bar" x="155" y="112" width="42" height="78"/><rect class="bar" x="235" y="126" width="42" height="64"/><rect class="bar" x="315" y="86" width="42" height="104"/><rect class="bar" x="395" y="98" width="42" height="92"/><rect class="bar" x="475" y="70" width="42" height="120"/><rect class="bar" x="555" y="52" width="42" height="138"/><path class="line" d="M96 132 L176 108 L256 121 L336 81 L416 93 L496 65 L576 47"/><circle class="point" cx="96" cy="132" r="4"/><circle class="point" cx="176" cy="108" r="4"/><circle class="point" cx="256" cy="121" r="4"/><circle class="point" cx="336" cy="81" r="4"/><circle class="point" cx="416" cy="93" r="4"/><circle class="point" cx="496" cy="65" r="4"/><circle class="point" cx="576" cy="47" r="4"/><text x="70" y="214">08:00</text><text x="225" y="214">10:00</text><text x="385" y="214">12:00</text><text x="545" y="214">14:00</text><text x="10" y="194">0</text><text x="4" y="67">50</text></svg></div></article>
+            <article class="panel"><div class="panel-header"><div><h2>Client Order Progress Grid</h2><p class="panel-kicker">Current production commitments</p></div></div><div class="table-wrap"><table><thead><tr><th>Order</th><th>Client</th><th>Scheme</th><th>Progress</th></tr></thead><tbody><tr><td class="mono">ORD-401</td><td>Snøhund</td><td>CMT</td><td class="progress-cell">68%<div class="progress-track"><div class="progress-bar" style="width:68%"></div></div></td></tr><tr><td class="mono">ORD-402</td><td>Brand-X</td><td>Semi-CMT</td><td class="progress-cell">42%<div class="progress-track"><div class="progress-bar" style="width:42%"></div></div></td></tr><tr><td class="mono">ORD-399</td><td>Snøhund</td><td>Full Package</td><td class="progress-cell">91%<div class="progress-track"><div class="progress-bar" style="width:91%"></div></div></td></tr></tbody></table></div></article></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-02" aria-labelledby="title-02" hidden>
+        <header class="view-header"><p class="eyebrow">02 — Sample &amp; Time Study Tracker</p><h1 id="title-02">Sample &amp; Time Study Tracker</h1><p class="subhead">/app/samples · Record a stable spec and its component targets.</p></header>
+        <div class="content-stack"><div class="spec-line"><strong>Spec: Arctic Parka</strong><span>|</span><strong>Active Version: v2 (Locked)</strong><span>|</span><span>History: v1 Archive</span></div><article class="panel stopwatch"><div><p class="panel-kicker">Current time study</p><h2>Component: Collar Stitch</h2><div class="stopwatch-time">00:04:12.4</div><p class="time-note">Elapsed observation · operator: Adis T.</p></div><button class="button button-primary" type="button">Save to Time Study</button></article><article class="panel"><div class="panel-header"><div><h2>Time Study Table</h2><p class="panel-kicker">Observed against active locked specification</p></div></div><div class="table-wrap"><table><thead><tr><th>Component</th><th>Target seconds</th><th>Last observed</th><th>Operator rate Rp/pc</th></tr></thead><tbody><tr><td>Collar Stitch</td><td class="numeric">248.0</td><td class="numeric">252.4</td><td class="numeric">Rp 1.450</td></tr><tr><td>Sleeve Assembly</td><td class="numeric">312.0</td><td class="numeric">306.8</td><td class="numeric">Rp 1.780</td></tr><tr><td>Hem Finish</td><td class="numeric">184.0</td><td class="numeric">190.1</td><td class="numeric">Rp 1.120</td></tr></tbody></table></div></article></div>
+      </section>
+
+      <section class="view" id="view-03" aria-labelledby="title-03" hidden>
+        <header class="view-header"><p class="eyebrow">03 — Multi-Client Warehouse Inventory Grid</p><h1 id="title-03">Multi-Client Warehouse Inventory Grid</h1><p class="subhead">/app/materials · Ownership is explicit at every issue point.</p></header>
+        <div class="content-stack"><div class="toolbar"><div class="toolbar-group"><label><span class="panel-kicker">Filter by Client: </span><select class="field"><option>All</option></select></label><label><span class="panel-kicker">Search Lot Tag: </span><input class="field field-search" value="LOT-2026-99" aria-label="Search Lot Tag"></label></div><span class="mono">Alerts: 0 Collisions</span></div><article class="panel"><div class="table-wrap"><table><thead><tr><th>Item</th><th>Owner</th><th>Allocated</th><th>Balance</th><th>Action</th></tr></thead><tbody><tr><td>Poly-Oxford</td><td>Snøhund</td><td class="mono">ORD-401</td><td class="numeric">420m</td><td><button class="button button-primary" type="button">Dispatch</button></td></tr><tr><td>Thermolite</td><td>Brand-X</td><td class="mono">ORD-402</td><td class="numeric">184m</td><td><button class="button" type="button">Dispatch</button></td></tr></tbody></table></div></article></div>
+        <!-- Mock-only scoping: this modal lives inside #view-03 so it renders with the warehouse view. In the React app the ownership-mismatch modal is a global overlay owned by the app shell, not by a route. -->
+        <div class="modal-layer" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="dispatch-modal-title"><p class="modal-label">FR-6.2 · Ownership guardrail</p><h2 id="dispatch-modal-title">Dispatch Ditolak — Ownership Mismatch</h2><p>Stock milik Client A tidak dapat diterbitkan ke Order Client B. Periksa ownership lot dan order sebelum dispatch dilanjutkan.</p><button class="button button-dismiss" type="button" data-dismiss-modal>Mengerti</button></div></div>
+      </section>
+
+      <section class="view" id="view-04" aria-labelledby="title-04" hidden>
+        <header class="view-header"><p class="eyebrow">04 — Floor Terminal (30-Minute Interval Touch Interface)</p><h1 id="title-04">Floor Terminal</h1><p class="subhead">/terminal/tally · Capture a bounded production block at the line.</p></header>
+        <div class="content-stack"><div class="context-bar"><span><strong>Line:</strong> Line 03</span><span><strong>Mandor:</strong> Budi</span><span><strong>Interval:</strong> 13:30 – 14:00</span></div><div class="terminal-grid"><article class="tailor-card"><div><p class="tailor-name">Tailor #14: Rudi S.</p><p class="tailor-role">Sleeve Assembly</p></div><div class="stepper"><button class="stepper-button" type="button" aria-label="Decrease Rudi S. count">−</button><span class="stepper-count">14</span><button class="stepper-button" type="button" aria-label="Increase Rudi S. count">+</button></div></article><article class="tailor-card"><div><p class="tailor-name">Tailor #18: Mira K.</p><p class="tailor-role">Collar Stitch</p></div><div class="stepper"><button class="stepper-button" type="button" aria-label="Decrease Mira K. count">−</button><span class="stepper-count">11</span><button class="stepper-button" type="button" aria-label="Increase Mira K. count">+</button></div></article><article class="tailor-card"><div><p class="tailor-name">Tailor #22: Sari P.</p><p class="tailor-role">Hem Finish</p></div><div class="stepper"><button class="stepper-button" type="button" aria-label="Decrease Sari P. count">−</button><span class="stepper-count">16</span><button class="stepper-button" type="button" aria-label="Increase Sari P. count">+</button></div></article><article class="tailor-card"><div><p class="tailor-name">Tailor #27: Dedi A.</p><p class="tailor-role">Front Panel</p></div><div class="stepper"><button class="stepper-button" type="button" aria-label="Decrease Dedi A. count">−</button><span class="stepper-count">13</span><button class="stepper-button" type="button" aria-label="Increase Dedi A. count">+</button></div></article></div><button class="button button-primary button-wide terminal-submit" type="button">SUBMIT INTERVAL BLOCK</button></div>
+      </section>
+
+      <section class="view" id="view-05" aria-labelledby="title-05" hidden>
+        <header class="view-header"><p class="eyebrow">05 — QC Inspection Terminal</p><h1 id="title-05">QC Inspection Terminal</h1><p class="subhead">/app/quality · One garment unit, one disposition.</p></header>
+        <div class="content-stack"><div class="context-bar"><span><strong>Order:</strong> ORD-401 (Snøhund)</span><span><strong>Garment Unit Serial:</strong> <span class="mono">SN-401-0891</span></span></div><article class="panel"><div class="panel-header"><div><h2>Disposition</h2><p class="panel-kicker">Select the result for this inspected unit.</p></div></div><div class="qc-actions"><button class="button qc-button button-success" type="button">(A) PASS</button><button class="button qc-button button-warning" type="button">(B) REPAIR</button><button class="button qc-button button-danger" type="button">(C) SCRAP / REJECT</button></div></article><article class="panel"><div class="panel-header"><div><h2>Defect taxonomy</h2><p class="panel-kicker">Select all observations that apply.</p></div></div><div class="checkbox-list"><label class="checkbox"><input type="checkbox">Broken Stitch</label><label class="checkbox"><input type="checkbox">Puckering</label><label class="checkbox"><input type="checkbox">Uneven Seam</label></div></article></div>
+      </section>
+
+      <section class="view" id="view-06" aria-labelledby="title-06" hidden>
+        <header class="view-header"><p class="eyebrow">06 — Payroll &amp; Costing Workspace</p><h1 id="title-06">Payroll &amp; Costing Workspace</h1><p class="subhead">/app/finance · A read-first projection of weekly factory cost.</p></header>
+        <div class="content-stack"><div class="spec-line"><strong>Cycle: Week 41 (Ending Saturday)</strong><span>|</span><strong>Tailors Processed: 68</strong></div><article class="panel"><div class="panel-header"><div><h2>Payroll run preview</h2><p class="panel-kicker">Figures are illustrative and not a financial posting.</p></div></div><div class="figures"><div class="figure-row"><span class="figure-label">Base Borongan</span><strong class="figure-value">Rp 42.150.000</strong></div><div class="figure-row"><span class="figure-label">Uang Makan (12.5%)</span><strong class="figure-value">Rp 5.268.750</strong></div><div class="figure-row"><span class="figure-label">Passed QC Units</span><strong class="figure-value">2.800 pcs</strong></div><div class="figure-row"><span class="figure-label">QC Bonus Pool</span><strong class="figure-value">Rp 2.800.000 (Split 3 ways: Rp 933.333)</strong></div><div class="figure-row"><span class="figure-label">Monthly Factory Overhead Allocation per Unit</span><strong class="figure-value">Rp 4.120 /pcs</strong></div></div><button class="button button-primary button-wide" type="button" style="margin-top:24px">EXECUTE PAYROLL RUN (SAT)</button><div class="ledger"><h3>Ledger (read projection)</h3><p class="ledger-note">Double-entry preview · immutable after posting</p><div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead><tbody><tr><td>Direct Labour Expense</td><td class="numeric">Rp 42.150.000</td><td class="numeric">—</td></tr><tr><td>Payroll Payable</td><td class="numeric">—</td><td class="numeric">Rp 42.150.000</td></tr><tr><td>QC Bonus Expense</td><td class="numeric">Rp 2.800.000</td><td class="numeric">—</td></tr><tr><td>QC Bonus Payable</td><td class="numeric">—</td><td class="numeric">Rp 2.800.000</td></tr></tbody></table></div></div></article></div>
+      </section>
+    </main>
+  </div>
+  <script>
+    (() => {
+      const navButtons = document.querySelectorAll('.nav-button');
+      const views = document.querySelectorAll('.view');
+      const showView = (viewId) => {
+        views.forEach((view) => { view.hidden = view.id !== viewId; });
+        navButtons.forEach((button) => {
+          const active = button.dataset.view === viewId;
+          button.setAttribute('aria-current', active ? 'page' : 'false');
+        });
+      };
+      navButtons.forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+      document.querySelectorAll('.stepper').forEach((stepper) => {
+        const count = stepper.querySelector('.stepper-count');
+        stepper.querySelectorAll('.stepper-button').forEach((button) => button.addEventListener('click', () => {
+          const delta = button.textContent.trim() === '+' ? 1 : -1;
+          count.textContent = Math.max(0, Number(count.textContent) + delta);
+        }));
+      });
+      const modal = document.querySelector('.modal-layer');
+      const dismiss = document.querySelector('[data-dismiss-modal]');
+      dismiss.addEventListener('click', () => { modal.hidden = true; });
+      showView('view-01');
+    })();
+  </script>
+</body>
+</html>

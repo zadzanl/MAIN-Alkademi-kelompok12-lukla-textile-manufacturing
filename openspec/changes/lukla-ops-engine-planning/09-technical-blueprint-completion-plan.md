@@ -29,13 +29,13 @@ Research-verified facts that constrain the design (all fetched 2026-10-13):
 - **Playwright 1.64**: built-in `json` + `junit` reporters, `trace: on-first-retry`, official Test Agents (Planner/Generator/Healer) and `@playwright/cli` for coding agents. [doc: https://playwright.dev/docs/test-reporters; doc: https://playwright.dev/docs/test-agents]
 - **Schemathesis 4.31**: actively maintained OpenAPI 3.1 contract testing, CLI + pytest plugin, JUnit reports. [doc: https://github.com/schemathesis/schemathesis]
 - **testcontainers-python + pgTAP 1.3.4**: boring-standard for FastAPI+Postgres integration tests and trigger/RLS unit tests. [doc: https://github.com/testcontainers/testcontainers-python; doc: https://pgtap.org/]
-- **Next.js portability**: use `output: 'standalone'`; avoid Vercel-only features (Image Optimization default loader, ISR writes, Edge runtime); AWS path = Amplify Hosting or S3+CloudFront+standalone container. [doc: https://opennext.js.org/]
+- **React/Vite portability**: produce a static bundle; avoid framework-specific server APIs; AWS path = S3 + CloudFront or a standard static/container host.
 
 ---
 
 ## 2. Gap Analysis Summary (what exists vs. what this plan adds)
 
-Existing and reused (not rewritten): `00-deconstruction.md`, BRD v2.3.0, PRD v2.0, `04-rbac-matrix.md`, `06-acceptance-tests.md`, `07-glossary.md`, `08-client-clarification-register.md`, `storage-architecture-draft.md` (S3 design, promote from DRAFT), `design_guideline.md` (Apple HIG + Next.js structure), 6 capability spec deltas.
+Existing and reused (not rewritten): `00-deconstruction.md`, BRD v2.3.0, PRD v2.0, `04-rbac-matrix.md`, `06-acceptance-tests.md`, `07-glossary.md`, `08-client-clarification-register.md`, `storage-architecture-draft.md` (S3 design, promote from DRAFT), `design_guideline.md` (Apple HIG + React/Vite structure), 6 capability spec deltas.
 
 Superseded: `backend_database_structure.md` (830-byte Supabase sketch → replaced by artifact 11); `task_assignment.md` (Supabase/Vercel assumptions → replaced by artifact 18); `design.md` Decision 3 wording ("Supabase Row Level Security" → portable RLS; design.md updated).
 
@@ -62,7 +62,7 @@ New artifacts this plan authors (all inside `openspec/changes/lukla-ops-engine-p
 
 ## 3. Key Architectural Commitments (the non-negotiables)
 
-1. **Portability rules** (artifact 10): `DATABASE_URL` as the only host-specific backend config; RLS policies bind `current_setting('app.current_tenant')`; S3 access behind a `StorageService` interface (presigned URLs per `storage-architecture-draft.md`); AI calls behind one OpenAI-compatible client with `AI_BASE_URL` env var; vector store behind a `VectorStore` protocol (pgvector day-1, Qdrant pivot); Next.js `output: 'standalone'`, no Vercel-only APIs.
+1. **Portability rules** (artifact 10): `DATABASE_URL` as the only host-specific backend config; RLS policies bind `current_setting('app.current_tenant')`; S3 access behind a `StorageService` interface (presigned URLs per `storage-architecture-draft.md`); AI calls behind one OpenAI-compatible client with `AI_BASE_URL` env var; vector store behind a `VectorStore` protocol (pgvector day-1, Qdrant pivot); React/Vite emits a static bundle with no framework-specific server APIs.
 2. **Scheduled jobs as HTTP endpoints** (artifact 15): Saturday payroll (FR-10.1) and monthly overhead (FR-10.4) are internal POST endpoints invoked by AWS EventBridge Scheduler; pivot = cron-job.org / GitHub Actions schedule. Never in-process cron — preserves FastAPI Cloud pivot.
 3. **Contract-first parallelization** (artifacts 12 + 18): `openapi.yaml` is authored BEFORE implementation; frontend devs build against Prism mock of the contract; backend devs implement to it; Schemathesis proves conformance. [doc: https://hub.docker.com/r/stoplight/prism/]
 4. **DB-level invariants stay in the DB** (artifact 11): `validate_material_dispatch()` trigger, append-only ledger (no UPDATE/DELETE, reversal entries only), RLS on every tenant-scoped table — enforced identically on every Postgres host.
@@ -74,14 +74,14 @@ New artifacts this plan authors (all inside `openspec/changes/lukla-ops-engine-p
 ## 4. Execution Phases (planning artifacts) — STATUS: COMPLETED
 
 **Phase A — Contracts first (sequential, blocks all parallel work): COMPLETED & APPROVED**
-- [x] A1. Artifact 10 (`10-technology-stack-and-decisions.md`): Stack ADRs (FastAPI + PostgreSQL + Next.js), forbidden-API list, portability matrix.
+- [x] A1. Artifact 10 (`10-technology-stack-and-decisions.md`): Stack ADRs (FastAPI + PostgreSQL + React/Vite), portability matrix.
 - [x] A2. Artifact 11 (`11-database-schema-spec.md`): Full DB schema, DDL, RLS policies (`app.current_tenant`), triggers, index design, migration ordering.
 - [x] A3. Artifact 12 (`12-api-contract-plan.md`) + `contracts/openapi.yaml`: Complete OpenAPI 3.1 contract (69 operations, 69 unique `operationId`s, 111 schemas, 630 local `$ref`s). Validated with `validate-blueprint.py`.
 - [x] A4. Phase A Review (`review/blueprint-contract-review.md`): Direct recovery review approved on 2026-10-13. Repaired defects: sewing tally fields (`cutBatchId`, `lineId`, `pieces`), QC assembly linkage (`assemblyId`, `defects`), FinancialRule schema composition, Idempotency-Key on `createClient`, aligned human API catalog.
 
 **Phase B — Parallel specification modules: COMPLETED & APPROVED**
 - [x] B1. Artifact 13 (`13-authn-authz-design.md`): JWT model, floor-tablet mandor auth, RLS session context propagation, B2B portal provisioning.
-- [x] B2. Artifact 14 (`14-frontend-architecture.md`): 6 view route maps, Next.js App Router, offline PWA tally queue for 30-min resilience per NFR-05.
+- [x] B2. Artifact 14 (`14-frontend-architecture.md`): 6 view route maps, React/Vite static frontend, offline PWA tally queue for 30-min resilience per NFR-05.
 - [x] B3. Artifact 15 (`15-deployment-and-operations.md`): AWS ECS Express Mode + RDS + S3 + EventBridge cron endpoints + Terraform layout + budget EC2 fallback.
 - [x] B4. Artifact 16 (`16-test-harness-and-agent-verification.md`): Deterministic test harness (Playwright E2E mapped 1:1 to AT-01..10 + PRD scenarios, Schemathesis contract tests, pytest+testcontainers, pgTAP, machine-readable `results.json`/JUnit).
 - [x] B5. Artifact 17 (`17-semantic-search-module.md`): Fenced pgvector module with `VectorStore` protocol for Qdrant pivot, OpenRouter embeddings, read-only tenant isolation.
@@ -103,12 +103,12 @@ WS-0 scaffold/CI → WS-1 ledger+RBAC (MOD-01) → WS-2 warehouse+guardrail (MOD
 
 - [x] AC-1: `contracts/openapi.yaml` covers every endpoint implied by the 26 FRs and 6 UI views (69 paths/operations); passes custom schema validation and example checks via `validate-blueprint.py`.
 - [x] AC-2: Artifact 11 defines every table, RLS policy, and trigger needed by the capability specs, including `validate_material_dispatch()` and append-only ledger, with migration ordering.
-- [x] AC-3: Artifact 15 produces a runnable AWS topology (ECS Express Mode + RDS db.t4g.micro + S3 + CloudFront + EventBridge Scheduler) with Terraform layout and documented pivot runbook for FastAPI Cloud / Neon / Qdrant Cloud / Vercel.
+- [x] AC-3: Artifact 15 produces a runnable AWS topology (ECS Express Mode + RDS db.t4g.micro + S3 + CloudFront + EventBridge Scheduler) with Terraform layout and documented pivot runbook for FastAPI Cloud / Neon / Qdrant Cloud / another standard host.
 - [x] AC-4: Artifact 16 defines the one-command verification bundle and machine-readable evidence files (`results.json`, JUnit XML); each AT-01..AT-10 / AT-R01..R08 and 4 PRD scenarios map to test IDs.
 - [x] AC-5: Artifact 18 lets 4 devs start simultaneously with no unresolved interface question (every interaction references an OpenAPI operationId or DB object name).
 - [x] AC-6: Every UNRESOLVED business item (OQ-1..OQ-9, 08-register) has a configurable default recorded in artifact 19 flagged `PRODUCTION_BLOCKED` — none silently invented.
 - [x] AC-7: `openspec validate lukla-ops-engine-planning` passes (exit code 0); `tasks.md` accurately reflects completion.
-- [x] AC-8: Portability rules (§3.1) are stated as explicit checks (no `auth.uid()`, no Vercel-only imports, session variable `app.current_tenant`).
+- [x] AC-8: Portability rules (§3.1) are stated as explicit checks (no provider-specific imports, session variable `app.current_tenant`).
 
 ---
 

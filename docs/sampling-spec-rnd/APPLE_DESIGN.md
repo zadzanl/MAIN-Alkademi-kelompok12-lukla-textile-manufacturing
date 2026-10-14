@@ -7,7 +7,7 @@
 ## 📁 Lokasi Frontend
 
 ```
-frontend/sampling-spec-rnd/
+prototypes/sampling-spec-rnd/frontend/
 ├── src/
 │   ├── components/          (Komponen React)
 │   │   ├── Button.tsx       (Apple-styled button, 48px touch target)
@@ -77,7 +77,7 @@ frontend/sampling-spec-rnd/
 
 ### 1. Install Dependencies
 ```bash
-cd frontend/sampling-spec-rnd
+cd prototypes/sampling-spec-rnd/frontend
 npm install
 ```
 
@@ -86,7 +86,7 @@ npm install
 npm run dev
 ```
 
-Buka: **http://localhost:3000**
+Buka: **http://localhost:3009**
 
 ### 3. Build Production
 ```bash
@@ -266,7 +266,7 @@ touchTarget: { min: 48px }
 ## 🚀 Next Steps
 
 1. **Run**: `npm install && npm run dev`
-2. **Test**: Open http://localhost:3000
+2. **Test**: Open http://localhost:3009
 3. **See**: Time Study UI dengan Apple Design
 4. **Modify**: Edit `src/pages/TimeStudyPage.tsx` untuk customize
 5. **Add**: Spec Version page (`src/pages/SpecVersionPage.tsx`) nanti
@@ -275,11 +275,10 @@ touchTarget: { min: 48px }
 
 ## 📝 Notes
 
-- Backend **tidak** termasuk (hanya frontend UI)
-- Data simpan di **localStorage** (cukup untuk demo)
-- Bisa nanti integrate dengan backend API
-- Semua components sudah **production-ready**
-- Design system **fully customizable** via `design-system.ts`
+- Frontend terhubung ke backend FastAPI (`prototypes/sampling-spec-rnd/backend`) via Vite reverse-proxy pada port `8009` (Base URL: `/api/sampling-spec-rnd`).
+- Caching offline tersedia melalui custom hook `useLocalStorage`.
+- Semua components sudah **production-ready** dengan standard Apple Design System.
+- Design system **fully customizable** via `design-system.ts`.
 
 ---
 
