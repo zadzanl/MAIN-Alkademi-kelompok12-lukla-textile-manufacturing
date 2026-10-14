@@ -263,8 +263,28 @@ class SamplingSpecAPI {
 
   async checkHealth(): Promise<ApiResponse<any>> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`);
-      return await response.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      const response = await fetch(`${this.baseUrl}/health`, {
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        return { 
+          success: false, 
+          error: `Health check failed: ${response.status}` 
+        };
+      }
+      
+      const data = await response.json();
+      return { 
+        success: true,
+        data: data
+      };
     } catch (error) {
       return { 
         success: false, 
