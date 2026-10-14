@@ -1,0 +1,57 @@
+1CFEE0A5308950DBD62ED076DCCDDE35304222054D4C2AC151469B56B10E37A5  openspec\artifacts\lukla_operations_engine_knowledge_base.md
+FAC4599865655659A3D9B82B88B07F847F85A475A6663634C6D6CCE1AE8C1C57  openspec\artifacts\Lukla_Operations_Engine_SOP_Draft_v0.1.md
+25B258DD875F370DB0274042A611823EA6B8BC2FCD2853D2CBEFC129DF6C8F70  openspec\changes\BRD - Lukla Operations Engine - v2.2.1 - FINAL.md
+1CDBC32D6A3632ABCEF5471760430A2B7A280A5DE2FCB5614EA69D56BE8636FA  openspec\changes\Overall Plan Draft.md
+833D794DBEF4746560E415BCCD9100C3A2848103FFA923B8FFE3AF1E01B6C7B5  openspec\changes\PRD Draft - Lukla Operations Engine - v1.3.md
+BC629D416775D811A006384BCBFEE2F636DA0D3A376BD2AE8798770597F8AC55  openspec\changes\install-apple-design-skill\README.md
+DF03E4CC90E2D148103CFA749693C9D7BE2B924943E7E0609948360BB2CB0C2D  openspec\changes\install-apple-design-skill\artifacts\apple-design-skill-plan.md
+2B5DA6C9F44CC9535F8A9F0F972E98912E4591DFD8830643E638518AFFD13540  openspec\changes\lukla-ops-engine-planning\design.md
+79288052A479D35C0FDAB3BDD012B6BEE35BB150F5348E72D4901AC825BD05BD  openspec\changes\lukla-ops-engine-planning\proposal.md
+521712A61F2981382D4941C03185A333C4AAD47D5A459C65160F98C66382907A  openspec\changes\lukla-ops-engine-planning\tasks.md
+F0E80EA796848061CCC7D3EADAA0A3E071BB6FD1406E40C6940E9F6430CB3D7D  openspec\changes\lukla-ops-engine-planning\artifacts\00-deconstruction.md
+6414CE005FBFB217FD6D384A30C49BE5DCAA01C5B3250796F2CA958B11876F2F  openspec\changes\lukla-ops-engine-planning\artifacts\04-rbac-matrix.md
+B71F15AC5D2D2B167AE93EF095A480831386C04E33E29F3FF4F2B0DB489636DF  openspec\changes\lukla-ops-engine-planning\artifacts\06-acceptance-tests.md
+33F952352929809A432D1BAD0B67CE3D9A2B6F4EF2F76D181DBB40662C8AFC3D  openspec\changes\lukla-ops-engine-planning\artifacts\07-glossary.md
+0B882C07D98BB7593561BA93BB54F635AAC497F1568F442113847CFDF1C6997C  openspec\changes\lukla-ops-engine-planning\artifacts\08-client-clarification-register.md
+71A181A37BD45B93426367EA13B5332969F20FF1E4FC7E60CD9286F0BE8BB0A0  openspec\changes\lukla-ops-engine-planning\artifacts\backend_database_structure.md
+4DD49CCB637857C4A2DE504B93DBE664C0BE1800647FF390EB9A33D0BD570360  openspec\changes\lukla-ops-engine-planning\artifacts\BRD-diagram.md
+8C3E6B806FB14922D596C9DEF3E36FE3F2EF06265B8F626880090283D72BFD8C  openspec\changes\lukla-ops-engine-planning\artifacts\design_guideline.md
+F38BEC04D52A8F6D4C28F7A90CE72546F864C5036402E85560D9FB0C685B7F16  openspec\changes\lukla-ops-engine-planning\artifacts\docs-conversion-plan-pickup.md
+E7D6F6D68BABC51C73960E7EA8348619CB83007AD7DC7F9F886D36EB305778CE  openspec\changes\lukla-ops-engine-planning\artifacts\docs-conversion-plan.md
+65C7570063FF96F5CDF53C0BAE180C3F2D3524E898778EA6C3961B361668BF87  openspec\changes\lukla-ops-engine-planning\artifacts\impl-005.md
+BB23C6C12FFBAF8D3D0B840A4C75BD3741938A909BBA6FADF1FFFE7B58D1BACA  openspec\changes\lukla-ops-engine-planning\artifacts\lukla_PRD_V.1.0.md
+708B527F97BD9F39A9B16D3894FC961A173414A3944C37299F730647EF45EC08  openspec\changes\lukla-ops-engine-planning\artifacts\review-003.md
+126A26EDA5946EE10F92A397984EA1F215CF64B7533C80625507D86DFDD702DE  openspec\changes\lukla-ops-engine-planning\artifacts\review-004.md
+7ACCA1C22268C4A6ACD4BB76C01B052C555E27AEA7C9B102E1291CD22DF893F7  openspec\changes\lukla-ops-engine-planning\artifacts\review-recovery-001.md
+F591A46AA22BFB694F3497E9164495BFF75B127B30E7537B57C1F7B55E08FBEB  openspec\changes\lukla-ops-engine-planning\artifacts\storage-architecture-draft.md
+BCC893D0FFA97EEE13360E6A01F42D5FFA949199E4081C4FE3914E892C86743F  openspec\changes\lukla-ops-engine-planning\artifacts\task_assignment.md
+EC5258E44BB6738BE2FFCD8132D2046D8B11F766FD4C5C28488C75003BA0F39E  openspec\changes\lukla-ops-engine-planning\artifacts\task-record.md
+1DAD461318E57ECFF7E4F16F6702676D08D1C01D8281AB3EDFCF1FED6401D2DD  openspec\changes\lukla-ops-engine-planning\artifacts\worklog.md
+731D2A2306B2302F6C753002368B538BF511DDE095EFB6B1097261CCE50F1969  openspec\changes\lukla-ops-engine-planning\artifacts\DEPRECATED\docs-conversion-plan-v2-pickup.md
+C07FA4E4A9E6E4F966F15D126DBC54483254DDA34FAB3C88ABA3CBC027A60845  openspec\changes\lukla-ops-engine-planning\artifacts\DEPRECATED\Lukla Operations Engine - BRD & PRD v1 -  - DEPRECATED.md
+DC8FC20B1A9498FC095F2744596E1B776FCE2FAF8DF46D1FE725D413578C3884  openspec\changes\lukla-ops-engine-planning\artifacts\DEPRECATED\Lukla Operations Engine - BRD v2.0.0 - DEPRECATED.md
+6321BBA66ED6B38A2FF28DA91AE370A27578CEF13FBD5F6B4850F4A0083C1042  openspec\changes\lukla-ops-engine-planning\artifacts\DEPRECATED\Lukla Operations Engine - BRD v2.2.0 -  - DEPRECATED.md
+19AE4549FFF077648CF5DC47830E8715D2C49FF5B7BBEB4E72C8E1E0355ACFA5  openspec\changes\lukla-ops-engine-planning\artifacts\DEPRECATED\phase-1a-protected-check.md
+9B3EF0A5A061DF217B40B93C288B37808D7239687310F40BFAA36FFDA0554681  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-001.md
+6F6F5544765BD63C60542B138F275FDA83C6C9C6E5FDC9B116BA53E7B08E9A0E  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-002.md
+9628AA86B7BDED44B02CFE5ADD76D3BF84C152438093239664D319B0B513B1DE  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-003.md
+3E8685399C081DA1119D4900B63244BF10E9A03C8469D2449F4073BC67615046  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-004.md
+2A6666FD314023FF7BDA1CC71F83681B96ACFCC48929A2CBE0F97702A9417999  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-006-rbac.md
+67955970FB8EF380DF0CE53EBFB0B4830F6B906B18D4068C7E7FFBD4973C31AE  openspec\changes\lukla-ops-engine-planning\artifacts\implementation\impl-007-tests.md
+0EAD50F55D3641E4BAA5DD5AB629FE8B81243ADFB383DA4474A7F3674B6DC325  openspec\changes\lukla-ops-engine-planning\artifacts\research\research-001.md
+C44E4A47241494CFEA0CAB3C353F372FC975274949A5F32452F4E315DBA6EEAF  openspec\changes\lukla-ops-engine-planning\artifacts\research\research-002.md
+60DB905C6C39BC658ADBE3A7FC77237ED9E5D070A479FAA5DA4E3CE943D79360  openspec\changes\lukla-ops-engine-planning\artifacts\research\research-003-phase2b-recovery.md
+3160F461E11A8A40E73104EE86A204FAB71F42F88C23F5245F9FE41A4E531DC5  openspec\changes\lukla-ops-engine-planning\artifacts\research\research-004-review-recovery.md
+03CB5457EF9B93CC628FA96625A1B195DD0B7CA027B31B1012A76E81FA8A1E80  openspec\changes\lukla-ops-engine-planning\artifacts\review\review-001.md
+F80F4B3768DF28D48468C45BA9496C8FA8D2D283FA2EBDA4CF1BD64BE87A2357  openspec\changes\lukla-ops-engine-planning\artifacts\review\review-002.md
+708B527F97BD9F39A9B16D3894FC961A173414A3944C37299F730647EF45EC08  openspec\changes\lukla-ops-engine-planning\artifacts\review\review-003.md
+45F89EF9B5FBDE1C8CCDE8137BB4EA6CA403947686BA73B7871A272BA8A01657  openspec\changes\lukla-ops-engine-planning\artifacts\review\review-005-phase2.md
+00702AAD9174EFF1CF180CA0EFF19283BFF985F8BDA78C2A82424BB561EE1217  openspec\changes\lukla-ops-engine-planning\artifacts\review\review-006-adversarial-hardening.md
+C33086EC5711E21E1B3AA4A88627DA5A34F7188713E20351435E5A3420B41BB0  openspec\changes\lukla-ops-engine-planning\specs\audit-and-sample-tracking\spec.md
+E5853C397607789A762F1F1D9C62AD736D1B3331FB28E06162DBCE7119AE0243  openspec\changes\lukla-ops-engine-planning\specs\multi-tenant-platform\spec.md
+40BFE7F6A381853E3ADE6B6603BF11B7CF20AABF2D0A443E4139C7C1940BBBCD  openspec\changes\lukla-ops-engine-planning\specs\payroll-and-costing-engine\spec.md
+309E2B382CB4A96606D39FFA7956F3EDD8A1969439FFB2A09C5BE579BE991936  openspec\changes\lukla-ops-engine-planning\specs\production-output-tracking\spec.md
+1DE53A4686C66151209EA5C69DE7094B3590D5F38719E9F7A3B6064EAB7B73A3  openspec\changes\lukla-ops-engine-planning\specs\quality-control-and-inspection\spec.md
+CDFDED6AC83D44D0F640F7A738E5B41EB7A546628C3D71B4C063AB7ACA7E102E  openspec\changes\lukla-ops-engine-planning\specs\warehouse-and-cutting-controls\spec.md
+E2B9ABF4FDD7B6329D33413A50FD0DD796CF5C6DAEC71C245F12457CC1C0A94B  openspec\changes\wagile-prd\artifacts\task-record.md
+704C7210C82D4CC7ACAE0A5849B6ED4348827053C51F5BBDBE39A7FEC0AB4509  openspec\changes\wagile-prd\artifacts\wagile-prd-plan.md
