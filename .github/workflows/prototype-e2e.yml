@@ -1,0 +1,60 @@
+name: Prototype E2E Smoke (Sampling & Spec R&D)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'prototypes/sampling-spec-rnd/**'
+      - '.github/workflows/prototype-e2e.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    name: Chromium Browser Smoke [Advisory]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: prototypes/sampling-spec-rnd/frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: prototypes/sampling-spec-rnd/frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        working-directory: prototypes/sampling-spec-rnd/backend
+        run: pip install -r requirements.txt
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke
+        run: npm run test:e2e
+
+      - name: Upload Playwright reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: prototype-playwright-reports
+          path: |
+            prototypes/sampling-spec-rnd/frontend/playwright-report/
+            prototypes/sampling-spec-rnd/frontend/test-results/
+          retention-days: 7
+          if-no-files-found: warn

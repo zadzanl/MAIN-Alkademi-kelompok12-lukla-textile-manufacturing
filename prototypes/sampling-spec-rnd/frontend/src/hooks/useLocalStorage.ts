@@ -38,7 +38,7 @@ export const useLocalStorage = <T>(
   initialValue: T,
   options: CacheOptions = {}
 ): [T, (value: T | ((val: T) => T)) => void, () => void] => {
-  const { ttl = null, useIndexedDB = true } = options;
+  const { ttl = undefined, useIndexedDB = true } = options;
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isLoaded, setIsLoaded] = useState(false);
 
