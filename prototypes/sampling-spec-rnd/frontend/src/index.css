@@ -1,0 +1,454 @@
+/**
+ * Global Styles - Sampling & Spec R&D
+ * Apple HIG Design System
+ * Matches Garment Backoffice HTML template
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Variables - Apple HIG Color Palette */
+:root {
+  /* Primary Colors */
+  --blue: #0071e3;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --line: #e6e6e9;
+  --paper: #f5f5f7;
+  
+  /* Extended Palette */
+  --blue-hover: #0066cc;
+  --blue-light: #eaf3fe;
+  --blue-pale: #c6ddfa;
+  
+  --gray-1: #1d1d1f;
+  --gray-2: #626269;
+  --gray-3: #77777d;
+  --gray-4: #86868b;
+  --gray-5: #dedee2;
+  --gray-6: #f5f5f7;
+  
+  --success: #34c759;
+  --success-bg: #e8f5e9;
+  --warning: #ff9500;
+  --warning-bg: #fff4e6;
+  --danger: #ff3b30;
+  --danger-bg: #ffebee;
+  
+  /* Typography */
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  
+  /* Spacing */
+  --radius-sm: 9px;
+  --radius-md: 10px;
+  --radius-lg: 11px;
+  --radius-xl: 18px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  background-color: var(--paper);
+  overflow-x: hidden;
+}
+
+/* SF Pro Font Class */
+.font-sf-pro {
+  font-family: var(--font-body);
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Links */
+a {
+  color: var(--blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--blue-hover);
+}
+
+/* Buttons Base */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Button */
+.primary {
+  background-color: var(--blue);
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--blue-hover);
+}
+
+/* Secondary Button */
+.secondary {
+  background-color: white;
+  color: var(--blue);
+  border: 1px solid #d5d5da;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: #f4f8fd;
+}
+
+/* Input Fields */
+.field,
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+input[type='number'],
+input[type='date'],
+input[type='time'],
+textarea,
+select {
+  width: 100%;
+  background-color: white;
+  border: 1px solid var(--gray-5);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+
+.field:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #80baff;
+  outline-offset: 0;
+  border-color: var(--blue);
+}
+
+.field::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray-4);
+}
+
+/* Textarea */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Select */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* Pills / Badges */
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pill.blue {
+  background-color: var(--blue-light);
+  color: var(--blue);
+}
+
+.pill.success {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.pill.warning {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.pill.danger {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+}
+
+.pill.gray {
+  background-color: #f0f0f2;
+  color: var(--gray-2);
+}
+
+/* Surface / Card */
+.surface {
+  background-color: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  background-color: white;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+
+.sidebar .nav-item {
+  transition: all 0.2s ease;
+}
+
+.sidebar .nav-item:hover {
+  background-color: var(--blue-light);
+  color: var(--blue);
+}
+
+.sidebar .nav-item.active {
+  background-color: var(--blue-light);
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  color: var(--gray-3);
+  background-color: #fafafa;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+tbody td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid #f0f0f2;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: #fafafa;
+}
+
+/* Tabs */
+.tab {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-2);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background-color: var(--gray-6);
+}
+
+.tab.active {
+  background-color: var(--blue-light);
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  background-color: rgba(23, 23, 27, 0.5);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Scrollbar Styling (Webkit) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a6;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 72px !important;
+    padding: 16px 8px;
+  }
+
+  .sidebar .brand,
+  .sidebar .nav-item span {
+    display: none;
+  }
+
+  .sidebar .nav-item {
+    justify-content: center;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus Visible */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .sidebar,
+  .header-tools,
+  button {
+    display: none !important;
+  }
+
+  .surface {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+}
