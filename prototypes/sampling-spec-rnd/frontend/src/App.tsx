@@ -34,6 +34,7 @@ import StudyListView       from './pages/StudyListView';
 import SpecListView        from './pages/SpecListView';
 import DriftAnalysisView   from './pages/DriftAnalysisView';
 import ReportsView         from './pages/ReportsView';
+import LedgerView          from './pages/LedgerView';
 
 import type { TimeStudy, SpecVersion, WorkflowSummary } from './types';
 
@@ -146,6 +147,7 @@ function App() {
     { id: 'spec-list',       label: 'Daftar Spec',       icon: 'bar-chart-3',      view: 'spec-list' },
     { id: 'drift-analysis',  label: 'Analisis Drift',    icon: 'activity',         view: 'drift-analysis' },
     { id: 'reports',         label: 'Laporan',           icon: 'bar-chart-3',      view: 'reports' },
+    { id: 'ledger',          label: 'Buku Besar',        icon: 'book-open',        view: 'ledger' },
     { id: 'settings',        label: 'Pengaturan',        icon: 'settings',         view: 'settings' },
   ];
 
@@ -539,6 +541,9 @@ function App() {
 
           {/* ── REPORTS ───────────────────────────────────────────────────────── */}
           {currentView === 'reports' && <ReportsView onExportCSV={exportToCSV} />}
+
+          {/* ── LEDGER ────────────────────────────────────────────────────────── */}
+          {currentView === 'ledger' && <LedgerView />}
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (
