@@ -1,0 +1,52 @@
+# Phase A3 — API Contract Plan
+
+**Task record:** revision 14. **Contract:** `contracts/openapi.yaml`. **Status:** proposed, contract-first; no server has been implemented and the Phase A review gate remains open.
+
+## 1. Protocol baseline
+
+The portable baseline is HTTPS JSON with an OAuth2/OIDC-compatible bearer access token at `Authorization: Bearer <token>`, short-lived access tokens, and an opaque rotating refresh token at `/auth/refresh`. The issuer, audience, signing-key rotation, password/floor-device enrollment, and final identity provider remain Phase B decisions. The proposed endpoint shapes become the baseline only after Phase A review: login returns `accessToken`, `expiresIn`, `refreshToken`, and actor context; refresh rotates the refresh token; logout revokes the presented refresh token. No API accepts a tenant header as authority.
+
+Every request gets `X-Request-Id`; every retryable write gets `Idempotency-Key`. The server authenticates first, resolves the actor's memberships/grants, rechecks authorization in the database transaction, installs `SET LOCAL` context, and only then reads or writes. Internal jobs use `X-Service-Principal` plus a service credential and an allowed service scope; a caller's employee role is never accepted as job authority.
+
+## 2. Stable error and paging contract
+
+Errors use `Problem {type,title,status,code,detail,instance,requestId,violations[]}`. Stable codes include `AUTH_REQUIRED`, `FORBIDDEN`, `TENANT_CONTEXT_MISSING`, `LEGAL_OWNER_MISMATCH`, `ORDER_BENEFICIARY_MISMATCH`, `IDEMPOTENCY_CONFLICT`, `INVALID_STATE`, `LEDGER_IMMUTABLE`, `DUPLICATE_REPAIR_CREDIT`, `FINANCIAL_RULE_PENDING`, `VALIDATION_ERROR`, `INSUFFICIENT_STOCK`, `OVER_CONSUMPTION`, and `SERVICE_SCOPE_REQUIRED`. List responses use `{items,nextCursor}` and opaque cursor tokens; no offset is required for correctness.
+
+Idempotency is scoped by `(authenticated tenant, operationId, key)`, never by key alone. The server stores a canonical JSON hash after removing transport-only headers and normalizing property order. Same hash returns the original status/body. A different hash returns `409 IDEMPOTENCY_CONFLICT`. An in-progress retry waits briefly or returns the same conflict state; a crashed request is safely retried under the unique row and transaction lock. The canonical payload includes ownership and beneficiary fields, so a replay cannot change legal meaning.
+
+## 3. Endpoint catalog and ownership rules
+
+The OpenAPI document is the machine-readable source. Each operation has source IDs, roles, view, and invariant metadata. Unresolved IDs are cataloged as `status-only` and do not receive invented business behavior.
+
+| Area | Operations | Primary source IDs / roles |
+|---|---|---|
+| Auth/session | `login`, `refreshSession`, `logout`, `getMyContext` | FR-2.1; all roles |
+| Provisioning/clients/orders | `provisionAccount`, `listClients`, `createClient`, `createOrder`, `getOrder`, `listOrders` | FR-1.1, FR-1.4 (status-only), FR-2.1; scoped roles per operation |
+| Ledger/audit | `appendLedgerTransaction`, `reverseLedgerTransaction`, `getLedgerEntries`, `listAuditEvents` | FR-3.1; Owner, Finance |
+| Samples/time study/rates | `createSample`, `createSampleRevision`, `lockSample`, `recordTimeStudy`, `upsertRateCard`, `listSampleRevisions`, `listSamples`, `approveSample`, `convertSampleToOrder`, `listRateCards` | FR-4.1..FR-4.3; scoped roles per operation |
+| Warehouse/cutting | `receiveMaterial`, `issueMaterial`, `getStock`, `createStocktake`, `createStockAdjustment`, `recordCuttingResult` | FR-5, FR-5.1..FR-5.2, FR-6, FR-6.1..FR-6.3; Warehouse, Owner |
+| Sewing/assembly | `listLines`, `createLine`, `listOperators`, `createOperator`, `listAssignments`, `assignOperator`, `recordSewingTally`, `verifySewingTally`, `listAssemblies`, `createAssembly`, `listProductionProgress` | FR-7.1..FR-7.4; scoped roles per operation |
+| QC/payroll | `inspectUnit`, `getBonusPool`, `createPayrollPeriod`, `listPayrollPeriods`, `calculateWeeklyPayroll`, `getPayrollStatement`, `approvePayroll`, `recordPayrollPayment`, `recordOverhead`, `calculateOverhead` | FR-8.1..FR-8.2, FR-9.1..FR-9.2, FR-10.1..FR-10.4; scoped roles per operation |
+| Financial governance | `listFinancialRules`, `proposeFinancialRule`, `approveFinancialRule` | Inferred approval workflow supporting FR-10.1..FR-10.4; permissions and business values pending authorized approval |
+| Client billing | `listClientInvoices`, `createClientInvoice`, `issueClientInvoice` | Proposed commercial workflow; audit dependency FR-3.1 alone is not evidence of a source requirement for invoicing |
+| Procurement | `createPurchaseOrder`, `approvePurchaseOrder`, `recordSupplierInvoice` | BRD/PRD in-scope manual PO/invoice; Finance |
+| Files/portal/dashboard | `createFileUpload`, `completeFileUpload`, `getFileDownload`, `getDashboard`, `getPortalOrderStatus` | FR-1.1, FR-3.1, six PRD views; scoped role |
+| Jobs/search | `runSaturdayPayrollJob`, `runMonthlyOverheadJob`, `getJob`, `searchOperationalDocuments` | FR-10.1, FR-10.4; service scope or authorized read role; search is a fenced extension |
+
+This catalog enumerates 69 operation IDs, not 69 independently proven requirements. The YAML specifies each operation's roles and required headers. Source-ID presence is only an inventory check; requirement semantics, error completeness, and six-view usability still need independent review.
+
+`FR-5` and `FR-6` are group-level status markers only. Their child endpoints are mapped to the specific child IDs. `FR-1.4` has only an onboarding/order contract shape and remains `DEFINITION_PENDING`; it does not assert missing source text.
+
+## 4. State and financial rules
+
+Order flow is `DRAFT -> CONFIRMED -> IN_PRODUCTION -> QC -> COMPLETED|CANCELLED`. Sample revisions are append-only; only a locked approved revision may seed a mass order. Material is received before issue; issue is atomically validated against stock lot legal owner and order beneficiary. A sewing tally identifies a cut batch, line, operator, component and integer piece count. Components are linked into a finished assembly before assembly-level QC. Repair preserves component-to-original-operator attribution. Eligible component contributions receive at most one wage credit each at their immutable rate snapshots; a finished assembly receives at most one bonus accrual. Multiple contributors do not multiply the assembly bonus.
+
+Money is `{amountMinor: integer, currency: string}`. Material quantities are `{value: decimal-string, unit: enum}` to preserve precision across JSON implementations; sewing output uses integer `pieces`. Material conservation compares compatible material units, never meters plus garment counts. Times are RFC 3339 with explicit offset; business periods include IANA timezone and cutoff. No financial calculation uses floating point.
+
+The three-way QC pool is one rule shared by `FR-9.2` and `FR-10.3`, not two bonuses. Recipient mapping, meal basis (10–15%), rounding/remainder destination, payroll eligibility, and overhead denominator are `PENDING` until authorized. APIs return `FINANCIAL_RULE_PENDING` rather than silently using a demo default. Zero-output periods return a non-error `NO_OUTPUT` calculation state and do not divide by zero.
+
+Financial-rule enums describe supported proposals, not arbitrary policy plug-ins. An authorized alternative outside those enums requires a reviewed contract/calculation change before production, not a free-form value. The fixed three-way baseline remains unless an explicit business amendment changes it. Rule approval still requires external authorization evidence; planning approval is not business authorization.
+
+## 5. Compatibility and change control
+
+`/api/v1` operation IDs, error codes, ownership dimensions, and core schemas are stable. Additive optional properties and new endpoints are compatible. Renaming/removing an operation, changing required fields, changing an enum/state, changing idempotency scope, or merging tenant/legal-owner/beneficiary fields requires a versioned contract change and review. Backend and frontend work may begin from this document only after A3 review; Phase B may refine auth implementation without changing the frozen protocol shape.
