@@ -8,7 +8,7 @@ Pastikan kedua service running:
 ```bash
 cd backend/sampling-spec-rnd
 .\venv\Scripts\activate
-uvicorn src.main:app --reload --port 8007
+uvicorn src.main:app --reload --port 8009
 ```
 
 **Terminal 2 - Frontend:**
@@ -17,7 +17,7 @@ cd frontend/sampling-spec-rnd
 npm run dev
 ```
 
-**Buka browser:** http://localhost:3007
+**Buka browser:** http://localhost:3009
 
 ---
 
@@ -25,7 +25,7 @@ npm run dev
 
 ### Test 1.1: Backend Connected
 **Langkah:**
-1. Buka http://localhost:3007
+1. Buka http://localhost:3009
 2. Lihat pojok kanan atas
 
 **Expected:**
