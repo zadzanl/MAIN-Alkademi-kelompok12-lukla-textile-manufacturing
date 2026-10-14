@@ -9,6 +9,10 @@ The system SHALL calculate weekly piece-rate wages every Saturday based exclusiv
 - **WHEN** the Saturday payroll cycle executes
 - **THEN** the system SHALL aggregate all QC-passed component counts multiplied by applicable piece rates for each operator
 
+#### Scenario: Unresolved financial rule gate
+- **WHEN** a payroll, QC, or financial operation references an `UNRESOLVED / PRODUCTION_BLOCKED` rule
+- **THEN** the operation SHALL return `FINANCIAL_RULE_PENDING` and SHALL NOT use a development-only default
+
 ### Requirement: Variable Production Meal Allowance Disbursement
 The system SHALL calculate floating meal allowances at 10 to 15 percent of total sewing wages generated in a production period.
 

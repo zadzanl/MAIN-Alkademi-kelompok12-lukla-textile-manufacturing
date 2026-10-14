@@ -40,3 +40,18 @@
 - [ ] 5.7 Verify openspec status reports 4/4 artifacts complete
 - [ ] 5.8 Verify openspec validate lukla-ops-engine-planning passes with zero errors
 - [ ] 5.9 Record Phase 5 execution in artifacts/worklog.md and update artifacts/task-record.md to rev 11
+
+## 6. Approved Technical Blueprint Extension — Current Work
+
+Historical Phase 5 checkbox reconciliation remains pending; see task-record revision 13. These tasks describe planning deliverables, not completed application features.
+
+- [x] 6.1 Refresh requirement/platform evidence and write concrete technical execution plan
+- [x] 6.2 Complete Phase A stack, database schema, and OpenAPI artifacts (planning contract repaired and custom checks pass; runtime not implemented)
+- [x] 6.3 Review and approve Phase A contract baseline before parallel work (direct recovery review; delegated reviewer unavailable; limitations recorded)
+- [x] 6.4 Author Phase B authentication, frontend, operations, verification harness, search, and business-decision documents (`artifacts/13`–`17`, `19`)
+- [x] 6.5 Independently review Phase B and reconcile cross-document interfaces (`artifacts/review/blueprint-phase-b-review.md`, approved)
+- [x] 6.6 Author Phase C workstreams and integrate OpenSpec design, capability deltas, and storage decisions (`artifacts/18-parallelization-and-workstreams.md`)
+- [x] 6.7 Extend planning validators and define negative controls; artifact visibility remains governed by the existing narrow ignore policy (`artifacts/verify-traceability.ps1`)
+- [x] 6.8 Complete final planning review and report unresolved business/release gates (`artifacts/review/blueprint-phase-c-review.md`; runtime implementation remains out of scope)
+
+Phase C integration is planning-only. It does not authorize application code, dependencies, runtime, cloud, database, or production execution.

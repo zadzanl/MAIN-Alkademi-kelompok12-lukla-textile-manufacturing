@@ -9,6 +9,10 @@ The system SHALL strictly isolate all data, orders, raw materials, and productio
 - **WHEN** an external maklon client queries production status or inventory balances
 - **THEN** the system SHALL return only records matching the client's authenticated `client_id` and deny access to other tenants' data
 
+#### Scenario: Phase C RLS planning boundary
+- **WHEN** implementation work is split across the Phase C workstreams
+- **THEN** every tenant-scoped table SHALL use portable PostgreSQL `ENABLE ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`, with policy ownership and non-owner verification traced to artifacts 11, 13, 15, and 18
+
 ### Requirement: Client and Order Onboarding
 The system SHALL support onboarding of distinct client accounts and production orders across CMT, Semi-CMT, and Full-Package commercial schemes.
 
