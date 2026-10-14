@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arsitektur Sistem — Sampling & Spec R&D | Lukla</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 50%, #eef2ff 100%);
+      min-height: 100vh;
+      padding: 48px 24px;
+      color: #1e293b;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .page-header .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #7c3aed;
+      color: #fff;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .page-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+    .page-header p {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    /* Diagram */
+    .diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Layer card */
+    .layer {
+      width: 100%;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    /* Layer 1 — Core */
+    .layer-core {
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+    }
+    .layer-core .layer-title {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+    .layer-core .modules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .module-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+    .module-card .icon { font-size: 28px; margin-bottom: 8px; }
+    .module-card .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 3px;
+    }
+    .module-card .sub {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Connector */
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+    }
+    .connector-line {
+      width: 2px;
+      height: 20px;
+      background: #cbd5e1;
+    }
+    .connector-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0;
+    }
+    .connector-label .line-h {
+      width: 80px;
+      height: 1px;
+      background: #cbd5e1;
+    }
+    .connector-label .text {
+      font-size: 11px;
+      font-weight: 500;
+      color: #94a3b8;
+      padding: 3px 10px;
+      background: #f1f5f9;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .connector-arrow {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 10px solid #cbd5e1;
+      margin-top: -2px;
+    }
+
+    /* Layer 2 — Operations */
+    .layer-ops {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .module-card-highlight {
+      background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%);
+      border: 2px solid #a855f7;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+    }
+    .highlight-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #7c3aed;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .module-card-highlight .icon { font-size: 28px; margin-bottom: 8px; margin-top: 6px; }
+    .module-card-highlight .name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b21a8;
+      margin-bottom: 3px;
+    }
+    .module-card-highlight .sub {
+      font-size: 11px;
+      color: #9333ea;
+    }
+
+    .module-card-neutral {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+    .module-card-neutral .icon { font-size: 26px; margin-bottom: 8px; }
+    .module-card-neutral .name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 3px;
+    }
+    .module-card-neutral .sub {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Layer 3 — Payroll */
+    .layer-payroll {
+      max-width: 280px;
+      width: 100%;
+    }
+    .module-card-payroll {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .module-card-payroll .icon { font-size: 28px; margin-bottom: 8px; }
+    .module-card-payroll .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 3px;
+    }
+    .module-card-payroll .sub {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Legend */
+    .legend {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .legend-dot-purple { background: #a855f7; }
+    .legend-dot-gray   { background: #94a3b8; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="badge">Arsitektur Sistem</div>
+      <h1>Posisi Sampling &amp; Spec R&amp;D dalam Lukla</h1>
+      <p>Lukla Operations Engine — Diagram Referensi Tim Pengembang</p>
+    </div>
+
+    <!-- Diagram -->
+    <div class="diagram">
+
+      <!-- Layer 1: Core -->
+      <div class="layer layer-core" style="width:100%">
+        <div class="layer-title">Inti Entri Ganda yang Tidak Dapat Diubah</div>
+        <div class="modules">
+          <div class="module-card">
+            <div class="icon">📒</div>
+            <div class="name">Buku Besar Keuangan</div>
+            <div class="sub">COA, Debit, Kredit</div>
+          </div>
+          <div class="module-card">
+            <div class="icon">📦</div>
+            <div class="name">Inventaris Multi-Penyewa</div>
+            <div class="sub">Konsinyasi vs Milik</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector -->
+      <div class="connector">
+        <div class="connector-line"></div>
+        <div class="connector-label">
+          <div class="line-h"></div>
+          <div class="text">Acara / Batasan Ketat</div>
+          <div class="line-h"></div>
+        </div>
+        <div class="connector-line"></div>
+        <div class="connector-arrow"></div>
+      </div>
+
+      <!-- Layer 2: Operations -->
+      <div class="layer-ops">
+
+        <!-- Highlighted: Sampling -->
+        <div class="module-card-highlight">
+          <div class="highlight-badge">◀ Anda di sini</div>
+          <div class="icon">🔬</div>
+          <div class="name">Sampling &amp; Spec R&amp;D</div>
+          <div class="sub">Studi Waktu, Versi Spec</div>
+        </div>
+
+        <!-- Manufacturing -->
+        <div class="module-card-neutral">
+          <div class="icon">🏭</div>
+          <div class="name">Eksekusi Manufaktur</div>
+          <div class="sub">Lini, Mandor UI</div>
+        </div>
+
+        <!-- QC -->
+        <div class="module-card-neutral">
+          <div class="icon">✅</div>
+          <div class="name">Kontrol Kualitas &amp; MES</div>
+          <div class="sub">Lulus, Perbaiki, Tolak</div>
+        </div>
+      </div>
+
+      <!-- Connector -->
+      <div class="connector">
+        <div class="connector-line"></div>
+        <div class="connector-label">
+          <div class="line-h"></div>
+          <div class="text">Penyelesaian Terverifikasi</div>
+          <div class="line-h"></div>
+        </div>
+        <div class="connector-line"></div>
+        <div class="connector-arrow"></div>
+      </div>
+
+      <!-- Layer 3: Payroll -->
+      <div class="layer-payroll">
+        <div class="module-card-payroll">
+          <div class="icon">💰</div>
+          <div class="name">Mesin Penggajian Dinamis</div>
+          <div class="sub">Tarif Per Unit, Kumpulan QC</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot legend-dot-purple"></div>
+        Modul aktif (Sampling &amp; Spec R&amp;D)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot legend-dot-gray"></div>
+        Modul terkait (dikerjakan tim lain)
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Lukla Operations Engine · Sampling &amp; Spec R&amp;D · Diagram Arsitektur v1.0
+    </div>
+
+  </div>
+</body>
+</html>

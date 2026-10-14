@@ -139,7 +139,7 @@ class TimeStudyRecorder:
         if self.status not in [StudyStatus.IN_PROGRESS, StudyStatus.PAUSED]:
             return False
         
-        if len(self.samples) < self.target_sample_size:
+        if len(self.samples) < 1:  # min 1 sample, 30 is recommendation
             return False
         
         self.status = StudyStatus.COMPLETED

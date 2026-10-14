@@ -85,7 +85,7 @@ class SamplingRnDWorkflow:
         if study.complete_study():
             result = self._analyze_study(study)
             return True, f"Study completed. {result}"
-        return False, f"Study requires {study.target_sample_size - len(study.samples)} more samples"
+        return False, f"Cannot complete: need at least 1 sample (current: {len(study.samples)}, status: {study.status.value})"
 
     def pause_time_study(self, study_id: str) -> Tuple[bool, str]:
         """Pause a time study"""

@@ -11,25 +11,25 @@
 
 **Backend Server**
 - Running: ✅ YES
-- Address: `http://127.0.0.1:8007`
+- Address: `http://127.0.0.1:8009`
 - Port: `8007`
 - Status: Uvicorn running with auto-reload
 
 **Frontend Integration**
-- Frontend Address: `http://localhost:3007`
-- API Proxy: Vite configured to proxy to `http://localhost:8007/api`
+- Frontend Address: `http://localhost:3009`
+- API Proxy: Vite configured to proxy to `http://localhost:8009/api`
 - Status: ✅ Connected
 
 ### Files Modified
 1. **Created**: `src/main.py`
    - FastAPI app instance
-   - CORS middleware (allows localhost:3007)
+   - CORS middleware (allows localhost:3009)
    - Health check endpoint
    - Router inclusion
 
 2. **Updated**: `run_backend.bat`
    - Changed from `uvicorn src.api.routes:app`
-   - To: `uvicorn src.main:app --reload --port 8007`
+   - To: `uvicorn src.main:app --reload --port 8009`
 
 ### API Endpoints Available
 ```
@@ -51,19 +51,19 @@ POST /api/sampling-spec-rnd/studies/{id}/start → Start study
 ```powershell
 cd backend\sampling-spec-rnd
 .\venv\Scripts\activate
-uvicorn src.main:app --reload --port 8007
+uvicorn src.main:app --reload --port 8009
 ```
 
 **Terminal 2 - Frontend:**
 ```powershell
 cd frontend\sampling-spec-rnd
 npm run dev
-# Opens http://localhost:3007
+# Opens http://localhost:3009
 ```
 
 ### Next Steps
 1. ✅ Backend startup fixed
-2. ✅ Frontend running on port 3007
+2. ✅ Frontend running on port 3009
 3. ✅ Integration verified
 4. Test API flow: Create study → Add sample → Verify backend receives data
 5. Check if any TypeScript errors remain (was 60 errors reported earlier)
