@@ -118,5 +118,5 @@ db-data/
 # ==========================================
 # Documentation Clutter
 # ==========================================
-artifacts/
+/artifacts/
 DEPRECATED/
