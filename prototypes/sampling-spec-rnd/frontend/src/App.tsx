@@ -36,6 +36,16 @@ import ReportsView         from './pages/ReportsView';
 
 import type { TimeStudy, SpecVersion, WorkflowSummary } from './types';
 
+// ─── Shared form helper — hoisted outside App to avoid remount on every render
+// Bug-fix #8
+interface FormFieldProps { id: string; label: string; children: React.ReactNode }
+const FormField: React.FC<FormFieldProps> = ({ id, label, children }) => (
+  <div>
+    <label htmlFor={id} className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
+    {children}
+  </div>
+);
+
 const API_BASE = 'http://localhost:8009/api/sampling-spec-rnd';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -264,15 +274,7 @@ function App() {
 
   const currentLabel = navItems.find(n => n.view === currentView)?.label ?? 'Overview';
 
-  // ── multi-line-views ─────────────────────────────────────────────────────────
-
-  // Shared footer form helper
-  const FormField = ({ id, label, children }: { id: string; label: string; children: React.ReactNode }) => (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
-      {children}
-    </div>
-  );
+  // ── shared style constants ────────────────────────────────────────────────────
   const inputCls = "w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]";
   const btnPrimary = "bg-[#0071e3] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#0066cc] transition-colors";
   const btnSecondary = "border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#f4f8fd] transition-colors";
