@@ -57,5 +57,5 @@ All four must exit 0. The same four commands run as the blocking `payroll-engine
 
 ## Status
 
-The financial rule registry and the payroll period lifecycle are implemented and tested: the contract schemas for rules and periods, the rule gate, the proposal and approval service, the period transition guard, and the integer money arithmetic. The HTTP layer and the PostgreSQL persistence are not implemented yet; the router lands with the real repository so that no endpoint ships against a fake store. Work proceeds through the phases in `openspec/changes/lukla-payroll-engine/tasks.md`.
+The financial rule registry, the payroll period lifecycle, and the weekly borongan calculation are implemented and tested: the contract schemas for rules, periods, and calculation results, the rule gate, the proposal and approval service, the period transition guard, the quality-passed-only wage aggregation, and the integer money arithmetic. The HTTP layer and the PostgreSQL persistence are not implemented yet; the router lands with the real repository so that no endpoint ships against a fake store. Work proceeds through the phases in `openspec/changes/lukla-payroll-engine/tasks.md`.
 

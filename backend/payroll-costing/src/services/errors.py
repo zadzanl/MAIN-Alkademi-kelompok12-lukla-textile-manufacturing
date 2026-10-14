@@ -35,3 +35,9 @@ class ValidationFailed(DomainError):
     """The request is well-formed but violates a domain invariant."""
 
     code = ErrorCode.VALIDATION_ERROR
+
+
+class DuplicateRepairCredit(DomainError):
+    """A garment unit would be paid twice across inspection cycles."""
+
+    code = ErrorCode.DUPLICATE_REPAIR_CREDIT
