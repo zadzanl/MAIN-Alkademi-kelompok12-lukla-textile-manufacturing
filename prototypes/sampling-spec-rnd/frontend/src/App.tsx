@@ -255,15 +255,37 @@ function App() {
     (!specSearch || s.spec_name.toLowerCase().includes(specSearch.toLowerCase()))
   );
 
-  const chartData = [
-    { label:'Sen', value: completionRate(timeStudies, 0), isCurrent:false },
-    { label:'Sel', value: completionRate(timeStudies, 1), isCurrent:false },
-    { label:'Rab', value: completionRate(timeStudies, 2), isCurrent:false },
-    { label:'Kam', value: completionRate(timeStudies, 3), isCurrent:false },
-    { label:'Jum', value: completionRate(timeStudies, 4), isCurrent:true  },
-    { label:'Sab', value: 0, isCurrent:false },
-    { label:'Min', value: 0, isCurrent:false },
-  ];
+  /**
+   * Build weekly chart from real backend data.
+   * Each completed/in-progress study has a created_at timestamp.
+   * We count how many studies were active or completed on each ISO weekday
+   * (Mon=0 … Sun=6), then express as % of the total.
+   *
+   * Today's weekday is highlighted; future weekdays are marked isFuture.
+   */
+  const chartData = (() => {
+    const DAYS = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+    // JS getDay(): 0=Sun,1=Mon,...,6=Sat  →  map to Mon-first (0=Mon,6=Sun)
+    const todayJs  = new Date().getDay();                   // 0(Sun)–6(Sat)
+    const todayIdx = todayJs === 0 ? 6 : todayJs - 1;     // Mon-first index
+
+    const counts = Array(7).fill(0);
+    const total  = timeStudies.length || 1;
+
+    timeStudies.forEach(study => {
+      const d  = new Date(study.created_at);
+      const js = d.getDay();
+      const i  = js === 0 ? 6 : js - 1;
+      counts[i]++;
+    });
+
+    return DAYS.map((label, i) => ({
+      label,
+      value:     i <= todayIdx ? Math.round((counts[i] / total) * 100) : 0,
+      isCurrent: i === todayIdx,
+      isFuture:  i > todayIdx,
+    }));
+  })();
 
   const statusItems = [
     { label:'Draft',       count: timeStudies.filter(s=>s.status==='draft').length },
@@ -303,10 +325,10 @@ function App() {
             <>
               {/* KPIs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <MetricCard label="Studi Aktif"      value={workflowSummary?.active_studies ?? 0}        note="Studi yang sedang berjalan"   loading={isLoading} />
-                <MetricCard label="Studi Selesai"    value={workflowSummary?.completed_studies ?? 0}     note="Studi yang telah diselesaikan" loading={isLoading} />
-                <MetricCard label="Versi Sample"     value={workflowSummary?.total_sample_versions ?? 0} note="Artikel dalam sistem versioning" loading={isLoading} />
-                <MetricCard label="Drift Kritis"     value={workflowSummary?.critical_drifts ?? 0}       note="Memerlukan perhatian segera"   loading={isLoading} />
+                <MetricCard label="Studi Aktif"      value={workflowSummary?.active_studies ?? 0}        note="Studi yang sedang berjalan"      loading={isLoading} accent="blue" />
+                <MetricCard label="Studi Selesai"    value={workflowSummary?.completed_studies ?? 0}     note="Studi yang telah diselesaikan"   loading={isLoading} accent="green" />
+                <MetricCard label="Versi Sample"     value={workflowSummary?.total_sample_versions ?? 0} note="Artikel dalam sistem versioning"  loading={isLoading} accent="orange" />
+                <MetricCard label="Drift Kritis"     value={workflowSummary?.critical_drifts ?? 0}       note="Memerlukan perhatian segera"      loading={isLoading} accent="red" />
               </div>
 
               {/* Chart + Status */}
@@ -542,18 +564,6 @@ function App() {
       </Modal>
     </div>
   );
-}
-
-// ── helper: naive weekly completion rate ──────────────────────────────────────
-
-function completionRate(studies: TimeStudy[], dayOffset: number): number {
-  const completed = studies.filter(s => s.status === 'completed').length;
-  const total     = studies.length;
-  if (total === 0) return 0;
-  // Spread completions across weekdays with some variance
-  const base = Math.round((completed / total) * 100);
-  const variance = [0, -8, 5, 12, 18][dayOffset] ?? 0;
-  return Math.max(0, Math.min(100, base + variance));
 }
 
 export default App;

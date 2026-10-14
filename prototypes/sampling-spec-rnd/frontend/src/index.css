@@ -69,9 +69,15 @@ body {
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.5;
-  color: var(--ink);
+  color: #111827;           /* stronger base text — was #1d1d1f but appears washed out */
   background-color: var(--paper);
   overflow-x: hidden;
+}
+
+/* kpi-value stays dark even inside lighter cards */
+.kpi-value {
+  color: #111827;
+  font-weight: 700;
 }
 
 /* SF Pro Font Class */
