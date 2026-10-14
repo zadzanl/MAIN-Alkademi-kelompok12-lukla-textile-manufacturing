@@ -1,6 +1,22 @@
 # Tasks: Payroll Engine Runtime Implementation
 
-Nothing in this checklist is implemented yet. Every task starts unchecked; a task is only marked complete after its verification step has actually been executed and its output recorded.
+Every task starts unchecked; a task is only marked complete after its verification step has actually been executed and its output recorded, and after its branch has merged, because root artifacts are integrated after workstream review.
+
+## 0. Branch Chain and Merge Order
+
+The work is delivered as a linear stack. Each branch adds exactly one commit over its parent, and each is green at its own tip (`ruff check`, `ruff format --check`, `mypy src/ --strict`, `pytest`, and `python scripts/check_workspace_hygiene.py`).
+
+| Order | Branch | Pull request base | Delivers |
+| --- | --- | --- | --- |
+| 1 | `chore/hygiene-allow-backend` | `master` | Tasks 1.1–1.4: `backend/` allowed in the hygiene allow-list, module scaffold, blocking CI job |
+| 2 | `feat/payroll-rule-registry` | `chore/hygiene-allow-backend` | Contract schemas, the financial rule gate, propose and approve |
+| 3 | `feat/payroll-period-lifecycle` | `feat/payroll-rule-registry` | Period schemas and the status transition guard |
+| 4 | `feat/payroll-wage-calculation` | `feat/payroll-period-lifecycle` | Quality-passed-only borongan aggregation behind the gate |
+| 5 | `feat/payroll-bonus-pool` | `feat/payroll-wage-calculation` | Bonus pool consolidation and the refused three-way split |
+
+Set each pull request's base to the branch above it, not to `master`. GitHub retargets the remaining pull requests automatically as each one merges, so no rebase is needed; merging out of order is what makes a diff carry another branch's commit.
+
+Still open after this chain: persistence and migrations (phase 3), the HTTP layer and the remaining operations of phase 4, the jobs of phase 5, the harness of phase 6, View 06 of phase 7, and the escalations of phase 8.
 
 ## 1. Scaffold and CI Gate
 
@@ -8,7 +24,7 @@ Implemented on branch `chore/hygiene-allow-backend`; tick these boxes once that 
 
 - [ ] 1.1 Extend `scripts/check_workspace_hygiene.py` `ALLOWED_ROOT_DIRS` with `backend` and document the reason inline.
 - [ ] 1.2 Create `backend/payroll-costing/` with `README.md`, `API_CONTRACTS.md`, and the `src/{models,services,utils,api}` layout named in `docs/MODULES_ARCHITECTURE.md`.
-- [ ] 1.3 Add a payroll CI job (ruff check, ruff format --check, mypy --strict) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job; pytest joins this job when the test suite lands in phase 6.
+- [ ] 1.3 Add a payroll CI job (ruff check, ruff format --check, mypy --strict) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job. pytest joined this job on `feat/payroll-rule-registry`, where the first tests landed.
 - [ ] 1.4 Verify: `python scripts/check_workspace_hygiene.py` exits 0 with the module present, and the new CI job fails on a deliberately broken lint input, then passes once reverted.
 
 ## 2. Recorded Design Decisions Before DDL
