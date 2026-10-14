@@ -20,7 +20,7 @@ The PRD inventory is **26 IDs**: the 23 child IDs `FR-1.1`, `FR-2.1`, `FR-3.1`, 
 | Files | `StorageService` interface with object key, content hash, metadata, and short-lived download/upload capability | S3-compatible implementation; local test implementation allowed | No direct AWS SDK calls in domain code |
 | Vectors | `VectorStore` interface; pgvector is an optional same-Postgres adapter, Qdrant an external adapter | adapter receives an already-authorized tenant/legal-owner scope | Search is read-only and cannot write the ledger |
 | Models | `EmbeddingsClient` and chat/provider adapter behind configurable base URL | OpenAI-compatible HTTP shape permits OpenRouter or another provider | No model name, price, or CVE claim is frozen here |
-| Web | Responsive Next.js PWA, `output: standalone` | standard browser APIs; Vercel, CloudFront/Amplify, or a container can host it | No Edge-only, ISR-write, or Vercel-only API |
+| Web | Responsive React 18 + Vite + Tailwind PWA | standard browser APIs; a static bundle can be hosted by S3/CloudFront or a standard static/container host | No framework-specific server runtime required |
 | Jobs | Internal authenticated HTTP job endpoints | AWS Scheduler invokes Lambda, Lambda POSTs the endpoint; other platforms use an external scheduler | No in-process cron and no claim that Scheduler directly targets arbitrary HTTP |
 | Test | pytest/database checks, Schemathesis contract checks, Playwright browser checks | JSON/JUnit/XML evidence contract; deterministic exit status | Tools are future implementation gates, not run in Phase A |
 

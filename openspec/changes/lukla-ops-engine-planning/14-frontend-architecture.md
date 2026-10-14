@@ -9,7 +9,7 @@
 - `[task]` `task-record.md`, revision 15; Phase B is authorized after A3 approval.
 - `[plan]` `09-technical-blueprint-completion-plan.md`, especially the six-view inventory, portability commitments, and NFR-05 tally requirement.
 - `[tech]` `artifacts/tech_plan-blueprint-001.md`, Contract Schema Conventions, Test Mapping, and offline tally boundary.
-- `[stack]` `artifacts/10-technology-stack-and-decisions.md`, §2 Web portability (`Next.js`, `output: standalone`, no Vercel-only API).
+- `[stack]` `artifacts/10-technology-stack-and-decisions.md`, §2 Web portability (React 18 + Vite + Tailwind static bundle).
 - `[schema]` `artifacts/11-database-schema-spec.md`, sewing tally, assembly/QC, idempotency, outbox, and scope dimensions.
 - `[api]` `artifacts/12-api-contract-plan.md`, endpoint catalog and error/paging/idempotency rules.
 - `[contract]` `artifacts/contracts/openapi.yaml`, the machine-readable operation and schema source.
@@ -17,7 +17,7 @@
 - `[tests]` `06-acceptance-tests.md`, AT-01–AT-10 and AT-R01–AT-R08; no runtime assertions are claimed here.
 - `[review]` `artifacts/review/blueprint-contract-review.md`, approved frozen contract and proof gaps.
 
-**PROPOSAL:** use a responsive Next.js web application with a framework-neutral data-access layer and `output: 'standalone'`. The same frontend build must be hostable by Vercel, AWS Amplify/CloudFront, or a standard container/static delivery path. No Vercel-only server action, Edge runtime, ISR write, or image-optimization dependency is required.
+**PROPOSAL:** use a responsive React + Vite web application with a framework-neutral data-access layer and a static production bundle. The same frontend build must be hostable by S3/CloudFront or a standard static/container delivery path. No framework-specific server runtime is required.
 
 ## 2. Information architecture and six views plus ledger
 
@@ -141,11 +141,11 @@ The dashboard and portal must not use a client-supplied tenant selector as a sco
 The frontend build must:
 
 - use standard browser APIs and HTTPS API calls;
-- emit a standalone build suitable for a container or standard host;
-- read API origin and public feature flags from deployment configuration, not hard-coded Vercel globals;
+- emit a static production bundle suitable for S3/CloudFront, a container, or another standard host;
+- read API origin and public feature flags from deployment configuration, not hard-coded host globals;
 - keep authentication cookie/domain/CORS policy explicit per environment;
-- avoid Vercel-only server actions, Edge-only APIs, ISR writes, and required platform storage;
-- permit AWS CloudFront/Amplify or an ordinary container/static host as the primary alternative;
+- avoid framework-specific server actions, edge-only APIs, server-side writes, and required platform storage;
+- permit AWS CloudFront or an ordinary container/static host as the primary deployment path;
 - keep offline data in browser storage behind a small adapter so IndexedDB can be replaced or disabled for unsupported devices;
 - make service-worker/cache policy explicit and never cache private API responses as public assets.
 

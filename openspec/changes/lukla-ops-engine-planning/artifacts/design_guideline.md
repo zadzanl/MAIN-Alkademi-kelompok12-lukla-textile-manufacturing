@@ -23,13 +23,13 @@ Antarmuka harus terasa premium, intuitif, dan responsif. Karena target utamanya 
 *   **Feedback:** Berikan haptic feedback (jika didukung perangkat) atau animasi *micro-interaction* (seperti efek *scale-down* ringan saat tombol ditekan).
 
 ---
-## 3. STRUKTUR FRONTEND (React / Next.js)
+## 3. STRUKTUR FRONTEND (React / Vite)
 
-Kita akan menggunakan **Next.js (App Router)** dengan **Tailwind CSS** dan komponen berbasis **Radix UI/shadcn** yang dikustomisasi dengan tema Apple (SF Pro, rounded, soft shadows).
+Kita akan menggunakan **React + Vite** dengan **Tailwind CSS** dan komponen berbasis **Radix UI/shadcn** yang dikustomisasi dengan tema Apple (SF Pro, rounded, soft shadows).
 
 ```text
 /src
- ├── /app                   # Next.js App Router (Halaman Utama)
+ ├── /pages                 # React/Vite views (Halaman Utama)
  │    ├── /dashboard        # View 01: Executive Dashboard
  │    ├── /sample-tracker   # View 02: Time Study
  │    ├── /warehouse        # View 03: Inventory Grid
