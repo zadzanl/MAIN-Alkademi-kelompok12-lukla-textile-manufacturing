@@ -1,4 +1,4 @@
-/**
+﻿/**
  * StudyListView — Full list of all time studies with stats + export
  */
 
@@ -52,7 +52,7 @@ const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
           <p className="text-[#6e6e73] text-sm mt-1">{studies.length} total studi waktu tercatat</p>
         </div>
         <button onClick={fetchAll}
-          className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#eaf3fe] inline-flex items-center gap-2">
+          className="btn-secondary">
           <LucideIcon name="activity" className="w-4 h-4" /> Refresh
         </button>
       </div>
@@ -88,7 +88,7 @@ const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
       />
 
       <button onClick={() => onExportCSV(filtered, 'study_list')}
-        className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:bg-[#f4f8fd]">
+        className="btn-secondary">
         <LucideIcon name="download" className="w-4 h-4" /> Ekspor CSV
       </button>
     </div>
@@ -96,3 +96,4 @@ const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
 };
 
 export default StudyListView;
+

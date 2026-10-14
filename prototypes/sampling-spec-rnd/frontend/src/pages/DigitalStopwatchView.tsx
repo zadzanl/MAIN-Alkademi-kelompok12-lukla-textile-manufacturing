@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DigitalStopwatchView — Digital Stopwatch for Time Study per Component
  * PRD: Stopwatch digital untuk mengukur durasi pengerjaan standar per komponen jahitan.
  * Data time study digunakan sebagai acuan rate card (ongkos jahit/potong).
@@ -349,7 +349,7 @@ const DigitalStopwatchView: React.FC = () => {
                 ))}
               </select>
               <button onClick={() => setShowNewStudy(v => !v)}
-                className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#eaf3fe] whitespace-nowrap">
+                className="btn-secondary">
                 + Studi Baru
               </button>
             </div>
@@ -378,7 +378,7 @@ const DigitalStopwatchView: React.FC = () => {
                   </div>
                 </div>
                 <button onClick={handleCreateStudy}
-                  className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2 font-semibold text-[13px] hover:bg-[#0066cc]">
+                  className="btn-primary !py-2">
                   Buat & Pilih
                 </button>
               </div>
@@ -392,7 +392,7 @@ const DigitalStopwatchView: React.FC = () => {
 
             <div className="flex gap-3 mt-4">
               <button onClick={handleSaveToStudy} disabled={saving || laps.length === 0}
-                className="bg-[#0071e3] text-white rounded-[10px] px-5 py-2.5 font-semibold text-[13px] hover:bg-[#0066cc] disabled:opacity-40 transition-colors inline-flex items-center gap-2">
+                className="btn-primary">
                 {saving ? 'Menyimpan…' : <><LucideIcon name="download" className="w-4 h-4" /> Simpan {laps.length} Lap ke Studi</>}
               </button>
             </div>
@@ -404,3 +404,4 @@ const DigitalStopwatchView: React.FC = () => {
 };
 
 export default DigitalStopwatchView;
+

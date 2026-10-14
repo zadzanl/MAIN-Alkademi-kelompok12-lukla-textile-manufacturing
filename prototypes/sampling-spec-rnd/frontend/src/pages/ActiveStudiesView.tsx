@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ActiveStudiesView — Real-time monitor of in_progress time studies
  * Shows live progress bars, control buttons (pause/resume/complete)
  */
@@ -99,18 +99,18 @@ const ActiveStudiesView: React.FC = () => {
         <div className="flex gap-2 flex-wrap">
           {study.status === 'draft' && (
             <button onClick={() => action(study.study_id, 'start')}
-              className="bg-[#34c759] text-white rounded-[9px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#2aae4e] inline-flex items-center gap-1">
+              className="btn-success !py-1.5 !px-3 !text-xs rounded-lg">
               ▶ Mulai
             </button>
           )}
           {study.status === 'in_progress' && (
             <>
               <button onClick={() => action(study.study_id, 'pause')}
-                className="bg-[#ff9500] text-white rounded-[9px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#e08600] inline-flex items-center gap-1">
+                className="btn-primary !py-1.5 !px-3 !text-xs rounded-lg !bg-[#d97706] !shadow-none">
                 ⏸ Pause
               </button>
               <button onClick={() => action(study.study_id, 'complete')}
-                className="border border-[#d5d5da] bg-white text-[#1d1d1f] rounded-[9px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#f5f5f7]">
+                className="btn-secondary !py-1.5 !px-3 !text-xs">
                 ✓ Selesai
               </button>
             </>
@@ -122,7 +122,7 @@ const ActiveStudiesView: React.FC = () => {
                 ▶ Lanjutkan
               </button>
               <button onClick={() => action(study.study_id, 'complete')}
-                className="border border-[#d5d5da] bg-white text-[#1d1d1f] rounded-[9px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#f5f5f7]">
+                className="btn-secondary !py-1.5 !px-3 !text-xs">
                 ✓ Selesai
               </button>
             </>
@@ -140,7 +140,7 @@ const ActiveStudiesView: React.FC = () => {
           <p className="text-[#6e6e73] text-sm mt-1">Monitor & kontrol studi waktu yang sedang berjalan</p>
         </div>
         <button onClick={fetchStudies}
-          className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#eaf3fe] inline-flex items-center gap-2">
+          className="btn-secondary">
           <LucideIcon name="activity" className="w-4 h-4" /> Refresh
         </button>
       </div>
@@ -191,3 +191,4 @@ const ActiveStudiesView: React.FC = () => {
 };
 
 export default ActiveStudiesView;
+

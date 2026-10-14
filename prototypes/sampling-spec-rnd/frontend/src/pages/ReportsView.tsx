@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ReportsView — Aggregate reports: time study stats, material costing, rate card summary
  * Bridge to Manufacturing Execution: final approved data ready for mandor / production line
  */
@@ -115,7 +115,7 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
           <p className="text-[#6e6e73] text-sm mt-1">Agregat data R&D → acuan mandor & line produksi</p>
         </div>
         <button onClick={fetchAll}
-          className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#eaf3fe] inline-flex items-center gap-2">
+          className="btn-secondary">
           <LucideIcon name="activity" className="w-4 h-4" /> Refresh
         </button>
       </div>
@@ -149,7 +149,7 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
               <div className="flex justify-between items-center mb-4">
                 <p className="text-[15px] font-semibold text-[#1d1d1f]">Ringkasan Studi Waktu</p>
                 <button onClick={() => onExportCSV(studies, 'report_time_studies')}
-                  className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#f4f8fd] inline-flex items-center gap-1">
+                  className="btn-secondary !py-1.5 !px-3 !text-xs">
                   <LucideIcon name="download" className="w-3.5 h-3.5" /> Ekspor
                 </button>
               </div>
@@ -200,7 +200,7 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
                   <p className="text-xs text-[#6e6e73] mt-0.5">Hanya studi selesai · Allowance bawaan 15% · IDR {RATE_PER_MIN_IDR}/menit</p>
                 </div>
                 <button onClick={() => onExportCSV(rateCards, 'rate_cards')}
-                  className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#f4f8fd] inline-flex items-center gap-1">
+                  className="btn-secondary !py-1.5 !px-3 !text-xs">
                   <LucideIcon name="download" className="w-3.5 h-3.5" /> Ekspor
                 </button>
               </div>
@@ -245,7 +245,7 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
                   <p className="text-xs text-[#6e6e73] mt-0.5">Dari sample version yang sudah disetujui</p>
                 </div>
                 <button onClick={() => onExportCSV(costingData, 'costing_report')}
-                  className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-1.5 text-[12px] font-semibold hover:bg-[#f4f8fd] inline-flex items-center gap-1">
+                  className="btn-secondary !py-1.5 !px-3 !text-xs">
                   <LucideIcon name="download" className="w-3.5 h-3.5" /> Ekspor
                 </button>
               </div>
@@ -338,3 +338,4 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
 };
 
 export default ReportsView;
+

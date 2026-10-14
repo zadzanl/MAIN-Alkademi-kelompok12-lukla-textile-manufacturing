@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SampleVersionView — Version History Tree + Component Spec + Material Estimation
  * PRD: Manajemen Versi Sample (v1 → v2 → converted to Mass Order)
  */
@@ -207,7 +207,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:bg-[#0066cc] transition-colors"
+          className="btn-primary"
         >
           <LucideIcon name="plus" className="w-4 h-4" /> Artikel Baru
         </button>
@@ -258,30 +258,30 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => openHistory(row)}
                   title="Riwayat versi"
-                  className="text-[11px] border border-[#d5d5da] rounded-[8px] px-2 py-1 text-[#626269] hover:bg-[#f5f5f7]">
+                  className="btn-pill btn-pill-gray">
                   Riwayat
                 </button>
                 {row.status === 'draft' && (
                   <>
                     <button onClick={() => { setSelected(row); setShowRevise(true); }}
-                      className="text-[11px] border border-[#d5d5da] rounded-[8px] px-2 py-1 text-[#0066cc] hover:bg-[#eaf3fe]">
+                      className="btn-pill btn-pill-blue">
                       Revisi
                     </button>
                     <button onClick={() => handleSubmitApproval(row)}
-                      className="text-[11px] border border-[#ff9500] rounded-[8px] px-2 py-1 text-[#ff9500] hover:bg-[#fff4e6]">
+                      className="btn-pill btn-pill-orange">
                       Ajukan
                     </button>
                   </>
                 )}
                 {row.status === 'pending_approval' && (
                   <button onClick={() => handleApprove(row)}
-                    className="text-[11px] border border-[#34c759] rounded-[8px] px-2 py-1 text-[#34c759] hover:bg-[#e8f5e9]">
+                    className="btn-pill btn-pill-green">
                     Setujui
                   </button>
                 )}
                 {row.status === 'approved' && (
                   <button onClick={() => handleConvert(row)}
-                    className="text-[11px] bg-[#1d1d1f] text-white rounded-[8px] px-2 py-1 hover:bg-[#3a3a3c]">
+                    className="btn-pill btn-pill-dark">
                     → Order
                   </button>
                 )}
@@ -294,7 +294,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
 
       <div className="mt-3">
         <button onClick={() => onExportCSV(filtered, 'sample_versions')}
-          className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:bg-[#f4f8fd] transition-colors">
+          className="btn-secondary">
           <LucideIcon name="download" className="w-4 h-4" /> Ekspor CSV
         </button>
       </div>
@@ -304,11 +304,11 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         footer={
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowCreate(false)}
-              className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#f4f8fd]">
+              className="btn-secondary">
               Batal
             </button>
             <button onClick={handleCreate}
-              className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#0066cc]">
+              className="btn-primary">
               Buat v1
             </button>
           </div>
@@ -341,11 +341,11 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         footer={
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowRevise(false)}
-              className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px]">
+              className="btn-secondary">
               Batal
             </button>
             <button onClick={handleRevise}
-              className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#0066cc]">
+              className="btn-primary">
               Buat Revisi
             </button>
           </div>
@@ -413,12 +413,12 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         footer={
           <div className="flex gap-3 justify-between">
             <button onClick={() => setEditComponents(c => [...c, { component_id: generateId(), ...EMPTY_COMPONENT }])}
-              className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-2 text-[13px] font-semibold hover:bg-[#eaf3fe]">
+              className="btn-secondary !py-2 !px-3">
               + Tambah Baris
             </button>
             <div className="flex gap-2">
               <button onClick={() => setShowCompModal(false)}
-                className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2 text-[13px]">
+                className="btn-secondary">
                 Batal
               </button>
               {selected?.status === 'draft' && (
@@ -488,7 +488,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         footer={
           <div className="flex gap-3 justify-between">
             <button onClick={() => setEditMaterials(m => [...m, { ...EMPTY_MATERIAL }])}
-              className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-2 text-[13px] font-semibold hover:bg-[#eaf3fe]">
+              className="btn-secondary !py-2 !px-3">
               + Tambah Baris
             </button>
             <div className="flex gap-2 items-center">
@@ -496,7 +496,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                 Total: Rp {editMaterials.reduce((s,m) => s + m.estimated_usage * m.unit_cost, 0).toLocaleString('id-ID')}
               </span>
               <button onClick={() => setShowMatModal(false)}
-                className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2 text-[13px]">
+                className="btn-secondary">
                 Batal
               </button>
               {selected?.status === 'draft' && (
@@ -567,3 +567,4 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
 };
 
 export default SampleVersionView;
+
