@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { LucideIcon } from '../components/Sidebar';
+import { generateId } from '../lib/uuid';
 import type { SampleVersion, GarmentComponent, MaterialEstimation } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
@@ -179,7 +180,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
     setSelected(sv);
     setEditComponents(sv.components?.length
       ? sv.components
-      : [{ component_id: crypto.randomUUID(), ...EMPTY_COMPONENT }]);
+      : [{ component_id: generateId(), ...EMPTY_COMPONENT }]);
     setShowCompModal(true);
   };
 
@@ -235,7 +236,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           { key: 'status',        label: 'Status', render: v => <Badge status={v} /> },
           {
             key: 'components', label: 'Komponen',
-            render: (v, row: SampleVersion) => (
+            render: (_v: unknown, row: SampleVersion) => (
               <button onClick={() => openComponents(row)}
                 className="text-[#0066cc] text-xs font-semibold hover:underline">
                 {row.components?.length ?? 0} komponen
@@ -244,7 +245,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           },
           {
             key: 'materials', label: 'Estimasi Bahan',
-            render: (v, row: SampleVersion) => (
+            render: (_v: unknown, row: SampleVersion) => (
               <button onClick={() => openMaterials(row)}
                 className="text-[#0066cc] text-xs font-semibold hover:underline">
                 Rp {totalCost(row.materials ?? []).toLocaleString('id-ID')}
@@ -253,7 +254,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           },
           {
             key: 'version_id', label: 'Aksi',
-            render: (v, row: SampleVersion) => (
+            render: (_v: unknown, row: SampleVersion) => (
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => openHistory(row)}
                   title="Riwayat versi"
@@ -411,7 +412,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         onClose={() => setShowCompModal(false)}
         footer={
           <div className="flex gap-3 justify-between">
-            <button onClick={() => setEditComponents(c => [...c, { component_id: crypto.randomUUID(), ...EMPTY_COMPONENT }])}
+            <button onClick={() => setEditComponents(c => [...c, { component_id: generateId(), ...EMPTY_COMPONENT }])}
               className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-3 py-2 text-[13px] font-semibold hover:bg-[#eaf3fe]">
               + Tambah Baris
             </button>

@@ -148,16 +148,18 @@ const DriftAnalysisView: React.FC = () => {
         <>
           {/* Risk score + trend */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: 'Risk Score',    value: `${analysis.risk_score}/100`,            highlight: analysis.risk_score > 70 },
-              { label: 'Total Drifts',  value: total,                                    highlight: false },
-              { label: 'Kritis',        value: sev.critical ?? 0,                        highlight: (sev.critical ?? 0) > 0 },
-              { label: 'Trend',         value: analysis.analysis?.trend ?? '—',          highlight: false,
-                extra: TREND_COLOR[analysis.analysis?.trend] ?? '' },
-            ].map(({ label, value, highlight, extra }) => (
+            {(
+              [
+                { label: 'Risk Score',   value: `${analysis.risk_score}/100`, highlight: analysis.risk_score > 70, trendCls: '' },
+                { label: 'Total Drifts', value: total,                         highlight: false,                    trendCls: '' },
+                { label: 'Kritis',       value: sev.critical ?? 0,             highlight: (sev.critical ?? 0) > 0, trendCls: '' },
+                { label: 'Trend',        value: analysis.analysis?.trend ?? '—', highlight: false,
+                  trendCls: TREND_COLOR[analysis.analysis?.trend as string] ?? 'text-[#1d1d1f]' },
+              ] as { label: string; value: string | number; highlight: boolean; trendCls: string }[]
+            ).map(({ label, value, highlight, trendCls }) => (
               <div key={label} className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
                 <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-2">{label}</p>
-                <p className={`text-[28px] font-semibold tracking-tight ${highlight ? 'text-[#ff3b30]' : (extra || 'text-[#1d1d1f]')}`}>
+                <p className={`text-[28px] font-semibold tracking-tight ${highlight ? 'text-[#ff3b30]' : (trendCls || 'text-[#1d1d1f]')}`}>
                   {String(value)}
                 </p>
               </div>

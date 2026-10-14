@@ -4,6 +4,22 @@ export default {
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
   ],
+  // Bug-fix #9: safelist runtime-constructed classes so Tailwind never purges them.
+  // These come from SEV_COLOR map in DriftAnalysisView and STATUS_STYLE maps.
+  safelist: [
+    // severity pill backgrounds / text used via variable lookup
+    'bg-[#e8f2ff]', 'text-[#0066cc]',
+    'bg-[#fff4e6]', 'text-[#ff9500]',
+    'bg-[#ffebee]', 'text-[#ff3b30]',
+    'bg-[#ff3b30]', 'text-white',
+    // status badge colours
+    'bg-[#e8f5e9]', 'text-[#34c759]',
+    'bg-[#f0f0f2]', 'text-[#626269]',
+    // border-left accent on study cards
+    'border-l-[#34c759]', 'border-l-[#ff9500]', 'border-l-[#0071e3]',
+    // trend text colours
+    'text-[#34c759]',
+  ],
   theme: {
     extend: {
       fontFamily: {
