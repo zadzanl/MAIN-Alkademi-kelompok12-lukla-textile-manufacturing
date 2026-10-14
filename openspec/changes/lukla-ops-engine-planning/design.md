@@ -31,12 +31,16 @@ Lukla Manufacturing manages contract garment production across three commercial 
 - **Alternatives Considered:** Application-layer checks only (rejected due to risk of bypass during batch operations or script execution).
 
 ### Decision 3: 8-Role RBAC Model with RLS Policy Enforcement
-- **Choice:** Implement 8 distinct roles (Owner, Sample Team, Warehouse, Production Head, Tailor, QC Inspector, Finance/Payroll, Maklon Client) backed by Supabase Row Level Security.
+- **Choice:** Plan 8 distinct roles (Owner, Sample Team, Warehouse, Production Head, Tailor, QC Inspector, Finance/Payroll, Maklon Client) backed by portable plain PostgreSQL Row Level Security, including `ENABLE` and `FORCE ROW LEVEL SECURITY` for tenant-scoped tables.
 - **Rationale:** Satisfies slide 04 governance where operators have read-only access to locked records, warehouse staff cannot issue mismatched materials, and clients only access records tagged with their `client_id`.
 
 ### Decision 4: Six Capability Modular Specification Architecture
 - **Choice:** Group the 20 FRs into 6 cohesive domain capabilities in `specs/`.
 - **Rationale:** Mirrors the 6-phase operational workflow and provides modular testability for acceptance scenarios.
+
+### Decision 5: Phase C parallelization and verification integration
+- **Choice:** Use `artifacts/18-parallelization-and-workstreams.md` as the dependency and branch-boundary plan for four developer workstreams, then integrate root OpenSpec deltas and the traceability verifier in a single review handoff.
+- **Rationale:** Makes exact operation/database/artifact dependencies explicit without claiming runtime evidence or allowing unresolved business defaults to become production behavior.
 
 ## Risks / Trade-offs
 
