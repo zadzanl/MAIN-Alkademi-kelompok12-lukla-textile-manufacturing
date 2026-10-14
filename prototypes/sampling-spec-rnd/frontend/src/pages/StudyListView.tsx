@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import { LucideIcon } from '../components/Sidebar';
-import type { TimeStudy } from '../types';
+import type { TimeStudy, ExportCSV } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
 
@@ -19,20 +19,16 @@ const STATUS_STYLE: Record<string, string> = {
   archived:    'bg-[#f0f0f2] text-[#626269]',
 };
 
-interface Props { onExportCSV: (data: any[], filename: string) => void; }
+interface Props { onExportCSV: ExportCSV; }
 
 const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
   const [studies, setStudies] = useState<TimeStudy[]>([]);
   const [tab, setTab]         = useState('all');
   const [search, setSearch]   = useState('');
-  const [loading, setLoading] = useState(false);
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await fetch(`${API}/studies/all?tenant_id=tenant-001`);
-      if (r.ok) { const j = await r.json(); setStudies(j.data ?? []); }
-    } finally { setLoading(false); }
+    const r = await fetch(`${API}/studies/all?tenant_id=tenant-001`);
+    if (r.ok) { const j = await r.json(); setStudies(j.data ?? []); }
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -72,16 +68,16 @@ const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
         searchValue={search}
         onSearchChange={setSearch}
         columns={[
-          { key: 'study_id',     label: 'ID',         render: v => <code className="text-xs text-[#6e6e73]">{v.substring(0,8)}</code> },
+          { key: 'study_id',     label: 'ID',         render: v => <code className="text-xs text-[#6e6e73]">{String(v).substring(0,8)}</code> },
           { key: 'process_name', label: 'Proses' },
-          { key: 'operator_id',  label: 'Operator',   render: v => v || '—' },
+          { key: 'operator_id',  label: 'Operator',   render: v => v ? String(v) : '—' },
           { key: 'status',       label: 'Status',
-            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[v]??'bg-[#f0f0f2] text-[#626269]'}`}>{v}</span> },
-          { key: 'total_cycles', label: 'Siklus',     render: (v, row: TimeStudy) => `${v??0}/${row.target_sample_size}` },
-          { key: 'mean_cycle_time', label: 'Rata-rata', render: v => fmtMs(v) },
-          { key: 'std_dev_cycle_time', label: 'Std. Dev', render: v => fmtMs(v) },
+            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[String(v)]??'bg-[#f0f0f2] text-[#626269]'}`}>{String(v)}</span> },
+          { key: 'total_cycles', label: 'Siklus',     render: (v, row: TimeStudy) => `${Number(v ?? 0)}/${row.target_sample_size}` },
+          { key: 'mean_cycle_time', label: 'Rata-rata', render: v => fmtMs(Number(v)) },
+          { key: 'std_dev_cycle_time', label: 'Std. Dev', render: v => fmtMs(Number(v)) },
           { key: 'created_at',   label: 'Dibuat',
-            render: v => new Date(v).toLocaleDateString('id-ID') },
+            render: v => new Date(String(v)).toLocaleDateString('id-ID') },
         ]}
         data={filtered}
         emptyMessage="Tidak ada studi yang cocok. Buat studi baru melalui menu Studi Waktu atau Stopwatch."

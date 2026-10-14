@@ -8,7 +8,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { LucideIcon } from '../components/Sidebar';
 import { generateId } from '../lib/uuid';
-import type { SampleVersion, GarmentComponent, MaterialEstimation } from '../types';
+import type { SampleVersion, GarmentComponent, MaterialEstimation, ExportCSV } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
 
@@ -32,7 +32,7 @@ const Badge: React.FC<{ status: string }> = ({ status }) => (
 );
 
 interface Props {
-  onExportCSV: (data: any[], filename: string) => void;
+  onExportCSV: ExportCSV;
 }
 
 const EMPTY_COMPONENT: Omit<GarmentComponent, 'component_id'> = {
@@ -48,7 +48,6 @@ const EMPTY_MATERIAL: MaterialEstimation = {
 const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
   const [versions, setVersions]           = useState<SampleVersion[]>([]);
   const [selected, setSelected]           = useState<SampleVersion | null>(null);
-  const [loading, setLoading]             = useState(false);
   const [tab, setTab]                     = useState('all');
   const [search, setSearch]               = useState('');
 
@@ -74,15 +73,10 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
   // ── fetch ──────────────────────────────────────────────────────────
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await fetch(`${API}/sample-versions/all?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        setVersions(j.data ?? []);
-      }
-    } finally {
-      setLoading(false);
+    const r = await fetch(`${API}/sample-versions/all?tenant_id=tenant-001`);
+    if (r.ok) {
+      const j = await r.json();
+      setVersions(j.data ?? []);
     }
   }, []);
 
@@ -233,7 +227,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           { key: 'article_name',  label: 'Nama' },
           { key: 'client_id',     label: 'Client' },
           { key: 'version_label', label: 'Versi' },
-          { key: 'status',        label: 'Status', render: v => <Badge status={v} /> },
+          { key: 'status',        label: 'Status', render: v => <Badge status={String(v)} /> },
           {
             key: 'components', label: 'Komponen',
             render: (_v: unknown, row: SampleVersion) => (
@@ -314,14 +308,14 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           </div>
         }>
         <div className="space-y-4">
-          {[
+          {([
             { id: 'article_id',   label: 'Kode Artikel *',  ph: 'e.g. ART-001' },
             { id: 'article_name', label: 'Nama Artikel *',  ph: 'e.g. Kaos Polos Snøhund' },
             { id: 'client_id',    label: 'Client ID *',     ph: 'e.g. snohund' },
-          ].map(({ id, label, ph }) => (
+          ] as { id: keyof typeof form; label: string; ph: string }[]).map(({ id, label, ph }) => (
             <div key={id}>
               <label className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
-              <input value={(form as any)[id]} placeholder={ph}
+              <input value={form[id]} placeholder={ph}
                 onChange={e => setForm(f => ({ ...f, [id]: e.target.value }))}
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>

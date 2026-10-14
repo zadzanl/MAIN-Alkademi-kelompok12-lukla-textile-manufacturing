@@ -358,14 +358,14 @@ const DigitalStopwatchView: React.FC = () => {
               <div className="mt-4 p-4 bg-[#f5f5f7] rounded-[12px] space-y-3">
                 <p className="text-xs font-semibold text-[#6e6e73] uppercase tracking-wider">Buat Studi Baru</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {[
+                  {([
                     { id: 'process_id',   label: 'ID Proses', ph: 'PROC-001' },
                     { id: 'process_name', label: 'Nama Proses', ph: 'Pasang Kerah' },
                     { id: 'operator_id',  label: 'ID Operator', ph: 'OPR-001' },
-                  ].map(({ id, label, ph }) => (
+                  ] as { id: 'process_id' | 'process_name' | 'operator_id'; label: string; ph: string }[]).map(({ id, label, ph }) => (
                     <div key={id} className={id === 'process_name' ? 'col-span-2' : ''}>
                       <label className="block text-xs text-[#6e6e73] mb-1">{label}</label>
-                      <input value={(newStudyForm as any)[id]} placeholder={ph}
+                      <input value={newStudyForm[id]} placeholder={ph}
                         onChange={e => setNewStudyForm(f => ({ ...f, [id]: e.target.value }))}
                         className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-[#80baff]" />
                     </div>

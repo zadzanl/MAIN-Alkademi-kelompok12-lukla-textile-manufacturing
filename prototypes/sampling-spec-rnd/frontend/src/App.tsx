@@ -35,8 +35,10 @@ import SpecListView        from './pages/SpecListView';
 import DriftAnalysisView   from './pages/DriftAnalysisView';
 import ReportsView         from './pages/ReportsView';
 import LedgerView          from './pages/LedgerView';
+import QualityView         from './pages/QualityView';
+import PayrollView         from './pages/PayrollView';
 
-import type { TimeStudy, SpecVersion, WorkflowSummary } from './types';
+import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
 
 // ─── Shared form helper — hoisted outside App to avoid remount on every render
 // Bug-fix #8
@@ -146,8 +148,10 @@ function App() {
     { id: 'spec-versions',   label: 'Versi Spec',        icon: 'badge-check',      view: 'spec-versions' },
     { id: 'spec-list',       label: 'Daftar Spec',       icon: 'bar-chart-3',      view: 'spec-list' },
     { id: 'drift-analysis',  label: 'Analisis Drift',    icon: 'activity',         view: 'drift-analysis' },
+    { id: 'quality',         label: 'Quality Control',   icon: 'check-circle',     view: 'quality' },
     { id: 'reports',         label: 'Laporan',           icon: 'bar-chart-3',      view: 'reports' },
     { id: 'ledger',          label: 'Buku Besar',        icon: 'book-open',        view: 'ledger' },
+    { id: 'payroll',         label: 'Payroll & Costing', icon: 'factory',          view: 'payroll' },
     { id: 'settings',        label: 'Pengaturan',        icon: 'settings',         view: 'settings' },
   ];
 
@@ -233,16 +237,17 @@ function App() {
 
   // ── CSV export (UTF-8 BOM) ────────────────────────────────────────────────────
 
-  const exportToCSV = (data: any[], filename: string) => {
+  const exportToCSV: ExportCSV = (data, filename) => {
     if (!data.length) { alert('Tidak ada data untuk diekspor.'); return; }
-    const headers = Object.keys(data[0]);
-    const rows = data.map(row =>
-      headers.map(h => {
+    const headers = Object.keys(data[0] as Record<string, unknown>);
+    const rows = data.map(item => {
+      const row = item as Record<string, unknown>;
+      return headers.map(h => {
         const v = row[h];
         const s = typeof v === 'object' ? JSON.stringify(v) : String(v ?? '');
         return `"${s.replace(/"/g, '""')}"`;
-      }).join(',')
-    );
+      }).join(',');
+    });
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + [headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
@@ -424,8 +429,8 @@ function App() {
                   searchValue={studySearch} onSearchChange={setStudySearch}
                   columns={[
                     { key:'process_name', label:'Proses' },
-                    { key:'status',       label:'Status', render: v => badge(v) },
-                    { key:'total_cycles', label:'Siklus',  render: (v, row: TimeStudy) => `${v??0}/${row.target_sample_size}` },
+                    { key:'status',       label:'Status', render: v => badge(String(v)) },
+                    { key:'total_cycles', label:'Siklus',  render: (v, row: TimeStudy) => `${Number(v??0)}/${row.target_sample_size}` },
                   ]}
                   data={filteredStudies.slice(0,5)}
                 />
@@ -437,7 +442,7 @@ function App() {
                   columns={[
                     { key:'spec_name',      label:'Nama Spec' },
                     { key:'version_number', label:'Versi' },
-                    { key:'status',         label:'Status', render: v => badge(v) },
+                    { key:'status',         label:'Status', render: v => badge(String(v)) },
                   ]}
                   data={filteredSpecs.slice(0,5)}
                 />
@@ -476,12 +481,12 @@ function App() {
                 activeTab={studyTab} onTabChange={setStudyTab}
                 searchValue={studySearch} onSearchChange={setStudySearch}
                 columns={[
-                  { key:'study_id',    label:'ID',        render: v => <code className="text-xs text-[#6e6e73]">{v.substring(0,8)}</code> },
+                  { key:'study_id',    label:'ID',        render: v => <code className="text-xs text-[#6e6e73]">{String(v).substring(0,8)}</code> },
                   { key:'process_name', label:'Proses' },
-                  { key:'status',       label:'Status',   render: v => badge(v) },
-                  { key:'total_cycles', label:'Siklus',   render: (v, row:TimeStudy) => `${v??0}/${row.target_sample_size}` },
-                  { key:'mean_cycle_time', label:'Rata-rata (ms)', render: v => v ? Math.round(v).toLocaleString('id-ID') : '—' },
-                  { key:'created_at',   label:'Dibuat',   render: v => new Date(v).toLocaleDateString('id-ID') },
+                  { key:'status',       label:'Status',   render: v => badge(String(v)) },
+                  { key:'total_cycles', label:'Siklus',   render: (v, row:TimeStudy) => `${Number(v??0)}/${row.target_sample_size}` },
+                  { key:'mean_cycle_time', label:'Rata-rata (ms)', render: v => Number(v) ? Math.round(Number(v)).toLocaleString('id-ID') : '—' },
+                  { key:'created_at',   label:'Dibuat',   render: v => new Date(String(v)).toLocaleDateString('id-ID') },
                 ]}
                 data={filteredStudies}
               />
@@ -514,14 +519,14 @@ function App() {
                 activeTab={specTab} onTabChange={setSpecTab}
                 searchValue={specSearch} onSearchChange={setSpecSearch}
                 columns={[
-                  { key:'version_id',    label:'ID',           render: v => <code className="text-xs text-[#6e6e73]">{v.substring(0,8)}</code> },
+                  { key:'version_id',    label:'ID',           render: v => <code className="text-xs text-[#6e6e73]">{String(v).substring(0,8)}</code> },
                   { key:'spec_name',     label:'Nama Spec' },
                   { key:'version_number',label:'Versi' },
-                  { key:'status',        label:'Status',       render: v => badge(v) },
-                  { key:'total_drifts',  label:'Drifts',       render: v => v ?? 0 },
+                  { key:'status',        label:'Status',       render: v => badge(String(v)) },
+                  { key:'total_drifts',  label:'Drifts',       render: v => Number(v ?? 0) },
                   { key:'critical_drifts',label:'Kritis',
-                    render: v => <span className={v>0?'text-[#ff3b30] font-semibold':''}>{v??0}</span> },
-                  { key:'created_at',    label:'Dibuat',       render: v => new Date(v).toLocaleDateString('id-ID') },
+                    render: v => { const n = Number(v); return <span className={n>0?'text-[#ff3b30] font-semibold':''}>{n}</span>; } },
+                  { key:'created_at',    label:'Dibuat',       render: v => new Date(String(v)).toLocaleDateString('id-ID') },
                 ]}
                 data={filteredSpecs}
               />
@@ -542,8 +547,14 @@ function App() {
           {/* ── REPORTS ───────────────────────────────────────────────────────── */}
           {currentView === 'reports' && <ReportsView onExportCSV={exportToCSV} />}
 
+          {/* ── QUALITY CONTROL ───────────────────────────────────────────────── */}
+          {currentView === 'quality' && <QualityView />}
+
           {/* ── LEDGER ────────────────────────────────────────────────────────── */}
           {currentView === 'ledger' && <LedgerView />}
+
+          {/* ── PAYROLL & COSTING ─────────────────────────────────────────────── */}
+          {currentView === 'payroll' && <PayrollView />}
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (

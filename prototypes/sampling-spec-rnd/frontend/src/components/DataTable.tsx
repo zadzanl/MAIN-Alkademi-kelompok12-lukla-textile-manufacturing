@@ -6,26 +6,31 @@ import React from 'react';
 import { LucideIcon } from './Sidebar';
 
 interface Tab    { id: string; label: string; }
-interface Column { key: string; label: string; render?: (value: any, row: any) => React.ReactNode; }
+export interface Column<T> {
+  key: Extract<keyof T, string>;
+  label: string;
+  render?: (value: unknown, row: T) => React.ReactNode;
+}
 
-interface DataTableProps {
+interface DataTableProps<T> {
   title: string;
   subtitle: string;
   tabs: Tab[];
   activeTab: string;
   onTabChange: (id: string) => void;
-  columns: Column[];
-  data: any[];
+  columns: Column<T>[];
+  data: T[];
   searchValue: string;
   onSearchChange: (v: string) => void;
   emptyMessage?: string;
 }
 
-const DataTable: React.FC<DataTableProps> = ({
+function DataTable<T>({
   title, subtitle, tabs, activeTab, onTabChange,
   columns, data, searchValue, onSearchChange,
   emptyMessage = 'Tidak ada data yang cocok.',
-}) => (
+}: DataTableProps<T>) {
+  return (
   <section className="surface bg-white border border-[#e2e8f0] rounded-[18px] overflow-hidden mb-4">
     {/* Header row */}
     <div className="p-5 flex flex-col lg:flex-row lg:justify-between gap-4 border-b border-[#f1f5f9]">
@@ -77,7 +82,7 @@ const DataTable: React.FC<DataTableProps> = ({
                 {columns.map(col => (
                   <td key={col.key} className="px-4 py-3 whitespace-nowrap">
                     {col.render ? col.render(row[col.key], row) : (
-                      <span className="text-[#334155]">{row[col.key]}</span>
+                      <span className="text-[#334155]">{row[col.key] as React.ReactNode}</span>
                     )}
                   </td>
                 ))}
@@ -92,6 +97,7 @@ const DataTable: React.FC<DataTableProps> = ({
       </p>
     )}
   </section>
-);
+  );
+}
 
 export default DataTable;
