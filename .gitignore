@@ -1,6 +1,5 @@
 # ==========================================
-# Next.js / Node.js
-# Source: https://github.com/github/gitignore/blob/main/Nextjs.gitignore
+# Vite / Node.js
 # ==========================================
 # dependencies
 /node_modules
@@ -9,10 +8,6 @@
 
 # testing
 /coverage
-
-# next.js
-/.next/
-/out/
 
 # production
 /build
@@ -30,12 +25,8 @@ yarn-error.log*
 .env*.local
 .env
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 # ==========================================
 # Python (Backend / Scripts)
