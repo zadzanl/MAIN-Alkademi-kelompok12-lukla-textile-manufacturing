@@ -1,6 +1,12 @@
 /**
  * Type definitions for Sampling & Spec R&D
+ * Includes: TimeStudy, SpecVersion, SampleVersion, WorkflowSummary
  */
+import React from 'react';
+
+// ─────────────────────────────────────────────
+// TIME STUDY
+// ─────────────────────────────────────────────
 
 export interface TimeSample {
   sample_id: string;
@@ -52,6 +58,10 @@ export interface TimeStudyStats {
   confidence_level: number;
   allowance_percent: number;
 }
+
+// ─────────────────────────────────────────────
+// SPEC VERSION
+// ─────────────────────────────────────────────
 
 export interface SpecChange {
   change_id: string;
@@ -113,6 +123,77 @@ export interface DriftAnalysis {
   parameters_with_drift: number;
 }
 
+// ─────────────────────────────────────────────
+// SAMPLE VERSION  (new — v1/v2/v3 article versioning per PRD)
+// ─────────────────────────────────────────────
+
+/** One sewn component (kerah, lengan, badan depan, badan belakang, etc.) */
+export interface GarmentComponent {
+  component_id: string;          // local UUID for keying
+  part_name: string;             // e.g. "Kerah", "Lengan Kiri"
+  description: string;           // technical description / construction notes
+  material_type: string;         // e.g. "Cotton Combed 30s"
+  estimated_usage_m: number;     // metres of fabric estimated
+  unit: string;                  // "m", "pcs", "yard"
+  sewing_time_std_ms: number;    // standard time from time study (ms)
+  rate_card_idr: number;         // derived rate card (IDR per piece)
+  notes: string;
+}
+
+/** One material line for BOM (Bill of Materials) estimation */
+export interface MaterialEstimation {
+  material_code: string;         // e.g. "FAB-CTN-30S"
+  material_name: string;         // e.g. "Cotton Combed 30s"
+  estimated_usage: number;
+  unit: string;                  // "m", "kg", "pcs"
+  unit_cost: number;             // IDR per unit
+  total_cost: number;            // estimated_usage × unit_cost
+  supplier_id: string;
+  notes: string;
+}
+
+/** Immutable event in the revision log */
+export interface RevisionLogEntry {
+  action:
+    | 'created'
+    | 'revised'
+    | 'submitted_for_approval'
+    | 'approved'
+    | 'converted_to_order'
+    | 'components_updated'
+    | 'materials_updated';
+  by: string;
+  at: string;   // ISO timestamp
+  note: string;
+}
+
+/** Full sample version record */
+export interface SampleVersion {
+  version_id: string;
+  tenant_id: string;
+  article_id: string;            // stable SKU / article code
+  article_name: string;
+  client_id: string;             // e.g. "snohund" or external brand ID
+  version_number: number;        // 1, 2, 3 …
+  version_label: string;         // "v1", "v2", "v3" …
+  parent_version_id: string | null;
+  status: 'draft' | 'pending_approval' | 'approved' | 'converted';
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  converted_to_order_id: string | null;
+  notes: string;
+  components: GarmentComponent[];
+  materials: MaterialEstimation[];
+  revision_log: RevisionLogEntry[];
+}
+
+// ─────────────────────────────────────────────
+// WORKFLOW SUMMARY
+// ─────────────────────────────────────────────
+
 export interface WorkflowSummary {
   active_studies: number;
   completed_studies: number;
@@ -120,9 +201,15 @@ export interface WorkflowSummary {
   specs_in_review: number;
   total_drifts: number;
   critical_drifts: number;
+  total_sample_versions: number;
+  pending_approval: number;
+  converted_to_order: number;
 }
 
-// Component Props
+// ─────────────────────────────────────────────
+// COMPONENT PROPS
+// ─────────────────────────────────────────────
+
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
