@@ -6,7 +6,30 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Display"',
+          '"SF Pro Text"',
+          '"Segoe UI"',
+          '"Helvetica Neue"',
+          'sans-serif',
+        ],
+      },
       colors: {
+        // Apple System Colors
+        apple: {
+          gray6: '#F2F2F7',      // System Gray 6 (background)
+          gray5: '#E5E5EA',      // System Gray 5
+          gray4: '#D1D1D6',      // System Gray 4
+          gray3: '#C7C7CC',      // System Gray 3
+          gray2: '#AEAEB2',      // System Gray 2
+          gray: '#8E8E93',       // System Gray
+          label: '#000000',      // Label (dark text)
+          secondary: '#3C3C43',  // Secondary label
+          tertiary: '#3C3C4399', // Tertiary label
+        },
         primary: {
           50: '#f5f3ff',
           100: '#ede9fe',
@@ -25,10 +48,11 @@ export default {
           200: 'rgba(255, 255, 255, 0.7)',
         },
         accent: {
-          blue: '#3b82f6',
-          green: '#10b981',
-          orange: '#f97316',
-          red: '#ef4444',
+          blue: '#007AFF',    // Apple blue
+          green: '#34C759',   // Apple green
+          orange: '#FF9500',  // Apple orange
+          red: '#FF3B30',     // Apple red
+          purple: '#AF52DE',  // Apple purple
         },
       },
       spacing: {

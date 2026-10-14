@@ -8,18 +8,18 @@ import { CardProps } from '@/types';
 
 export const Card = memo<CardProps>(
   ({ variant = 'default', className = '', children, ...props }) => {
-    const baseClasses = 'rounded-xl transition-all duration-200';
+    const baseClasses = 'rounded-2xl transition-all duration-200';
 
     const variantClasses = {
       default:
-        'bg-white/80 backdrop-blur-md border border-white/20 ' +
-        'shadow-lg hover:shadow-xl hover:bg-white/90',
+        'bg-white backdrop-blur-md border border-gray-100 ' +
+        'shadow-sm hover:shadow-md',
       glass:
-        'bg-white/60 backdrop-blur-lg border border-white/30 ' +
-        'shadow-glass',
+        'bg-white/85 backdrop-blur-xl border border-white/20 ' +
+        'shadow-lg',
       outlined:
-        'bg-transparent border-2 border-purple-200 ' +
-        'hover:border-purple-400 hover:bg-purple-50/50',
+        'bg-transparent border border-gray-200 ' +
+        'hover:border-gray-300 hover:bg-white/50',
     };
 
     return (
