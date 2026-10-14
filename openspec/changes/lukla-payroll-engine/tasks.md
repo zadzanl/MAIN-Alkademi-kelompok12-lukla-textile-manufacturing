@@ -4,9 +4,11 @@ Nothing in this checklist is implemented yet. Every task starts unchecked; a tas
 
 ## 1. Scaffold and CI Gate
 
+Implemented on branch `chore/hygiene-allow-backend`; tick these boxes once that branch merges, since root artifacts are integrated after workstream review.
+
 - [ ] 1.1 Extend `scripts/check_workspace_hygiene.py` `ALLOWED_ROOT_DIRS` with `backend` and document the reason inline.
 - [ ] 1.2 Create `backend/payroll-costing/` with `README.md`, `API_CONTRACTS.md`, and the `src/{models,services,utils,api}` layout named in `docs/MODULES_ARCHITECTURE.md`.
-- [ ] 1.3 Add a payroll CI job (ruff, mypy --strict, pytest) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job.
+- [ ] 1.3 Add a payroll CI job (ruff check, ruff format --check, mypy --strict) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job; pytest joins this job when the test suite lands in phase 6.
 - [ ] 1.4 Verify: `python scripts/check_workspace_hygiene.py` exits 0 with the module present, and the new CI job fails on a deliberately broken lint input, then passes once reverted.
 
 ## 2. Recorded Design Decisions Before DDL
