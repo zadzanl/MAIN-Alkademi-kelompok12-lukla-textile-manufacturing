@@ -3,7 +3,7 @@ Main FastAPI Application
 Sampling & Spec R&D Module
 """
 
-import os
+from typing import Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,13 +39,13 @@ app.include_router(router)
 
 # Health check endpoint (at root level for backward compatibility)
 @app.get("/health")
-def health_check():
+def health_check() -> Dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy", "service": "sampling-spec-rnd-api"}
 
 # Health check endpoint (also at API level for frontend)
 @app.get("/api/sampling-spec-rnd/health")
-def health_check_api():
+def health_check_api() -> Dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy", "service": "sampling-spec-rnd-api"}
 
