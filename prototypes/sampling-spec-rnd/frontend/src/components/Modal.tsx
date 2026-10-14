@@ -1,8 +1,7 @@
 /**
- * Modal Component — Dialog Overlay
- * Matches Garment Backoffice HTML template design
+ * Modal — slide-up dialog with backdrop blur
+ * Animated entry, high-contrast title, close button with hover ring
  */
-
 import React, { useEffect } from 'react';
 import { LucideIcon } from './Sidebar';
 
@@ -15,73 +14,49 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer }) => {
-  // Handle Escape key
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && isOpen) onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="modal-backdrop fixed inset-0 bg-[#17171b80] flex items-center justify-center p-4 sm:p-6 z-50"
-      onClick={(e) => {
-        // Close on backdrop click
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      className="modal-backdrop fixed inset-0 flex items-center justify-center p-4 z-50"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        className="surface bg-white border border-[#e6e6e9] rounded-[18px] w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        role="dialog" aria-modal="true" aria-labelledby="modal-title"
+        className="bg-white border border-[#e2e8f0] rounded-[20px] w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Title row */}
         <div className="flex justify-between items-center mb-5">
-          <h2
-            id="modal-title"
-            className="text-[17px] font-semibold tracking-[-0.02em] text-[#1d1d1f]"
-          >
+          <h2 id="modal-title" className="text-[17px] font-bold text-[#0f172a] tracking-tight">
             {title}
           </h2>
           <button
-            type="button"
-            aria-label="Tutup formulir"
+            type="button" aria-label="Tutup"
             onClick={onClose}
-            className="secondary border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] p-2 hover:bg-[#f4f8fd] transition-colors"
+            className="w-8 h-8 rounded-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center
+                       hover:bg-[#fee2e2] hover:text-[#dc2626] transition-all duration-150 active:scale-90"
           >
             <LucideIcon name="x" className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content */}
+        {/* Body */}
         <div>{children}</div>
 
-        {/* Footer (optional) */}
-        {footer && <div className="mt-4">{footer}</div>}
+        {/* Footer */}
+        {footer && <div className="mt-5 pt-4 border-t border-[#f1f5f9]">{footer}</div>}
       </div>
     </div>
   );

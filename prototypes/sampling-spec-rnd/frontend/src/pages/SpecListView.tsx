@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SpecListView — Full list of spec versions with action buttons
  */
 
@@ -99,24 +99,24 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
             render: (_, row: SpecVersion) => (
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => openDetail(row)}
-                  className="text-[11px] border border-[#d5d5da] rounded-[8px] px-2 py-1 text-[#626269] hover:bg-[#f5f5f7]">
+                  className="btn-pill btn-pill-gray">
                   Detail
                 </button>
                 {row.status === 'draft' && (
                   <button onClick={() => doAction(row, 'submit-review', { reviewer_id: 'reviewer-001' })}
-                    className="text-[11px] border border-[#ff9500] rounded-[8px] px-2 py-1 text-[#ff9500] hover:bg-[#fff4e6]">
+                    className="btn-pill btn-pill-orange">
                     Submit Review
                   </button>
                 )}
                 {row.status === 'review' && (
                   <button onClick={() => doAction(row, 'approve', { approver_id: 'manager-001' })}
-                    className="text-[11px] border border-[#34c759] rounded-[8px] px-2 py-1 text-[#34c759] hover:bg-[#e8f5e9]">
+                    className="btn-pill btn-pill-green">
                     Setujui
                   </button>
                 )}
                 {row.status === 'approved' && (
                   <button onClick={() => doAction(row, 'activate')}
-                    className="text-[11px] bg-[#0071e3] text-white rounded-[8px] px-2 py-1 hover:bg-[#0066cc]">
+                    className="btn-pill btn-pill-dark !bg-[#0071e3]">
                     Aktifkan
                   </button>
                 )}
@@ -129,7 +129,7 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
       />
 
       <button onClick={() => onExportCSV(filtered, 'spec_list')}
-        className="border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:bg-[#f4f8fd]">
+        className="btn-secondary">
         <LucideIcon name="download" className="w-4 h-4" /> Ekspor CSV
       </button>
 
@@ -189,3 +189,4 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
 };
 
 export default SpecListView;
+

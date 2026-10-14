@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DriftAnalysisView — Drift severity chart + record & resolve corrective actions
  */
 
@@ -113,7 +113,7 @@ const DriftAnalysisView: React.FC = () => {
         </div>
         {selectedId && (
           <button onClick={() => setShowRecord(true)}
-            className="bg-[#ff3b30] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#cc2200] inline-flex items-center gap-2">
+            className="btn-danger">
             <LucideIcon name="plus" className="w-4 h-4" /> Catat Drift Baru
           </button>
         )}
@@ -259,7 +259,7 @@ const DriftAnalysisView: React.FC = () => {
                           <td className="px-4 py-3">
                             {!d.resolved && (
                               <button onClick={() => { setResolveDriftId(d.drift_id); setShowResolve(true); }}
-                                className="text-xs border border-[#34c759] rounded-[8px] px-2 py-1 text-[#34c759] hover:bg-[#e8f5e9]">
+                                className="btn-pill btn-pill-green">
                                 Resolve
                               </button>
                             )}
@@ -288,7 +288,7 @@ const DriftAnalysisView: React.FC = () => {
             <button onClick={() => setShowRecord(false)}
               className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
             <button onClick={handleRecordDrift}
-              className="bg-[#ff3b30] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#cc2200]">Catat Drift</button>
+              className="btn-danger">Catat Drift</button>
           </div>
         }>
         <div className="space-y-4">
@@ -336,7 +336,7 @@ const DriftAnalysisView: React.FC = () => {
             <button onClick={() => setShowResolve(false)}
               className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
             <button onClick={handleResolveDrift}
-              className="bg-[#34c759] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#2aae4e]">Resolve</button>
+              className="btn-success">Resolve</button>
           </div>
         }>
         <div>
@@ -352,3 +352,4 @@ const DriftAnalysisView: React.FC = () => {
 };
 
 export default DriftAnalysisView;
+

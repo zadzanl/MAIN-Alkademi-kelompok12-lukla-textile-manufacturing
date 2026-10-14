@@ -234,13 +234,27 @@ function App() {
   };
 
   const badge = (status: string) => {
-    const map: Record<string,string> = {
-      draft:'bg-[#e8f2ff] text-[#0066cc]', in_progress:'bg-[#fff4e6] text-[#ff9500]',
-      paused:'bg-[#f0f0f2] text-[#626269]', completed:'bg-[#e8f5e9] text-[#34c759]',
-      review:'bg-[#fff4e6] text-[#ff9500]', approved:'bg-[#e8f5e9] text-[#34c759]',
-      active:'bg-[#e8f5e9] text-[#34c759]', superseded:'bg-[#f0f0f2] text-[#626269]',
+    const cls: Record<string, string> = {
+      draft:      'pill pill-blue',
+      in_progress:'pill pill-orange',
+      paused:     'pill pill-gray',
+      completed:  'pill pill-green',
+      review:     'pill pill-orange',
+      approved:   'pill pill-green',
+      active:     'pill pill-green',
+      superseded: 'pill pill-gray',
+      converted:  'pill pill-gray',
     };
-    return <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${map[status]??'bg-[#f0f0f2] text-[#626269]'}`}>{status}</span>;
+    const LABEL: Record<string, string> = {
+      draft:'Draft', in_progress:'Berjalan', paused:'Pause',
+      completed:'Selesai', review:'Review', approved:'Disetujui',
+      active:'Aktif', superseded:'Digantikan', converted:'Dikonversi',
+    };
+    return (
+      <span className={cls[status] ?? 'pill pill-gray'}>
+        {LABEL[status] ?? status}
+      </span>
+    );
   };
 
   // ── computed ──────────────────────────────────────────────────────────────────
@@ -297,9 +311,9 @@ function App() {
   const currentLabel = navItems.find(n => n.view === currentView)?.label ?? 'Overview';
 
   // ── shared style constants ────────────────────────────────────────────────────
-  const inputCls = "w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]";
-  const btnPrimary = "bg-[#0071e3] text-white rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#0066cc] transition-colors";
-  const btnSecondary = "border border-[#d5d5da] bg-white text-[#0066cc] rounded-[10px] px-4 py-2.5 font-semibold text-[13px] hover:bg-[#f4f8fd] transition-colors";
+  const inputCls  = "w-full rounded-[10px] px-3 py-2.5 text-[13px]";
+  const btnPrimary   = "btn-primary";
+  const btnSecondary = "btn-secondary";
 
   // ── render ────────────────────────────────────────────────────────────────────
 
