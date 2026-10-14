@@ -19,6 +19,10 @@ export default {
     'border-l-[#34c759]', 'border-l-[#ff9500]', 'border-l-[#0071e3]',
     // trend text colours
     'text-[#34c759]',
+    // dark mode overrides for hardcoded hex classes
+    'dark:bg-[#1e293b]', 'dark:bg-[#263447]', 'dark:bg-[#0f172a]',
+    'dark:border-[#334155]', 'dark:border-[#475569]',
+    'dark:text-[#f1f5f9]', 'dark:text-[#cbd5e1]', 'dark:text-[#94a3b8]',
   ],
   theme: {
     extend: {

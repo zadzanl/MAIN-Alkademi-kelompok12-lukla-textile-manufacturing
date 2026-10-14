@@ -2,6 +2,7 @@
  * Sidebar — fixed 226px navigation, scrollable, 11 nav items
  * Bug-fix #4: added overflow-y-auto so items never clip on small screens.
  * Exports LucideIcon for use in pages.
+ * Dark mode toggle button added at the bottom.
  */
 import React from 'react';
 
@@ -16,14 +17,25 @@ interface SidebarProps {
   currentView: string;
   navItems: NavItem[];
   onNavigate: (view: string) => void;
+  isDark: boolean;
+  onToggleDark: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, navItems, onNavigate }) => (
-  <aside className="flex flex-col w-[226px] flex-none bg-white border-r border-[#e6e6e9]"
-         style={{ height: '100vh' }}>
+const Sidebar: React.FC<SidebarProps> = ({ currentView, navItems, onNavigate, isDark, onToggleDark }) => (
+  <aside
+    className="flex flex-col w-[226px] flex-none border-r"
+    style={{
+      height: '100vh',
+      background: isDark ? '#0a0a0a' : '#ffffff',
+      borderColor: isDark ? '#262626' : '#e6e6e9',
+    }}
+  >
     {/* Brand — fixed at top */}
     <div className="px-6 pt-6 pb-4 shrink-0">
-      <div className="w-9 h-9 rounded-xl bg-[#1d1d1f] text-white flex items-center justify-center mb-4">
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
+        style={{ background: isDark ? '#3b9eff' : '#1d1d1f', color: '#fff' }}
+      >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
@@ -31,33 +43,79 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, navItems, onNavigate }) 
           <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
         </svg>
       </div>
-      <p className="text-[10px] uppercase tracking-[.16em] font-semibold text-[#6e6e73]">
+      <p className="text-[10px] uppercase tracking-[.16em] font-semibold" style={{ color: isDark ? '#64748b' : '#6e6e73' }}>
         LUKLA · R&amp;D
       </p>
     </div>
 
     {/* Nav — scrollable so all 11 items are always reachable */}
-    <nav className="flex-1 overflow-y-auto px-3 pb-6 space-y-0.5" aria-label="Navigasi utama">
-      {navItems.map((item) => (
-        <button key={item.id} type="button"
-          onClick={() => onNavigate(item.view)}
-          aria-current={currentView === item.view ? 'page' : undefined}
-          className={`w-full flex items-center gap-2.5 text-left rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-colors ${
-            currentView === item.view
-              ? 'bg-[#eaf3fe] text-[#0066cc]'
-              : 'text-[#626269] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]'
-          }`}>
-          <LucideIcon name={item.icon} className="w-[15px] h-[15px] shrink-0" />
-          <span className="truncate">{item.label}</span>
-        </button>
-      ))}
+    <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label="Navigasi utama">
+      {navItems.map((item) => {
+        const active = currentView === item.view;
+        return (
+          <button key={item.id} type="button"
+            onClick={() => onNavigate(item.view)}
+            aria-current={active ? 'page' : undefined}
+            style={active
+              ? { background: isDark ? '#1e3a5f' : '#eaf3fe', color: isDark ? '#3b9eff' : '#0066cc' }
+              : { color: isDark ? '#94a3b8' : '#626269' }
+            }
+            className={`w-full flex items-center gap-2.5 text-left rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-colors ${
+              active ? 'font-semibold' : isDark ? 'hover:bg-[#161616] hover:text-[#f1f5f9]' : 'hover:bg-[#f5f5f7] hover:text-[#1d1d1f]'
+            }`}>
+            <LucideIcon name={item.icon} className="w-[15px] h-[15px] shrink-0" />
+            <span className="truncate">{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
+
+    {/* Dark mode toggle — pinned to bottom */}
+    <div
+      className="px-4 py-4 shrink-0 border-t"
+      style={{ borderColor: isDark ? '#262626' : '#e6e6e9' }}
+    >
+      <button
+        type="button"
+        onClick={onToggleDark}
+        aria-label={isDark ? 'Aktifkan light mode' : 'Aktifkan dark mode'}
+        className="w-full flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-colors"
+        style={{
+          background: isDark ? '#161616' : '#f5f5f7',
+          color: isDark ? '#94a3b8' : '#626269',
+          border: 'none',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#262626' : '#e6e6e9';
+          (e.currentTarget as HTMLButtonElement).style.color = isDark ? '#f1f5f9' : '#1d1d1f';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#161616' : '#f5f5f7';
+          (e.currentTarget as HTMLButtonElement).style.color = isDark ? '#94a3b8' : '#626269';
+        }}
+      >
+        <span className="theme-icon-wrap" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+               className="theme-icon theme-icon--sun">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+               className="theme-icon theme-icon--moon">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+          </svg>
+        </span>
+        <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+      </button>
+    </div>
   </aside>
 );
 
 /* ── Icon registry ─────────────────────────────────────────────────────────── */
 
-type IconProps = { className?: string };
+type IconProps = { className?: string; style?: React.CSSProperties };
 
 const icons: Record<string, React.FC<IconProps>> = {
   'layout-dashboard': ({ className }) => (
@@ -177,10 +235,11 @@ const icons: Record<string, React.FC<IconProps>> = {
   ),
 };
 
-const LucideIcon: React.FC<{ name: string; className?: string }> = ({ name, className = 'w-4 h-4' }) => {
+const LucideIcon: React.FC<{ name: string; className?: string; style?: React.CSSProperties }> = ({ name, className = 'w-4 h-4', style }) => {
   const Icon = icons[name];
-  if (!Icon) return <>{icons['layers']({ className })}</>;
-  return <Icon className={className} />;
+  const el = Icon ? <Icon className={className} /> : <>{icons['layers']({ className })}</>;
+  if (style) return <span style={{ display: 'inline-flex', alignItems: 'center', ...style }}>{el}</span>;
+  return el;
 };
 
 export { LucideIcon };

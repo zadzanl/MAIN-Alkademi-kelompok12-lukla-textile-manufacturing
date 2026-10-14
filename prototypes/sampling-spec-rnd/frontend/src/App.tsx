@@ -15,7 +15,7 @@
  *   settings          — Placeholder
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Sidebar, { NavItem, LucideIcon } from './components/Sidebar';
 import Header from './components/Header';
 import MetricCard from './components/MetricCard';
@@ -24,6 +24,7 @@ import StatusPanel from './components/StatusPanel';
 import DataTable from './components/DataTable';
 import ActivityLog, { Activity } from './components/ActivityLog';
 import Modal from './components/Modal';
+import FontSelector, { FontKey } from './components/FontSelector';
 
 // Page views
 import SampleVersionView   from './pages/SampleVersionView';
@@ -55,6 +56,55 @@ function App() {
   const [currentView, setCurrentView] = useState('overview');
   const [globalSearch, setGlobalSearch] = useState('');
 
+  // ── dark mode ────────────────────────────────────────────────────────────────
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const stored = localStorage.getItem('ui-dark');
+    if (stored !== null) return stored === 'true';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
+
+  const transitionTimer = useRef<number | undefined>(undefined);
+
+  // Apply / remove 'dark' class on <html> and persist preference
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('ui-dark', String(isDark));
+  }, [isDark]);
+
+  // Toggle theme with a soft colour cross-fade (via .theme-transition)
+  const toggleDark = useCallback(() => {
+    const root = document.documentElement;
+    root.classList.add('theme-transition');
+    setIsDark(d => !d);
+
+    if (transitionTimer.current !== undefined) window.clearTimeout(transitionTimer.current);
+    transitionTimer.current = window.setTimeout(() => {
+      root.classList.remove('theme-transition');
+      transitionTimer.current = undefined;
+    }, 900);
+  }, []);
+
+  // Clear any pending timer on unmount
+  useEffect(() => () => {
+    if (transitionTimer.current !== undefined) window.clearTimeout(transitionTimer.current);
+  }, []);
+
+  // ── font preference ──────────────────────────────────────────────────────────
+  const [uiFont, setUiFont] = useState<FontKey>(() => {
+    return (localStorage.getItem('ui-font') as FontKey) ?? 'sf-pro';
+  });
+
+  // Apply font to <html> immediately on mount and whenever it changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-font', uiFont);
+    localStorage.setItem('ui-font', uiFont);
+  }, [uiFont]);
+
   // ── backend state ────────────────────────────────────────────────────────────
   const [isConnected, setIsConnected]   = useState(false);
   const [isLoading, setIsLoading]       = useState(true);
@@ -84,7 +134,7 @@ function App() {
     materials: '', process_steps: '', notes: '',
   });
 
-  // ── navigation ───────────────────────────────────────────────────────────────
+  // Bug-fix: deduplicate navItems (defined once, no map issues)
   const navItems: NavItem[] = [
     { id: 'overview',        label: 'Overview',          icon: 'layout-dashboard', view: 'overview' },
     { id: 'sample-versions', label: 'Versi Sample',      icon: 'layers',           view: 'sample-versions' },
@@ -318,8 +368,17 @@ function App() {
   // ── render ────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f7] font-sf-pro">
-      <Sidebar currentView={currentView} navItems={navItems} onNavigate={setCurrentView} />
+    <div
+      className="flex h-screen overflow-hidden font-sf-pro"
+      style={{ background: isDark ? '#000000' : '#f5f5f7' }}
+    >
+      <Sidebar
+        currentView={currentView}
+        navItems={navItems}
+        onNavigate={setCurrentView}
+        isDark={isDark}
+        onToggleDark={toggleDark}
+      />
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-[1440px] mx-auto p-6 lg:p-8">
@@ -332,6 +391,7 @@ function App() {
               : 'Backend tidak terhubung — pastikan server berjalan di port 8009'}
             globalSearch={globalSearch}
             onGlobalSearchChange={setGlobalSearch}
+            isDark={isDark}
           />
 
           {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
@@ -482,31 +542,95 @@ function App() {
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (
-            <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-8">
-              <h2 className="text-xl font-semibold text-[#1d1d1f] mb-6">Pengaturan</h2>
-              <div className="space-y-4 max-w-md">
-                {[
-                  { label:'Tenant ID',   value:'tenant-001' },
-                  { label:'Backend URL', value:API_BASE },
-                  { label:'Frontend',    value:'http://localhost:3009' },
-                  { label:'Versi Modul', value:'Sprint 1 · v1.0.0' },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between py-3 border-b border-[#f0f0f2] last:border-0">
-                    <span className="text-sm text-[#6e6e73]">{label}</span>
-                    <code className="text-sm text-[#1d1d1f] font-medium">{value}</code>
+            <div className="space-y-6 max-w-3xl">
+
+              {/* ── Dark mode toggle ───────────────────────────────────────── */}
+              <div
+                className="border rounded-[18px] p-6"
+                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3
+                      className="text-[15px] font-semibold mb-1"
+                      style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}
+                    >
+                      Tampilan
+                    </h3>
+                    <p className="text-[13px]" style={{ color: isDark ? '#94a3b8' : '#6e6e73' }}>
+                      {isDark ? 'Mode Gelap aktif — klik untuk beralih ke Mode Terang' : 'Mode Terang aktif — klik untuk beralih ke Mode Gelap'}
+                    </p>
                   </div>
-                ))}
+                  {/* Toggle switch */}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isDark}
+                    aria-label="Toggle dark mode"
+                    onClick={toggleDark}
+                    className="relative inline-flex items-center rounded-full transition-colors focus-visible:outline-none shrink-0"
+                    style={{ width: 52, height: 30, background: isDark ? '#3b9eff' : '#cbd5e1' }}
+                  >
+                    <span
+                      className="inline-block rounded-full bg-white shadow-sm"
+                      style={{
+                        width: 22, height: 22,
+                        transform: isDark ? 'translateX(26px)' : 'translateX(4px)',
+                        transition: 'transform 200ms cubic-bezier(.34,1.56,.64,1)',
+                      }}
+                    />
+                  </button>
+                </div>
               </div>
-              <div className="mt-6">
-                <button
-                  onClick={async () => {
-                    const ok = await checkHealth();
-                    alert(ok ? '✓ Backend terhubung dan sehat.' : '✗ Backend tidak dapat dijangkau. Periksa port 8009.');
-                  }}
-                  className={btnSecondary + ' inline-flex items-center gap-2'}>
-                  <LucideIcon name="activity" className="w-4 h-4" /> Test Koneksi Backend
-                </button>
+
+              {/* ── Font selector ─────────────────────────────────────────── */}
+              <div
+                className="border rounded-[18px] p-6"
+                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
+              >
+                <FontSelector currentFont={uiFont} onChange={setUiFont} />
               </div>
+
+              {/* ── System info ───────────────────────────────────────────── */}
+              <div
+                className="border rounded-[18px] p-6"
+                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
+              >
+                <h3
+                  className="text-[15px] font-semibold mb-4"
+                  style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}
+                >
+                  Informasi Sistem
+                </h3>
+                <div className="space-y-0">
+                  {[
+                    { label:'Tenant ID',   value:'tenant-001' },
+                    { label:'Backend URL', value:API_BASE },
+                    { label:'Frontend',    value:'http://localhost:3009' },
+                    { label:'Versi Modul', value:'Sprint 1 · v1.0.0' },
+                  ].map(({ label, value }) => (
+                    <div
+                      key={label}
+                      className="flex justify-between py-3 border-b last:border-0"
+                      style={{ borderColor: isDark ? '#262626' : '#f0f0f2' }}
+                    >
+                      <span className="text-sm" style={{ color: isDark ? '#94a3b8' : '#6e6e73' }}>{label}</span>
+                      <code className="text-sm font-medium" style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}>{value}</code>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5">
+                  <button
+                    onClick={async () => {
+                      const ok = await checkHealth();
+                      alert(ok ? '✓ Backend terhubung dan sehat.' : '✗ Backend tidak dapat dijangkau. Periksa port 8009.');
+                    }}
+                    className={btnSecondary + ' inline-flex items-center gap-2'}>
+                    <LucideIcon name="activity" className="w-4 h-4" /> Test Koneksi Backend
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
 

@@ -184,19 +184,8 @@ body {
   animation: slideDown 0.3s ease-out;
 }
 
-/* Clear contrast - ensure readability */
-.text-primary {
-  color: rgb(139, 92, 246);
-}
-
-.text-secondary {
-  color: rgb(107, 114, 128);
-}
-
-.text-muted {
-  color: rgb(156, 163, 175);
-}
-
+/* Semantic color utilities (non-text-color ones kept here; text-primary/secondary/muted
+   are defined authoritatively in index.css to avoid conflict) */
 .text-error {
   color: rgb(239, 68, 68);
 }
