@@ -3,9 +3,8 @@ Time Study Pattern Analysis Utilities
 Detects patterns, trends, and outliers in time study data
 """
 
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Any
 import statistics
-from math import sqrt
 
 
 def analyze_time_patterns(cycle_times: List[float]) -> Dict[str, Any]:

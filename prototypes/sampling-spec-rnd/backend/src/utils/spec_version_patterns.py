@@ -3,8 +3,8 @@ Specification Version Pattern Analysis Utilities
 Tracks version changes and identifies drift trends
 """
 
-from typing import Dict, List, Any, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, List, Any
+from datetime import datetime
 from collections import defaultdict
 
 
@@ -274,7 +274,7 @@ def compare_spec_versions(
     }
 
 
-def _determine_impact_level(changes: Dict[str, List], change_percent: float) -> str:
+def _determine_impact_level(changes: Dict[str, Any], change_percent: float) -> str:
     """Determine impact level of changes"""
     if len(changes["removed_parameters"]) > 0 or len(changes["added_parameters"]) > 2:
         return "high"
