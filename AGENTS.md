@@ -38,3 +38,12 @@ The engineering bar is unchanged: correct, tested, no new dependencies without a
 4. Use OpenSpec to propose, implement, and archive material changes. Keep implementation small, reversible, and directly traceable to approved requirements.
 5. Verify each change with focused checks, then broader relevant checks when practical. Report exactly what was and was not verified. Never use unverified positive claims.
 
+### Workspace Hygiene & Pre-Archive Gate
+
+**CRITICAL: You MUST maintain workspace clarity across sprints and avoid adding cognitive clutter for both developers and collaborating agents**
+
+- **Root & Sandbox Isolation:** Keep the repository root clean (only root configuration files, `README.md`, and `AGENTS.md`). Place all experimental spikes in `prototypes/<name>/` and documentation in `docs/`. OpenSpec change folders must contain only specification diffs, designs, tasks, and review records—never runnable application source trees or duplicate backups.
+- **Anchored Git Rules:** Always anchor folder ignore patterns in `.gitignore` with a leading slash (e.g., `/artifacts/`, `/build/`) so nested application folders in subdirectories are not silently untracked.
+- **Pre-Archive Gate (Adversarial Check):** Before archiving an OpenSpec change or promoting a prototype:
+    1. **Asset Reconciliation:** Audit uncommitted and unported files to ensure working algorithms, UI components, active PRDs, and test scripts are not abandoned or accidentally deleted.
+    2. **Configuration Drift:** Confirm target ports, environment variables, and proxy URLs match the single source of truth across backend, frontend, scripts, and documentation without drift.
