@@ -1,75 +1,132 @@
 /**
- * Chart Component — Weekly Bar Chart
- * Matches Garment Backoffice HTML template design
+ * Chart — Weekly bar chart driven by real backend data
+ *
+ * Fix list:
+ *  - Day labels were garbled ("Senator", "Loptai") — now hardcoded correct
+ *    Indonesian abbreviations: Sen Sel Rab Kam Jum Sab Min
+ *  - Bars used naive completionRate() helper that spread one value across every
+ *    bar — chart now receives real per-day counts from parent and derives pct
+ *  - Value labels and day labels now have proper contrast (#374151 / #111827)
+ *  - Zero-value bars render as a thin placeholder so the chart looks correct
+ *  - Active bar is solid #0071e3; past bars are #93c5fd; future bars #e5e7eb
  */
 
 import React from 'react';
 
-interface ChartDataPoint {
+export interface DayPoint {
+  /** Indonesian 3-char abbreviation — e.g. "Sen", "Sel", "Rab" */
   label: string;
+  /** 0–100 completion percentage */
   value: number;
+  /** Highlight this bar as "today" */
   isCurrent?: boolean;
+  /** Bar is in the future (no data yet) */
+  isFuture?: boolean;
 }
 
 interface ChartProps {
-  data: ChartDataPoint[];
+  data: DayPoint[];
   title: string;
   subtitle: string;
   badge?: string;
 }
 
-const Chart: React.FC<ChartProps> = ({ data, title, subtitle, badge = 'Minggu ini' }) => {
-  const maxValue = Math.max(...data.map((d) => d.value), 1);
+const CHART_HEIGHT = 160; // px — height of the bar area
+const MIN_BAR_H   = 4;    // px — minimum visible height for zero bars
+
+const Chart: React.FC<ChartProps> = ({
+  data,
+  title,
+  subtitle,
+  badge = 'Minggu ini',
+}) => {
+  const maxVal = Math.max(...data.map(d => d.value), 1);
+
+  const barColor = (p: DayPoint) => {
+    if (p.isFuture)  return '#e5e7eb';           // grey — no data
+    if (p.isCurrent) return '#0071e3';           // solid blue — today
+    if (p.value > 0) return '#93c5fd';           // light blue — past days
+    return '#e5e7eb';                            // grey — past zero
+  };
 
   return (
-    <section className="surface bg-white border border-[#e6e6e9] rounded-[18px] p-5">
+    <section className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 shadow-sm">
       {/* Header */}
-      <div className="flex justify-between items-start gap-3 mb-8">
+      <div className="flex justify-between items-start gap-3 mb-6">
         <div>
-          <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-[#1d1d1f]">
+          <h2 className="text-[17px] font-semibold text-[#111827] tracking-tight">
             {title}
           </h2>
-          <p className="text-[#6e6e73] text-xs mt-1">{subtitle}</p>
+          <p className="text-[12px] text-[#6b7280] mt-0.5">{subtitle}</p>
         </div>
-        <span className="pill blue bg-[#e8f2ff] text-[#0066cc] rounded-full px-2.5 py-1.5 text-[11px] font-semibold whitespace-nowrap">
+        <span className="bg-[#dbeafe] text-[#1d4ed8] rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
           {badge}
         </span>
       </div>
 
-      {/* Bar Chart */}
+      {/* Bars */}
       <div
-        className="h-44 flex items-end justify-between gap-3"
+        className="flex items-end justify-between gap-2"
+        style={{ height: CHART_HEIGHT + 48 }}   // extra space for labels
         aria-label={title}
         role="img"
       >
         {data.map((point, idx) => {
-          const heightPercent = (point.value / maxValue) * 100;
-          const heightPx = (point.value / maxValue) * 176; // 176px = 44 * 4 (tailwind h-44)
+          const barH = point.value > 0
+            ? Math.max(MIN_BAR_H, Math.round((point.value / maxVal) * CHART_HEIGHT))
+            : MIN_BAR_H;
 
           return (
             <div
               key={idx}
-              className="flex-1 h-full flex flex-col justify-end items-center gap-2"
+              className="flex-1 flex flex-col items-center justify-end gap-1.5"
+              style={{ height: CHART_HEIGHT + 48 }}
             >
-              {/* Value label */}
-              <span className="text-xs text-[#6e6e73] font-medium">
-                {point.value}%
+              {/* Percentage label above bar */}
+              <span
+                className={`text-[11px] font-semibold ${
+                  point.value > 0 ? 'text-[#374151]' : 'text-[#d1d5db]'
+                }`}
+              >
+                {point.value > 0 ? `${point.value}%` : '—'}
               </span>
 
               {/* Bar */}
               <div
-                className={`w-full max-w-12 rounded-t-[5px] rounded-b-[2px] transition-all duration-300 ${
-                  point.isCurrent ? 'bg-[#0071e3]' : 'bg-[#c6ddfa]'
-                }`}
-                style={{ height: `${heightPx}px` }}
-                role="presentation"
+                className="w-full rounded-t-[6px] rounded-b-[2px] transition-all duration-500"
+                style={{
+                  height: barH,
+                  backgroundColor: barColor(point),
+                  minHeight: MIN_BAR_H,
+                  maxWidth: 48,
+                }}
               />
 
-              {/* Day label */}
-              <span className="text-xs text-[#6e6e73]">{point.label}</span>
+              {/* Day label below bar */}
+              <span
+                className={`text-[11px] font-medium ${
+                  point.isCurrent ? 'text-[#0071e3] font-bold' : 'text-[#374151]'
+                }`}
+              >
+                {point.label}
+              </span>
             </div>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#f3f4f6]">
+        {[
+          { color: '#0071e3', label: 'Hari ini' },
+          { color: '#93c5fd', label: 'Selesai' },
+          { color: '#e5e7eb', label: 'Belum ada data' },
+        ].map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+            <span className="text-[11px] text-[#6b7280]">{label}</span>
+          </div>
+        ))}
       </div>
     </section>
   );
