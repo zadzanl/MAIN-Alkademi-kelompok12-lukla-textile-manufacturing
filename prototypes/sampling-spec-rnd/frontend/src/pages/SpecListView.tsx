@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { LucideIcon } from '../components/Sidebar';
-import type { SpecVersion } from '../types';
+import type { SpecVersion, SpecDrift, ExportCSV } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
 
@@ -19,14 +19,14 @@ const STATUS_STYLE: Record<string, string> = {
   archived:   'bg-[#f0f0f2] text-[#626269]',
 };
 
-interface Props { onExportCSV: (data: any[], filename: string) => void; }
+interface Props { onExportCSV: ExportCSV; }
 
 const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
   const [specs, setSpecs]       = useState<SpecVersion[]>([]);
   const [tab, setTab]           = useState('all');
   const [search, setSearch]     = useState('');
   const [selected, setSelected] = useState<SpecVersion | null>(null);
-  const [detail, setDetail]     = useState<any>(null);
+  const [detail, setDetail]     = useState<SpecVersion | null>(null);
   const [actionMsg, setActionMsg] = useState('');
 
   const fetchAll = useCallback(async () => {
@@ -89,11 +89,11 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
           { key: 'spec_name',  label: 'Nama Spec' },
           { key: 'version_number', label: 'Versi' },
           { key: 'status',     label: 'Status',
-            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[v]??'bg-[#f0f0f2] text-[#626269]'}`}>{v}</span> },
-          { key: 'total_drifts',    label: 'Drifts',  render: v => v ?? 0 },
+            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[String(v)]??'bg-[#f0f0f2] text-[#626269]'}`}>{String(v)}</span> },
+          { key: 'total_drifts',    label: 'Drifts',  render: v => Number(v ?? 0) },
           { key: 'critical_drifts', label: 'Kritis',
-            render: v => <span className={v > 0 ? 'text-[#ff3b30] font-semibold' : ''}>{v ?? 0}</span> },
-          { key: 'created_by', label: 'Dibuat oleh', render: v => v || '—' },
+            render: v => { const n = Number(v); return <span className={n > 0 ? 'text-[#ff3b30] font-semibold' : ''}>{n}</span>; } },
+          { key: 'created_by', label: 'Dibuat oleh', render: v => v ? String(v) : '—' },
           {
             key: 'version_id', label: 'Aksi',
             render: (_, row: SpecVersion) => (
@@ -168,7 +168,7 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
             {detail.drifts?.length > 0 && (
               <div>
                 <p className="text-[11px] text-[#6e6e73] uppercase tracking-wider mb-2">Daftar Drift ({detail.drifts.length})</p>
-                {detail.drifts.map((d: any) => (
+                {detail.drifts.map((d: SpecDrift) => (
                   <div key={d.drift_id} className={`rounded-[10px] px-3 py-2 mb-2 text-[12px] ${
                     d.severity === 'critical' ? 'bg-[#ffebee] text-[#ff3b30]' :
                     d.severity === 'high'     ? 'bg-[#fff4e6] text-[#ff9500]' : 'bg-[#f5f5f7] text-[#626269]'

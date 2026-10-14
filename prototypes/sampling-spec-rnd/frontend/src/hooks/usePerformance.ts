@@ -69,11 +69,11 @@ export const usePerformance = () => {
 
   // Throttle function calls (useful for event handlers)
   const throttle = useCallback(
-    (callback: (...args: any[]) => void, delay: number = 16) => {
+    <A extends unknown[]>(callback: (...args: A) => void, delay: number = 16) => {
       let lastCall = 0;
       let timeoutId: NodeJS.Timeout | null = null;
 
-      return (...args: any[]) => {
+      return (...args: A) => {
         const now = Date.now();
         const timeSinceLastCall = now - lastCall;
 
@@ -94,10 +94,10 @@ export const usePerformance = () => {
 
   // Debounce function calls
   const debounce = useCallback(
-    (callback: (...args: any[]) => void, delay: number = 300) => {
+    <A extends unknown[]>(callback: (...args: A) => void, delay: number = 300) => {
       let timeoutId: NodeJS.Timeout | null = null;
 
-      return (...args: any[]) => {
+      return (...args: A) => {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
@@ -121,8 +121,11 @@ export const usePerformance = () => {
   // Request idle callback (low priority work)
   const scheduleIdleTask = useCallback(
     (callback: () => void, timeout: number = 1000) => {
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(callback, { timeout });
+      const w = window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      };
+      if (typeof w.requestIdleCallback === 'function') {
+        w.requestIdleCallback(callback, { timeout });
       } else {
         setTimeout(callback, timeout);
       }

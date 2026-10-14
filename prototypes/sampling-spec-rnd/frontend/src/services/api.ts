@@ -23,7 +23,7 @@ export interface ApiResult<T = unknown> {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function qs(params: Record<string, string | number | boolean | undefined>): string {
+function qs(params: Record<string, unknown>): string {
   const p = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') p.append(k, String(v));
@@ -32,7 +32,7 @@ function qs(params: Record<string, string | number | boolean | undefined>): stri
   return s ? `?${s}` : '';
 }
 
-async function post<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<ApiResult<T>> {
+async function post<T>(path: string, params?: Record<string, unknown>): Promise<ApiResult<T>> {
   try {
     const res = await fetch(`${BASE}${path}${params ? qs(params) : ''}`, {
       method: 'POST',
@@ -46,7 +46,7 @@ async function post<T>(path: string, params?: Record<string, string | number | b
   }
 }
 
-async function get<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<ApiResult<T>> {
+async function get<T>(path: string, params?: Record<string, unknown>): Promise<ApiResult<T>> {
   try {
     const res = await fetch(`${BASE}${path}${params ? qs(params) : ''}`);
     const raw = await res.json();
@@ -82,7 +82,7 @@ export async function createStudy(p: {
   operator_id: string;
   target_sample_size?: number;
 }): Promise<ApiResult<{ study_id: string; status: string }>> {
-  const res = await post<CreateStudyRaw>('/studies/create', p as any);
+  const res = await post<CreateStudyRaw>('/studies/create', p);
   if (!res.success || !res.data) return res as ApiResult<{ study_id: string; status: string }>;
   return { success: true, data: { study_id: res.data.study_id, status: res.data.status }, message: res.data.message };
 }
@@ -116,7 +116,7 @@ export async function addSample(p: {
   notes?: string;
 }): Promise<ApiResult<null>> {
   const { study_id, ...rest } = p;
-  return post<OkRaw>(`/studies/${study_id}/add-sample`, rest as any) as unknown as Promise<ApiResult<null>>;
+  return post<OkRaw>(`/studies/${study_id}/add-sample`, { ...rest }) as unknown as Promise<ApiResult<null>>;
 }
 
 /** GET /studies/{id}/data → TimeStudy */
@@ -145,7 +145,7 @@ export async function createSpec(p: {
   created_by: string;
   version_number?: string;
 }): Promise<ApiResult<{ version_id: string; status: string }>> {
-  const res = await post<CreateSpecRaw>('/specs/create', p as any);
+  const res = await post<CreateSpecRaw>('/specs/create', p);
   if (!res.success || !res.data) return res as ApiResult<{ version_id: string; status: string }>;
   return { success: true, data: { version_id: res.data.version_id, status: res.data.status }, message: res.data.message };
 }
@@ -162,7 +162,7 @@ export async function recordSpecChange(p: {
   impact_assessment?: string;
 }): Promise<ApiResult<null>> {
   const { version_id, ...rest } = p;
-  return post<OkRaw>(`/specs/${version_id}/record-change`, rest as any) as unknown as Promise<ApiResult<null>>;
+  return post<OkRaw>(`/specs/${version_id}/record-change`, { ...rest }) as unknown as Promise<ApiResult<null>>;
 }
 
 /** POST /specs/{id}/record-drift */
@@ -175,7 +175,7 @@ export async function recordDrift(p: {
   corrective_action?: string;
 }): Promise<ApiResult<null>> {
   const { version_id, ...rest } = p;
-  return post<OkRaw>(`/specs/${version_id}/record-drift`, rest as any) as unknown as Promise<ApiResult<null>>;
+  return post<OkRaw>(`/specs/${version_id}/record-drift`, { ...rest }) as unknown as Promise<ApiResult<null>>;
 }
 
 /** POST /specs/{id}/resolve-drift/{drift_id} */

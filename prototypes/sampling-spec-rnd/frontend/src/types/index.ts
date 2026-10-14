@@ -13,7 +13,7 @@ export interface TimeSample {
   timestamp: string;
   cycle_time_ms: number;
   element_name: string;
-  observations: Record<string, any>;
+  observations: Record<string, unknown>;
   operator_id: string | null;
   machine_id: string | null;
   is_abnormal: boolean;
@@ -97,7 +97,7 @@ export interface SpecVersion {
   created_at: string;
   updated_at: string;
   status: 'draft' | 'review' | 'approved' | 'active' | 'superseded' | 'archived';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   tolerances: Record<string, { min: number; max: number }>;
   materials: string[];
   process_steps: string[];
@@ -205,6 +205,13 @@ export interface WorkflowSummary {
   pending_approval: number;
   converted_to_order: number;
 }
+
+// ─────────────────────────────────────────────
+// SHARED CALLBACKS
+// ─────────────────────────────────────────────
+
+/** CSV export handler shared by App and page views. */
+export type ExportCSV = (data: unknown[], filename: string) => void;
 
 // ─────────────────────────────────────────────
 // COMPONENT PROPS

@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
-import type { SpecVersion } from '../types';
+import type { SpecVersion, DriftAnalysis, SpecDrift } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
 
@@ -19,8 +19,8 @@ const SEV_COLOR: Record<string, { bg: string; text: string; bar: string }> = {
 const DriftAnalysisView: React.FC = () => {
   const [specs, setSpecs]             = useState<SpecVersion[]>([]);
   const [selectedId, setSelectedId]   = useState('');
-  const [analysis, setAnalysis]       = useState<any>(null);
-  const [report, setReport]           = useState<any>(null);
+  const [analysis, setAnalysis]       = useState<{ analysis: DriftAnalysis; risk_score: number } | null>(null);
+  const [report, setReport]           = useState<{ drifts: SpecDrift[] } | null>(null);
   const [loading, setLoading]         = useState(false);
 
   // Record drift form
@@ -95,7 +95,8 @@ const DriftAnalysisView: React.FC = () => {
   };
 
   const sev = analysis?.analysis?.severity_distribution ?? {};
-  const total = Object.values(sev).reduce((s: any, v: any) => s + v, 0) as number;
+  const total = Object.values(sev).reduce((s: number, v) => s + (typeof v === 'number' ? v : 0), 0);
+  const reportDrifts = report?.drifts ?? [];
 
   const TREND_COLOR: Record<string, string> = {
     stable:     'text-[#34c759]',
@@ -205,7 +206,7 @@ const DriftAnalysisView: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(analysis.analysis.by_parameter).map(([param, data]: [string, any]) => (
+                    {Object.entries(analysis.analysis.by_parameter).map(([param, data]: [string, { count: number; critical: number }]) => (
                       <tr key={param} className="border-b border-[#f0f0f2] last:border-0">
                         <td className="px-4 py-3 font-medium text-[#1d1d1f]">{param}</td>
                         <td className="px-4 py-3 text-[#626269]">{data.count}</td>
@@ -223,7 +224,7 @@ const DriftAnalysisView: React.FC = () => {
           )}
 
           {/* Drift list from report */}
-          {report?.drifts?.length > 0 && (
+          {reportDrifts.length > 0 && (
             <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
               <div className="px-5 py-4 border-b border-[#f0f0f2]">
                 <h3 className="text-[15px] font-semibold text-[#1d1d1f]">Semua Drift Tercatat</h3>
@@ -238,7 +239,7 @@ const DriftAnalysisView: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {report.drifts.map((d: any) => {
+                    {reportDrifts.map((d: SpecDrift) => {
                       const c = SEV_COLOR[d.severity] ?? SEV_COLOR.low;
                       return (
                         <tr key={d.drift_id} className="border-b border-[#f0f0f2] last:border-0">

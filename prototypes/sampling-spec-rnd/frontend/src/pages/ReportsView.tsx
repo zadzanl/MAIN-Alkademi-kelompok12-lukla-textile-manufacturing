@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
-import type { TimeStudy, SampleVersion } from '../types';
+import type { TimeStudy, SampleVersion, ExportCSV } from '../types';
 
 const API = 'http://localhost:8009/api/sampling-spec-rnd';
 
@@ -21,23 +21,20 @@ const rateCard = (meanMs: number, allowance: number) => {
   return Math.round(stdTimeMin * RATE_PER_MIN_IDR);
 };
 
-interface Props { onExportCSV: (data: any[], filename: string) => void; }
+interface Props { onExportCSV: ExportCSV; }
 
 const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
   const [studies, setStudies]   = useState<TimeStudy[]>([]);
   const [svList, setSvList]     = useState<SampleVersion[]>([]);
-  const [loading, setLoading]   = useState(false);
   const [activeTab, setActiveTab] = useState<'timestudy'|'costing'|'ratecards'|'handoff'>('timestudy');
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
     const [rs, rv] = await Promise.all([
       fetch(`${API}/studies/all?tenant_id=tenant-001`),
       fetch(`${API}/sample-versions/all?tenant_id=tenant-001`),
     ]);
     if (rs.ok) { const j = await rs.json(); setStudies(j.data ?? []); }
     if (rv.ok) { const j = await rv.json(); setSvList(j.data ?? []); }
-    setLoading(false);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
