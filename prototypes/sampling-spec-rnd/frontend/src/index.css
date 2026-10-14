@@ -4,18 +4,23 @@
  *
  * Color contract (WCAG AA minimum 4.5:1 on white bg):
  *   --text-primary   #0f172a  contrast ≈ 19:1
- *   --text-secondary #334155  contrast ≈  9:1
+ *   --text-secondary #262626  contrast ≈  9:1
  *   --text-muted     #475569  contrast ≈  6:1
  *   --text-faint     #64748b  contrast ≈  4.6:1  ← floor
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
 
 /* ── Design Tokens ──────────────────────────────────────────────────────────── */
 :root {
   /* Text */
   --text-primary:   #0f172a;
-  --text-secondary: #334155;
+  --text-secondary: #262626;
   --text-muted:     #475569;
   --text-faint:     #64748b;
 
@@ -578,6 +583,55 @@ article.surface:hover {
 /* ── Font class ─────────────────────────────────────────────────────────────── */
 .font-sf-pro { font-family: var(--font-body); }
 
+/* ── Font theme overrides (applied via [data-font] on <html>) ────────────────── */
+
+/* Default / SF Pro — system font stack */
+[data-font="sf-pro"] {
+  --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+}
+
+/* Inter — clean, neutral, widely trusted */
+[data-font="inter"] {
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Plus Jakarta Sans — modern rounded geometric */
+[data-font="plus-jakarta"] {
+  --font-body:    'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+/* DM Sans — soft, approachable, low-contrast */
+[data-font="dm-sans"] {
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+  --font-display: 'DM Sans', -apple-system, sans-serif;
+  letter-spacing: 0.005em;
+}
+
+/* Geist — developer-forward, precise */
+[data-font="geist"] {
+  --font-body:    'Geist', -apple-system, sans-serif;
+  --font-display: 'Geist', -apple-system, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* IBM Plex Sans — structured, engineering-grade */
+[data-font="ibm-plex"] {
+  --font-body:    'IBM Plex Sans', -apple-system, sans-serif;
+  --font-display: 'IBM Plex Sans', -apple-system, sans-serif;
+  letter-spacing: 0em;
+}
+
+/* Sora — rounded, expressive, friendly */
+[data-font="sora"] {
+  --font-body:    'Sora', -apple-system, sans-serif;
+  --font-display: 'Sora', -apple-system, sans-serif;
+  letter-spacing: -0.015em;
+}
+
 /* ── Print ──────────────────────────────────────────────────────────────────── */
 @media print {
   .sidebar, .header-tools, button { display: none !important; }
@@ -588,4 +642,309 @@ article.surface:hover {
 @media (max-width: 768px) {
   h1 { font-size: 22px; }
   h2 { font-size: 18px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DARK MODE — toggled by adding .dark to <html> (Tailwind class strategy)
+   All CSS custom properties are overridden; Tailwind dark: variants handle
+   any utility classes that aren't covered here.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.dark {
+  /* Text */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #94a3b8;
+  --text-faint:     #64748b;
+
+  /* Brand */
+  --blue:           #3b9eff;
+  --blue-dark:      #1a7ae8;
+  --blue-hover:     #5aadff;
+  --blue-light:     #1e3a5f;
+  --blue-ring:      #1d4ed8;
+
+  /* Semantic */
+  --success:        #34d058;
+  --success-bg:     #0d2a1a;
+  --success-dark:   #a7f3d0;
+  --warning:        #fbbf24;
+  --warning-bg:     #2d1f00;
+  --warning-dark:   #fde68a;
+  --danger:         #f87171;
+  --danger-bg:      #2a0d0d;
+  --danger-dark:    #fecaca;
+
+  /* Surface */
+  --bg-page:        #000000;
+  --bg-card:        #0a0a0a;
+  --border:         #262626;
+  --border-strong:  #3d3d3d;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.30);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.40), 0 1px 2px rgba(0,0,0,.20);
+  --shadow-md: 0 4px 8px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.25);
+  --shadow-lg: 0 10px 24px rgba(0,0,0,.50), 0 4px 8px rgba(0,0,0,.30);
+}
+
+/* ── Dark: body & html ───────────────────────────────────────────────────── */
+.dark body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+/* ── Dark: Surface / Card ────────────────────────────────────────────────── */
+.dark .surface,
+.dark .bg-white,
+.dark [class*="bg-white"] {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary);
+}
+
+/* ── Dark: Headings & paragraphs ─────────────────────────────────────────── */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: var(--text-primary);
+}
+.dark p { color: var(--text-secondary); }
+
+/* ── Dark: Sidebar ───────────────────────────────────────────────────────── */
+.dark .sidebar,
+.dark aside {
+  background: #0a0a0a !important;
+  border-color: #262626 !important;
+}
+
+/* ── Dark: Tables ────────────────────────────────────────────────────────── */
+.dark thead th {
+  background: #161616;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.dark tbody td {
+  color: var(--text-secondary);
+  border-color: #0a0a0a;
+}
+.dark tbody tr:hover { background: #161616; }
+
+/* ── Dark: Inputs ────────────────────────────────────────────────────────── */
+.dark .field,
+.dark input[type='text'],
+.dark input[type='email'],
+.dark input[type='password'],
+.dark input[type='search'],
+.dark input[type='number'],
+.dark input[type='date'],
+.dark input[type='time'],
+.dark textarea,
+.dark select {
+  background: #161616;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-faint);
+}
+.dark select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+.dark label {
+  color: var(--text-secondary);
+}
+
+/* ── Dark: Buttons ───────────────────────────────────────────────────────── */
+.dark .btn-secondary,
+.dark .secondary {
+  background: #161616;
+  color: var(--blue);
+  border-color: var(--border-strong);
+}
+.dark .btn-secondary:not(:disabled):hover,
+.dark .secondary:not(:disabled):hover {
+  background: var(--blue-light);
+  border-color: var(--blue);
+}
+
+.dark .btn-ghost {
+  color: var(--text-muted);
+}
+.dark .btn-ghost:not(:disabled):hover {
+  background: #161616;
+  color: var(--text-primary);
+}
+
+/* ── Dark: Tabs ──────────────────────────────────────────────────────────── */
+.dark .tab {
+  color: var(--text-muted);
+}
+.dark .tab:hover {
+  background: #161616;
+  color: var(--text-secondary);
+}
+.dark .tab.active,
+.dark .tab[aria-selected="true"] {
+  background: var(--blue-light);
+  color: var(--blue);
+  box-shadow: inset 0 0 0 1.5px rgba(59,158,255,.25);
+}
+
+/* ── Dark: Pills / badges ────────────────────────────────────────────────── */
+.dark .pill.blue, .dark .pill-blue {
+  background: #1e3a5f; color: #93c5fd; border-color: #1d4ed8;
+}
+.dark .pill.success, .dark .pill-green {
+  background: #0d2a1a; color: #86efac; border-color: #166534;
+}
+.dark .pill.warning, .dark .pill-orange {
+  background: #2d1f00; color: #fcd34d; border-color: #92400e;
+}
+.dark .pill.danger, .dark .pill-red {
+  background: #2a0d0d; color: #fca5a5; border-color: #991b1b;
+}
+.dark .pill.gray, .dark .pill-gray {
+  background: #161616; color: #94a3b8; border-color: #262626;
+}
+
+/* ── Dark: pill buttons (inline table actions) ───────────────────────────── */
+.dark .btn-pill-blue   { color: #93c5fd; border-color: #1d4ed8; background: #1e3a5f; }
+.dark .btn-pill-green  { color: #86efac; border-color: #166534; background: #0d2a1a; }
+.dark .btn-pill-orange { color: #fcd34d; border-color: #92400e; background: #2d1f00; }
+.dark .btn-pill-red    { color: #fca5a5; border-color: #991b1b; background: #2a0d0d; }
+.dark .btn-pill-dark   { color: #f1f5f9; background: #262626;   border-color: #3d3d3d; }
+
+/* ── Dark: Modal backdrop ────────────────────────────────────────────────── */
+.dark .modal-backdrop {
+  background: rgba(0,0,0,.72);
+}
+
+/* ── Dark: Scrollbar ─────────────────────────────────────────────────────── */
+.dark ::-webkit-scrollbar-thumb { background: #262626; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #3d3d3d; }
+
+/* ── Dark: code cells in tables ──────────────────────────────────────────── */
+.dark td code {
+  background: #161616;
+  color: var(--text-secondary);
+}
+
+/* ── Dark: mini-line progress bar ────────────────────────────────────────── */
+.dark .mini-line { background: #262626; }
+
+/* ── Dark: skeleton ──────────────────────────────────────────────────────── */
+.dark .skeleton {
+  background: linear-gradient(90deg, #0a0a0a 25%, #161616 50%, #0a0a0a 75%);
+}
+
+/* ── Dark: inline hardcoded Tailwind color overrides ────────────────────── */
+/* Pages use inline hex Tailwind classes like text-[#1d1d1f], bg-[#f5f5f7], etc.
+   We override the most common ones here so pages look correct in dark mode.  */
+
+/* Card/surface backgrounds */
+.dark .bg-\[\#f5f5f7\]  { background: #000000 !important; }
+.dark .bg-\[\#fafafa\]  { background: #161616 !important; }
+.dark .bg-\[\#f0f0f2\]  { background: #262626 !important; }
+.dark .bg-\[\#f1f5f9\]  { background: #161616 !important; }
+
+/* Border colours */
+.dark .border-\[\#e6e6e9\]  { border-color: #262626 !important; }
+.dark .border-\[\#e2e8f0\]  { border-color: #262626 !important; }
+.dark .border-\[\#f0f0f2\]  { border-color: #161616 !important; }
+.dark .border-\[\#d5d5da\]  { border-color: #3d3d3d !important; }
+.dark .border-\[\#dedee2\]  { border-color: #3d3d3d !important; }
+
+/* Text colours */
+.dark .text-\[\#1d1d1f\]  { color: #f1f5f9 !important; }
+.dark .text-\[\#0f172a\]  { color: #f1f5f9 !important; }
+.dark .text-\[\#111827\]  { color: #f1f5f9 !important; }
+.dark .text-\[\#374151\]  { color: #cbd5e1 !important; }
+.dark .text-\[\#6b7280\]  { color: #94a3b8 !important; }
+.dark .text-\[\#626269\]  { color: #94a3b8 !important; }
+.dark .text-\[\#6e6e73\]  { color: #94a3b8 !important; }
+.dark .text-\[\#64748b\]  { color: #94a3b8 !important; }
+.dark .text-\[\#334155\]  { color: #cbd5e1 !important; }
+.dark .text-\[\#475569\]  { color: #94a3b8 !important; }
+
+/* Input/surface fills */
+.dark .bg-\[\#f5f5f7\]   { background: #161616 !important; }
+
+/* Stopwatch clock face background in dark */
+.dark .bg-\[\#1d1d1f\]   { background: #f1f5f9 !important; }
+
+/* ── Dark: header search input ───────────────────────────────────────────── */
+.dark #global-search {
+  background: #161616;
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* ── Dark mode toggle button (moon/sun in sidebar) ───────────────────────── */
+.dark-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: background var(--dur-base), color var(--dur-base), border-color var(--dur-base);
+}
+.dark-toggle:hover {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   THEME SWITCH — soft colour cross-fade
+   .theme-transition is added to <html> only while a light/dark toggle plays,
+   so theme colours ease instead of snapping. It is removed afterwards so
+   normal hover transitions stay snappy.
+   ══════════════════════════════════════════════════════════════════════════════ */
+html.theme-transition,
+html.theme-transition *:not(.theme-icon),
+html.theme-transition *:not(.theme-icon)::before,
+html.theme-transition *:not(.theme-icon)::after {
+  transition:
+    background-color 480ms var(--ease-smooth),
+    border-color     480ms var(--ease-smooth),
+    color            480ms var(--ease-smooth),
+    fill             480ms var(--ease-smooth),
+    stroke           480ms var(--ease-smooth),
+    box-shadow       480ms var(--ease-smooth) !important;
+}
+
+/* ── Sun ⇄ Moon icon cross-fade (sidebar theme button) ────────────────────── */
+.theme-icon-wrap {
+  position: relative;
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+.theme-icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition:
+    opacity   320ms var(--ease-smooth),
+    transform 460ms var(--ease-spring);
+}
+/* Light mode: sun in, moon out */
+.theme-icon--sun  { opacity: 1; transform: rotate(0deg)   scale(1); }
+.theme-icon--moon { opacity: 0; transform: rotate(-120deg) scale(.4); }
+/* Dark mode: moon in, sun out */
+.dark .theme-icon--sun  { opacity: 0; transform: rotate(120deg) scale(.4); }
+.dark .theme-icon--moon { opacity: 1; transform: rotate(0deg)  scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon { transition: none; }
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after { transition: none !important; }
 }
