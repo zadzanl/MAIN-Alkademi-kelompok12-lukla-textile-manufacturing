@@ -47,3 +47,34 @@ jobs:
       - name: Validate OpenAPI 3.1 Blueprint Contract
         run: python openspec/changes/lukla-ops-engine-planning/validate-blueprint.py
 
+  payroll-engine-quality:
+    name: Payroll Engine Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/payroll-costing
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/payroll-costing/requirements-dev.txt
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Ruff Linter Check
+        run: ruff check src/
+
+      - name: Ruff Format Check
+        run: ruff format --check src/
+
+      - name: Mypy Type Check
+        run: mypy src/ --strict
+

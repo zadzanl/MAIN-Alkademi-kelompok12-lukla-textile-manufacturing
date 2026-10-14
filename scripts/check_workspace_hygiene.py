@@ -27,6 +27,7 @@ ALLOWED_ROOT_DIRS = {
     ".github",
     ".agents",
     ".vscode",
+    "backend",  # application modules target backend/<module>/ per docs/MODULES_ARCHITECTURE.md
     "docs",
     "openspec",
     "prototypes",
