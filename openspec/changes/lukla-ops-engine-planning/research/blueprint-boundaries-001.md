@@ -18,6 +18,8 @@ Every claim below is either (a) verified by `read_file`/`run_in_terminal` agains
 | # | File | Lines inspected | Purpose |
 |---|---|---|---|
 | R1 | `openspec/changes/lukla-ops-engine-planning/task-record.md` | 1–400 | Rev 12 confirmation; active phase banner |
+
+> **Stack status note (2026-10-14):** The current stack decision is React 18 + Vite + Tailwind. Any Next.js portability findings below remain historical evidence for a possible future pivot and are not current implementation requirements.
 | R2 | `openspec/changes/lukla-ops-engine-planning/09-technical-blueprint-completion-plan.md` | 1–200 | New authoritative blueprint; gap analysis; ACs |
 | R3 | `openspec/changes/lukla-ops-engine-planning/00-deconstruction.md` | header + 04/05/06/07/08/09/Contradictions/UNRESOLVED sections | Source of truth (rev 4) for FR/role/QC references |
 | R4 | `openspec/changes/lukla-ops-engine-planning/04-rbac-matrix.md` | entire file | 8-role matrix; UNSPECIFIED column |

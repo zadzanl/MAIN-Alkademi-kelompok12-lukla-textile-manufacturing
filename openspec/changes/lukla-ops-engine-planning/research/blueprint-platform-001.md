@@ -18,6 +18,8 @@
 | Storage draft read | `artifacts/storage-architecture-draft.md` (full, 300 lines reviewed) |
 | Peer research files | `research-001/002/003/004` confirmed on disk; no prior `blueprint-platform-001.md` exists (`Test-Path False`) |
 | Search runs | 8 web searches via `mcp_mcp-omnisearc_web_search`; 4 targeted `fetch_webpage` calls (AWS docs, FastAPI Cloud pricing/docs, OpenRouter embeddings API spec) |
+
+> **Stack status note (2026-10-14):** The current stack decision is React 18 + Vite + Tailwind. The Next.js portability findings in this research remain historical evidence for a possible future pivot and are not current implementation requirements.
 | Local semantic search | 1 hit confirmed `09-technical-blueprint-completion-plan.md` lines 23–24, 30–32, 65–66, 94–96 (matches the verbatim text I cite below) |
 
 No subagents were dispatched. No terminal commands other than file inventory + `Test-Path`. No git mutations. No code edits.
