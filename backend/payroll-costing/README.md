@@ -31,12 +31,14 @@ Written by this module:
 ```
 backend/payroll-costing/
 ├── src/
-│   ├── api/        # HTTP routers bound 1:1 to contract operationIds
-│   ├── models/     # request/response and persistence models
-│   ├── services/   # payroll, bonus pool, overhead, rule gate
-│   └── utils/      # money (integer minor units), period and cutoff helpers
+│   ├── api/        # HTTP routers bound 1:1 to contract operationIds (not implemented yet)
+│   ├── models/     # contract-shaped pydantic schemas (Money, Problem, financial rules)
+│   ├── services/   # the financial rule gate, the rule registry, domain errors
+│   └── utils/      # integer minor-unit arithmetic
+├── tests/          # pytest suite
 ├── API_CONTRACTS.md
 ├── pyproject.toml
+├── requirements.txt
 └── requirements-dev.txt
 ```
 
@@ -45,13 +47,15 @@ backend/payroll-costing/
 ```bash
 cd backend/payroll-costing
 pip install -r requirements-dev.txt
-ruff check src/
-ruff format --check src/
+ruff check .
+ruff format --check .
 mypy src/ --strict
+pytest -q
 ```
 
-All three must exit 0. The same three commands run as the blocking `payroll-engine-quality` job in `.github/workflows/ci.yml`.
+All four must exit 0. The same four commands run as the blocking `payroll-engine-quality` job in `.github/workflows/ci.yml`.
 
 ## Status
 
-Scaffold only. No router, migration, service, or test exists yet; the package contains docstrings only. Implementation proceeds through the phases in `openspec/changes/lukla-payroll-engine/tasks.md`.
+The financial rule registry domain is implemented and tested: the contract schemas, the rule gate, the proposal and approval service, and the integer money arithmetic. The HTTP layer and the PostgreSQL persistence are not implemented yet; the router lands with the real repository so that no endpoint ships against a fake store. Work proceeds through the phases in `openspec/changes/lukla-payroll-engine/tasks.md`.
+

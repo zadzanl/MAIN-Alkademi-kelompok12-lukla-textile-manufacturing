@@ -70,11 +70,14 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Ruff Linter Check
-        run: ruff check src/
+        run: ruff check .
 
       - name: Ruff Format Check
-        run: ruff format --check src/
+        run: ruff format --check .
 
       - name: Mypy Type Check
         run: mypy src/ --strict
+
+      - name: Pytest
+        run: pytest -q
 

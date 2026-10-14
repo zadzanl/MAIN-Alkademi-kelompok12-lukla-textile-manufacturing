@@ -1,3 +1,5 @@
 # Development and Static Analysis Dependencies
+-r requirements.txt
 ruff>=0.1.6
 mypy>=1.7.0
+pytest>=8.0
