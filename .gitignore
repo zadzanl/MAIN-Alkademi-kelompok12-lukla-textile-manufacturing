@@ -107,7 +107,8 @@ db-data/
 *.swo
 
 # ==========================================
-# Documentation Clutter
+# Documentation Clutter & Agent Orchestration
 # ==========================================
 /artifacts/
 DEPRECATED/
+.agents/teamwork/
