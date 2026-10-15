@@ -2,13 +2,14 @@ import logging
 import uuid
 from typing import List
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from fastapi.openapi.utils import get_openapi
 from .api.v1 import api_router
 from .schemas.problem import Problem, Violation, ProblemException, ProblemCode
+from .copilot.html import get_copilot_html
 
 logger = logging.getLogger("lukla.security.audit")
 logging.basicConfig(level=logging.INFO)
@@ -235,3 +236,17 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 app.include_router(api_router)
+
+@app.get(
+    "/copilot",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+@app.get(
+    "/copilot/",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+async def get_copilot_page():
+    return HTMLResponse(content=get_copilot_html(), status_code=status.HTTP_200_OK)
+
