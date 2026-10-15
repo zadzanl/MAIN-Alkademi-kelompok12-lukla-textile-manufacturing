@@ -24,6 +24,7 @@
  * Reuses the shared finance flag: set VITE_LEDGER_MODE=live plus
  * VITE_LEDGER_API_URL / VITE_LEDGER_TOKEN to hit the real service.
  */
+import { DATA_MODE as MODE, LEDGER_BASE as LIVE_BASE, LEDGER_TOKEN as LIVE_TOKEN } from './config';
 
 export type Currency = 'IDR' | 'USD';
 export interface Money { amountMinor: number; currency: Currency; }
@@ -101,10 +102,6 @@ export interface RuleRequest { ruleVersion: string; }
 export interface Page<T> { items: T[]; }
 export interface PayrollResultEnvelope<T> { ok: boolean; data?: T; error?: string; }
 
-const MODE: 'mock' | 'live' =
-  (import.meta.env.VITE_LEDGER_MODE as string) === 'live' ? 'live' : 'mock';
-const LIVE_BASE = (import.meta.env.VITE_LEDGER_API_URL as string) || '/api/v1';
-const LIVE_TOKEN = (import.meta.env.VITE_LEDGER_TOKEN as string) || '';
 const CURRENCY: Currency = 'IDR';
 
 export const isMockPayroll = MODE === 'mock';

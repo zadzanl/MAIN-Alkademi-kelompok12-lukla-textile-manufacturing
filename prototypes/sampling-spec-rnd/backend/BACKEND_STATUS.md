@@ -12,7 +12,7 @@
 **Backend Server**
 - Running: ✅ YES
 - Address: `http://127.0.0.1:8009`
-- Port: `8007`
+- Port: `8009`
 - Status: Uvicorn running with auto-reload
 
 **Frontend Integration**
@@ -72,5 +72,5 @@ npm run dev
 ### Verification
 - Backend import test: ✅ PASS
 - Backend server start: ✅ PASS (Uvicorn running)
-- Frontend dev server: ✅ PASS (Vite running on 3007)
-- CORS configured: ✅ YES (localhost:3007 allowed)
+- Frontend dev server: ✅ PASS (Vite running on 3009)
+- CORS configured: ✅ YES (localhost:3009 allowed)

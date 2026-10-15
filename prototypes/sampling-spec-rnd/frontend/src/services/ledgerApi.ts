@@ -17,6 +17,7 @@
  * modes requires no UI change. The real service also needs CORS + a token
  * issuer before the browser can call it (revisit in the auth phase).
  */
+import { DATA_MODE as MODE, LEDGER_BASE as LIVE_BASE, LEDGER_TOKEN as LIVE_TOKEN } from './config';
 
 export type LedgerDirection = 'DEBIT' | 'CREDIT';
 
@@ -50,10 +51,6 @@ export interface LedgerResult<T> {
   error?: string;
 }
 
-const MODE: 'mock' | 'live' =
-  (import.meta.env.VITE_LEDGER_MODE as string) === 'live' ? 'live' : 'mock';
-const LIVE_BASE = (import.meta.env.VITE_LEDGER_API_URL as string) || '/api/v1';
-const LIVE_TOKEN = (import.meta.env.VITE_LEDGER_TOKEN as string) || '';
 const TENANT_ID = '11111111-1111-1111-1111-111111111111';
 
 /** True when the UI is backed by the in-memory mock instead of the live service. */

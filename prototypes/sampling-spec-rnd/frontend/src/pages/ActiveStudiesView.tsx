@@ -6,8 +6,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import type { TimeStudy } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID } from '../services/identity';
 
 const fmtMs = (ms: number) => {
   if (!ms) return '—';
@@ -23,11 +23,8 @@ const ActiveStudiesView: React.FC = () => {
   const fetchStudies = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/studies/all?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        setStudies(j.data ?? []);
-      }
+      const res = await api.listStudies(TENANT_ID);
+      if (res.success && res.data) setStudies(res.data);
     } finally { setLoading(false); }
   }, []);
 
@@ -39,9 +36,14 @@ const ActiveStudiesView: React.FC = () => {
   }, [fetchStudies]);
 
   const action = async (study_id: string, verb: 'start'|'pause'|'resume'|'complete') => {
-    const r = await fetch(`${API}/studies/${study_id}/${verb}`, { method: 'POST' });
-    const j = await r.json();
-    setActionMsg(j.message ?? j.detail ?? '');
+    const run = {
+      start: api.startStudy,
+      pause: api.pauseStudy,
+      resume: api.resumeStudy,
+      complete: api.completeStudy,
+    }[verb];
+    const res = await run(study_id);
+    setActionMsg(res.success ? (res.message ?? '') : (res.error ?? ''));
     fetchStudies();
     setTimeout(() => setActionMsg(''), 3000);
   };

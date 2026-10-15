@@ -3,10 +3,10 @@ Main FastAPI Application
 Sampling & Spec R&D Module
 """
 
-from typing import Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .api.routes import create_api_router
 
 # Load environment variables from .env file
@@ -25,8 +25,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3009",
         "http://127.0.0.1:3009",
-        "http://localhost:3007",
-        "http://127.0.0.1:3007",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -37,18 +35,16 @@ app.add_middleware(
 router = create_api_router()
 app.include_router(router)
 
-# Health check endpoint (at root level for backward compatibility)
+
+# Health check endpoint (at root level for backward compatibility).
+# The /api/sampling-spec-rnd/health route is provided by the API router.
 @app.get("/health")
-def health_check() -> Dict[str, str]:
+def health_check() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy", "service": "sampling-spec-rnd-api"}
 
-# Health check endpoint (also at API level for frontend)
-@app.get("/api/sampling-spec-rnd/health")
-def health_check_api() -> Dict[str, str]:
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "sampling-spec-rnd-api"}
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8009, reload=True)

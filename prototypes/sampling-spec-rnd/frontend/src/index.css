@@ -553,6 +553,20 @@ article.surface:hover {
 }
 .fade-up { animation: fadeUp var(--dur-slow) var(--ease-smooth) both; }
 
+/* ── Book page-turn transition (navigation between views) ──────────────────── */
+.page-stage { perspective: 1600px; }
+
+.page-turn {
+  transform-origin: left center;
+  backface-visibility: hidden;
+  animation: pageTurn var(--dur-slow) var(--ease-smooth) both;
+}
+
+@keyframes pageTurn {
+  from { opacity: 0; transform: rotateY(-14deg) translateX(-12px); }
+  to   { opacity: 1; transform: rotateY(0deg)  translateX(0); }
+}
+
 /* ── Pulse dot (live indicator) ─────────────────────────────────────────────── */
 @keyframes pulseDot {
   0%,100% { transform: scale(1); opacity: 1; }
@@ -943,6 +957,7 @@ html.theme-transition *:not(.theme-icon)::after {
 
 @media (prefers-reduced-motion: reduce) {
   .theme-icon { transition: none; }
+  .page-turn { animation: none; }
   html.theme-transition,
   html.theme-transition *,
   html.theme-transition *::before,

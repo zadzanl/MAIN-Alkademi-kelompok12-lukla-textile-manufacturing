@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Sidebar, { NavItem, LucideIcon } from './components/Sidebar';
+import Sidebar, { NavChapter, LucideIcon } from './components/Sidebar';
 import Header from './components/Header';
 import MetricCard from './components/MetricCard';
 import Chart from './components/Chart';
@@ -30,6 +30,7 @@ import FontSelector, { FontKey } from './components/FontSelector';
 import SampleVersionView   from './pages/SampleVersionView';
 import DigitalStopwatchView from './pages/DigitalStopwatchView';
 import ActiveStudiesView   from './pages/ActiveStudiesView';
+import ProductionView      from './pages/ProductionView';
 import StudyListView       from './pages/StudyListView';
 import SpecListView        from './pages/SpecListView';
 import DriftAnalysisView   from './pages/DriftAnalysisView';
@@ -39,6 +40,10 @@ import QualityView         from './pages/QualityView';
 import PayrollView         from './pages/PayrollView';
 
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
+import { SAMPLING_BASE, DATA_MODE } from './services/config';
+import * as api from './services/api';
+import { TENANT_ID, actor } from './services/identity';
+import { matchesQuery } from './utils/filter';
 
 // ─── Shared form helper — hoisted outside App to avoid remount on every render
 // Bug-fix #8
@@ -50,7 +55,50 @@ const FormField: React.FC<FormFieldProps> = ({ id, label, children }) => (
   </div>
 );
 
-const API_BASE = 'http://localhost:8009/api/sampling-spec-rnd';
+// ─── Navigation chapters ("bab") — module-scoped so the array identity is stable
+// for the Sidebar accordion. Grouping mirrors the R&D workflow.
+const chapters: NavChapter[] = [
+  {
+    id: 'ringkasan', label: 'Ringkasan', icon: 'layout-dashboard',
+    items: [
+      { id: 'overview', label: 'Overview', icon: 'layout-dashboard', view: 'overview' },
+    ],
+  },
+  {
+    id: 'sampling-studi', label: 'Sampling & Studi', icon: 'clock',
+    items: [
+      { id: 'sample-versions', label: 'Versi Sample', icon: 'layers', view: 'sample-versions' },
+      { id: 'stopwatch',       label: 'Stopwatch',    icon: 'clock',  view: 'stopwatch' },
+      { id: 'active-studies',  label: 'Studi Aktif',  icon: 'activity', view: 'active-studies' },
+      { id: 'production',      label: 'Produksi & Tally', icon: 'factory', view: 'production' },
+      { id: 'time-studies',    label: 'Studi Waktu',  icon: 'clipboard-list', view: 'time-studies' },
+      { id: 'study-list',      label: 'Daftar Studi', icon: 'boxes', view: 'study-list' },
+    ],
+  },
+  {
+    id: 'spesifikasi', label: 'Spesifikasi', icon: 'badge-check',
+    items: [
+      { id: 'spec-versions',  label: 'Versi Spec',     icon: 'badge-check', view: 'spec-versions' },
+      { id: 'spec-list',      label: 'Daftar Spec',    icon: 'bar-chart-3', view: 'spec-list' },
+      { id: 'drift-analysis', label: 'Analisis Drift', icon: 'activity',    view: 'drift-analysis' },
+    ],
+  },
+  {
+    id: 'kualitas-keuangan', label: 'Kualitas & Keuangan', icon: 'check-circle',
+    items: [
+      { id: 'quality', label: 'Quality Control',   icon: 'check-circle', view: 'quality' },
+      { id: 'reports', label: 'Laporan',           icon: 'bar-chart-3',  view: 'reports' },
+      { id: 'ledger',  label: 'Buku Besar',        icon: 'book-open',    view: 'ledger' },
+      { id: 'payroll', label: 'Payroll & Costing', icon: 'factory',      view: 'payroll' },
+    ],
+  },
+  {
+    id: 'sistem', label: 'Sistem', icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -137,102 +185,63 @@ function App() {
     materials: '', process_steps: '', notes: '',
   });
 
-  // Bug-fix: deduplicate navItems (defined once, no map issues)
-  const navItems: NavItem[] = [
-    { id: 'overview',        label: 'Overview',          icon: 'layout-dashboard', view: 'overview' },
-    { id: 'sample-versions', label: 'Versi Sample',      icon: 'layers',           view: 'sample-versions' },
-    { id: 'stopwatch',       label: 'Stopwatch',         icon: 'clock',            view: 'stopwatch' },
-    { id: 'active-studies',  label: 'Studi Aktif',       icon: 'activity',         view: 'active-studies' },
-    { id: 'time-studies',    label: 'Studi Waktu',       icon: 'clipboard-list',   view: 'time-studies' },
-    { id: 'study-list',      label: 'Daftar Studi',      icon: 'boxes',            view: 'study-list' },
-    { id: 'spec-versions',   label: 'Versi Spec',        icon: 'badge-check',      view: 'spec-versions' },
-    { id: 'spec-list',       label: 'Daftar Spec',       icon: 'bar-chart-3',      view: 'spec-list' },
-    { id: 'drift-analysis',  label: 'Analisis Drift',    icon: 'activity',         view: 'drift-analysis' },
-    { id: 'quality',         label: 'Quality Control',   icon: 'check-circle',     view: 'quality' },
-    { id: 'reports',         label: 'Laporan',           icon: 'bar-chart-3',      view: 'reports' },
-    { id: 'ledger',          label: 'Buku Besar',        icon: 'book-open',        view: 'ledger' },
-    { id: 'payroll',         label: 'Payroll & Costing', icon: 'factory',          view: 'payroll' },
-    { id: 'settings',        label: 'Pengaturan',        icon: 'settings',         view: 'settings' },
-  ];
-
   // ── API helpers ───────────────────────────────────────────────────────────────
 
   const checkHealth = useCallback(async () => {
-    try {
-      const r = await fetch(`${API_BASE}/health`);
-      setIsConnected(r.ok);
-      return r.ok;
-    } catch { setIsConnected(false); return false; }
+    const res = await api.checkHealth();
+    setIsConnected(res.success);
+    return res.success;
   }, []);
 
   const fetchWorkflowSummary = useCallback(async () => {
-    try {
-      const r = await fetch(`${API_BASE}/workflow/summary?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        if (j.success) setWorkflowSummary(j.summary);
-      }
-    } catch { /* offline */ }
+    const res = await api.getWorkflowSummary(TENANT_ID);
+    if (res.success && res.data) setWorkflowSummary(res.data);
   }, []);
 
   const fetchTimeStudies = useCallback(async () => {
-    try {
-      const r = await fetch(`${API_BASE}/studies/all?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        if (j.success) setTimeStudies(j.data ?? []);
-      }
-    } catch { setTimeStudies([]); }
+    const res = await api.listStudies(TENANT_ID);
+    setTimeStudies(res.success && res.data ? res.data : []);
   }, []);
 
   const fetchSpecVersions = useCallback(async () => {
-    try {
-      const r = await fetch(`${API_BASE}/specs/all?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        if (j.success) setSpecVersions(j.data ?? []);
-      }
-    } catch { setSpecVersions([]); }
+    const res = await api.listSpecs(TENANT_ID);
+    setSpecVersions(res.success && res.data ? res.data : []);
   }, []);
 
   const createTimeStudy = async () => {
     if (!newStudy.process_id || !newStudy.process_name) {
       alert('ID Proses dan Nama Proses wajib diisi.'); return;
     }
-    const q = new URLSearchParams({
-      tenant_id: 'tenant-001',
+    const res = await api.createStudy({
+      tenant_id: TENANT_ID,
       process_id: newStudy.process_id,
       process_name: newStudy.process_name,
       operator_id: newStudy.operator_id || 'default',
-      target_sample_size: String(newStudy.target_sample_size),
+      target_sample_size: newStudy.target_sample_size,
     });
-    const r = await fetch(`${API_BASE}/studies/create?${q}`, { method: 'POST' });
-    if (r.ok) {
-      const j = await r.json();
-      alert(`✓ Studi dibuat: ${j.study_id.substring(0,8)}`);
+    if (res.success && res.data) {
+      alert(`✓ Studi dibuat: ${res.data.study_id.substring(0,8)}`);
       setShowCreateStudyModal(false);
       setNewStudy({ process_id:'', process_name:'', target_sample_size:30, confidence_level:95, allowance_percent:15, operator_id:'', notes:'' });
       fetchTimeStudies(); fetchWorkflowSummary();
-    } else { const e = await r.json(); alert(`Error: ${e.detail}`); }
+    } else { alert(`Error: ${res.error}`); }
   };
 
   const createSpecVersion = async () => {
     if (!newSpec.spec_id || !newSpec.spec_name) {
       alert('ID Spec dan Nama Spec wajib diisi.'); return;
     }
-    const q = new URLSearchParams({
-      tenant_id: 'tenant-001', spec_id: newSpec.spec_id,
-      spec_name: newSpec.spec_name, created_by: 'admin',
+    const res = await api.createSpec({
+      tenant_id: TENANT_ID, spec_id: newSpec.spec_id,
+      spec_name: newSpec.spec_name, created_by: actor(),
       version_number: newSpec.version_number,
     });
-    const r = await fetch(`${API_BASE}/specs/create?${q}`, { method: 'POST' });
-    if (r.ok) {
-      const j = await r.json();
-      alert(`✓ Spec dibuat: ${j.version_id.substring(0,8)}`);
+    if (res.success && res.data) {
+      alert(`✓ Spec dibuat: ${res.data.version_id.substring(0,8)}`);
       setShowCreateSpecModal(false);
       setNewSpec({ spec_id:'', spec_name:'', version_number:'1.0.0', materials:'', process_steps:'', notes:'' });
       fetchSpecVersions(); fetchWorkflowSummary();
-    } else { const e = await r.json(); alert(`Error: ${e.detail}`); }
+    } else { alert(`Error: ${res.error}`); }
   };
 
   // ── CSV export (UTF-8 BOM) ────────────────────────────────────────────────────
@@ -316,14 +325,17 @@ function App() {
 
   // ── computed ──────────────────────────────────────────────────────────────────
 
+  // Global header search ("Cari studi atau spec...") narrows both tables.
   const filteredStudies = timeStudies.filter(s =>
     (studyTab === 'all' || s.status === studyTab) &&
-    (!studySearch || s.process_name.toLowerCase().includes(studySearch.toLowerCase()))
+    matchesQuery(studySearch, s.process_name) &&
+    matchesQuery(globalSearch, s.process_name, s.process_id)
   );
 
   const filteredSpecs = specVersions.filter(s =>
     (specTab === 'all' || s.status === specTab) &&
-    (!specSearch || s.spec_name.toLowerCase().includes(specSearch.toLowerCase()))
+    matchesQuery(specSearch, s.spec_name) &&
+    matchesQuery(globalSearch, s.spec_name, s.spec_id)
   );
 
   /**
@@ -365,7 +377,7 @@ function App() {
     { label:'Completed',   count: timeStudies.filter(s=>s.status==='completed').length },
   ];
 
-  const currentLabel = navItems.find(n => n.view === currentView)?.label ?? 'Overview';
+  const currentLabel = chapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview';
 
   // ── shared style constants ────────────────────────────────────────────────────
   const inputCls  = "w-full rounded-[10px] px-3 py-2.5 text-[13px]";
@@ -381,13 +393,13 @@ function App() {
     >
       <Sidebar
         currentView={currentView}
-        navItems={navItems}
+        chapters={chapters}
         onNavigate={setCurrentView}
         isDark={isDark}
         onToggleDark={toggleDark}
       />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto page-stage">
         <div className="max-w-[1440px] mx-auto p-6 lg:p-8">
 
           <Header
@@ -400,6 +412,10 @@ function App() {
             onGlobalSearchChange={setGlobalSearch}
             isDark={isDark}
           />
+
+          {/* key={currentView} remounts this wrapper on navigation so the
+              page-turn animation replays for the newly opened view. */}
+          <div key={currentView} className="page-turn">
 
           {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
           {currentView === 'overview' && (
@@ -463,6 +479,9 @@ function App() {
           {/* ── ACTIVE STUDIES ────────────────────────────────────────────────── */}
           {currentView === 'active-studies' && <ActiveStudiesView />}
 
+          {/* ── PRODUCTION & TALLY (VIEW-04 floor terminal + admin) ───────────── */}
+          {currentView === 'production' && <ProductionView />}
+
           {/* ── TIME STUDIES (create + manage) ────────────────────────────────── */}
           {currentView === 'time-studies' && (
             <div>
@@ -499,7 +518,7 @@ function App() {
           )}
 
           {/* ── STUDY LIST ────────────────────────────────────────────────────── */}
-          {currentView === 'study-list' && <StudyListView onExportCSV={exportToCSV} />}
+          {currentView === 'study-list' && <StudyListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
 
           {/* ── SPEC VERSIONS (create + manage) ───────────────────────────────── */}
           {currentView === 'spec-versions' && (
@@ -539,7 +558,7 @@ function App() {
           )}
 
           {/* ── SPEC LIST ─────────────────────────────────────────────────────── */}
-          {currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} />}
+          {currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
 
           {/* ── DRIFT ANALYSIS ────────────────────────────────────────────────── */}
           {currentView === 'drift-analysis' && <DriftAnalysisView />}
@@ -620,8 +639,9 @@ function App() {
                 </h3>
                 <div className="space-y-0">
                   {[
-                    { label:'Tenant ID',   value:'tenant-001' },
-                    { label:'Backend URL', value:API_BASE },
+                    { label:'Tenant ID',   value: TENANT_ID },
+                    { label:'Backend URL', value: SAMPLING_BASE },
+                    { label:'Mode Data',   value: DATA_MODE === 'mock' ? 'Mock (in-memory)' : 'Live' },
                     { label:'Frontend',    value:'http://localhost:3009' },
                     { label:'Versi Modul', value:'Sprint 1 · v1.0.0' },
                   ].map(({ label, value }) => (
@@ -650,6 +670,7 @@ function App() {
             </div>
           )}
 
+          </div>
         </div>
       </main>
 

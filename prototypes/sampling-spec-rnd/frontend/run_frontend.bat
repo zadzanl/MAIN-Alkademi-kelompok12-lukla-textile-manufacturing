@@ -5,10 +5,10 @@ echo Installing dependencies...
 call npm install
 
 echo.
-echo Starting frontend server on port 3007...
+echo Starting frontend server on port 3009...
 echo.
-echo Frontend will be available at: http://localhost:3007
-echo Backend should be running on: http://localhost:8007
+echo Frontend will be available at: http://localhost:3009
+echo Backend should be running on: http://localhost:8009
 echo.
 echo Press Ctrl+C to stop the server
 echo.

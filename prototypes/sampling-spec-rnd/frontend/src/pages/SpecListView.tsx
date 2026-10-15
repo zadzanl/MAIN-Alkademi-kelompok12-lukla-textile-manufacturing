@@ -7,8 +7,9 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { LucideIcon } from '../components/Sidebar';
 import type { SpecVersion, SpecDrift, ExportCSV } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID, REVIEWER_ID, APPROVER_ID } from '../services/identity';
+import { matchesQuery } from '../utils/filter';
 
 const STATUS_STYLE: Record<string, string> = {
   draft:      'bg-[#e8f2ff] text-[#0066cc]',
@@ -19,9 +20,9 @@ const STATUS_STYLE: Record<string, string> = {
   archived:   'bg-[#f0f0f2] text-[#626269]',
 };
 
-interface Props { onExportCSV: ExportCSV; }
+interface Props { onExportCSV: ExportCSV; globalSearch?: string; }
 
-const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
+const SpecListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
   const [specs, setSpecs]       = useState<SpecVersion[]>([]);
   const [tab, setTab]           = useState('all');
   const [search, setSearch]     = useState('');
@@ -30,32 +31,33 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
   const [actionMsg, setActionMsg] = useState('');
 
   const fetchAll = useCallback(async () => {
-    const r = await fetch(`${API}/specs/all?tenant_id=tenant-001`);
-    if (r.ok) { const j = await r.json(); setSpecs(j.data ?? []); }
+    const res = await api.listSpecs(TENANT_ID);
+    if (res.success && res.data) setSpecs(res.data);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const openDetail = async (spec: SpecVersion) => {
     setSelected(spec);
-    const r = await fetch(`${API}/specs/${spec.version_id}/data`);
-    if (r.ok) { const j = await r.json(); setDetail(j.data); }
+    const res = await api.getSpecData(spec.version_id);
+    if (res.success && res.data) setDetail(res.data);
   };
 
   const doAction = async (spec: SpecVersion, path: string, extra?: Record<string, string>) => {
-    const q = extra ? '?' + new URLSearchParams(extra) : '';
-    const r = await fetch(`${API}/specs/${spec.version_id}/${path}${q}`, { method: 'POST' });
-    const j = await r.json();
-    setActionMsg(j.message ?? j.detail ?? '');
+    const res =
+      path === 'submit-review' ? await api.submitSpecReview(spec.version_id, extra?.reviewer_id ?? '')
+      : path === 'approve' ? await api.approveSpec(spec.version_id, extra?.approver_id ?? '')
+      : await api.activateSpec(spec.version_id);
+    setActionMsg(res.success ? (res.message ?? '') : (res.error ?? ''));
     fetchAll();
     setTimeout(() => setActionMsg(''), 3000);
   };
 
-  const filtered = specs.filter(s => {
-    if (tab !== 'all' && s.status !== tab) return false;
-    if (search && !s.spec_name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const filtered = specs.filter(s =>
+    (tab === 'all' || s.status === tab) &&
+    matchesQuery(search, s.spec_name) &&
+    matchesQuery(globalSearch, s.spec_name, s.spec_id)
+  );
 
   return (
     <div className="space-y-4">
@@ -103,13 +105,13 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
                   Detail
                 </button>
                 {row.status === 'draft' && (
-                  <button onClick={() => doAction(row, 'submit-review', { reviewer_id: 'reviewer-001' })}
+                  <button onClick={() => doAction(row, 'submit-review', { reviewer_id: REVIEWER_ID })}
                     className="btn-pill btn-pill-orange">
                     Submit Review
                   </button>
                 )}
                 {row.status === 'review' && (
-                  <button onClick={() => doAction(row, 'approve', { approver_id: 'manager-001' })}
+                  <button onClick={() => doAction(row, 'approve', { approver_id: APPROVER_ID })}
                     className="btn-pill btn-pill-green">
                     Setujui
                   </button>

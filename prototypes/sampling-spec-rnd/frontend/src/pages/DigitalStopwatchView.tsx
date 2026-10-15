@@ -7,8 +7,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import type { TimeStudy } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID } from '../services/identity';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -71,11 +71,8 @@ const DigitalStopwatchView: React.FC = () => {
 
   const fetchStudies = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/studies/all?tenant_id=tenant-001`);
-      if (r.ok) {
-        const j = await r.json();
-        setStudies(j.data ?? []);
-      }
+      const res = await api.listStudies(TENANT_ID);
+      if (res.success && res.data) setStudies(res.data);
     } catch { /* offline */ }
   }, []);
 
@@ -146,18 +143,18 @@ const DigitalStopwatchView: React.FC = () => {
     // 1. start the study if still draft
     const study = studies.find(s => s.study_id === selectedStudyId);
     if (study?.status === 'draft') {
-      await fetch(`${API}/studies/${selectedStudyId}/start`, { method: 'POST' });
+      await api.startStudy(selectedStudyId);
     }
     // 2. push each lap as a sample
     for (const lap of laps) {
-      const q = new URLSearchParams({
-        cycle_time_ms: String(lap.cycle_time_ms),
-        element_name:  lap.element_name,
-        is_abnormal:   String(lap.is_abnormal),
-        notes:         lap.notes,
+      const res = await api.addSample({
+        study_id: selectedStudyId,
+        cycle_time_ms: lap.cycle_time_ms,
+        element_name: lap.element_name,
+        is_abnormal: lap.is_abnormal,
+        notes: lap.notes,
       });
-      const r = await fetch(`${API}/studies/${selectedStudyId}/add-sample?${q}`, { method: 'POST' });
-      if (r.ok) successCount++;
+      if (res.success) successCount++;
     }
     setSaveMsg(`${successCount}/${laps.length} sampel tersimpan ke studi.`);
     setSaving(false);
@@ -167,17 +164,14 @@ const DigitalStopwatchView: React.FC = () => {
   const handleCreateStudy = async () => {
     const { process_id, process_name, operator_id, target_sample_size } = newStudyForm;
     if (!process_id || !process_name) { alert('Process ID dan Nama Proses wajib diisi.'); return; }
-    const q = new URLSearchParams({
-      tenant_id: 'tenant-001', process_id, process_name,
-      operator_id, target_sample_size: String(target_sample_size),
+    const res = await api.createStudy({
+      tenant_id: TENANT_ID, process_id, process_name, operator_id, target_sample_size,
     });
-    const r = await fetch(`${API}/studies/create?${q}`, { method: 'POST' });
-    if (r.ok) {
-      const j = await r.json();
-      setSelectedStudyId(j.study_id);
+    if (res.success && res.data) {
+      setSelectedStudyId(res.data.study_id);
       setShowNewStudy(false);
       fetchStudies();
-    } else { const e = await r.json(); alert(e.detail); }
+    } else { alert(res.error); }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────

@@ -9,8 +9,8 @@ import Modal from '../components/Modal';
 import { LucideIcon } from '../components/Sidebar';
 import { generateId } from '../lib/uuid';
 import type { SampleVersion, GarmentComponent, MaterialEstimation, ExportCSV } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID, actor, APPROVER_ID } from '../services/identity';
 
 const STATUS_STYLE: Record<string, string> = {
   draft:            'bg-[#e8f2ff] text-[#0066cc]',
@@ -73,11 +73,8 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
   // ── fetch ──────────────────────────────────────────────────────────
 
   const fetchAll = useCallback(async () => {
-    const r = await fetch(`${API}/sample-versions/all?tenant_id=tenant-001`);
-    if (r.ok) {
-      const j = await r.json();
-      setVersions(j.data ?? []);
-    }
+    const res = await api.listSampleVersions(TENANT_ID);
+    if (res.success && res.data) setVersions(res.data);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -97,75 +94,60 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
     if (!form.article_id || !form.article_name || !form.client_id) {
       alert('Article ID, Nama Artikel, dan Client ID wajib diisi.'); return;
     }
-    const q = new URLSearchParams({
-      tenant_id: 'tenant-001', ...form, created_by: 'admin',
-    });
-    const r = await fetch(`${API}/sample-versions/create?${q}`, { method: 'POST' });
-    if (r.ok) {
+    const res = await api.createSampleVersion({ tenant_id: TENANT_ID, ...form, created_by: actor() });
+    if (res.success) {
       setShowCreate(false);
       setForm({ article_id: '', article_name: '', client_id: '', notes: '' });
       fetchAll();
     } else {
-      const e = await r.json(); alert(e.detail);
+      alert(res.error);
     }
   };
 
   const handleRevise = async () => {
     if (!selected || !revisionNote) { alert('Catatan revisi wajib diisi.'); return; }
-    const q = new URLSearchParams({ revised_by: 'admin', revision_note: revisionNote });
-    const r = await fetch(`${API}/sample-versions/${selected.version_id}/new-revision?${q}`, { method: 'POST' });
-    if (r.ok) {
+    const res = await api.createSampleVersionRevision(selected.version_id, actor(), revisionNote);
+    if (res.success) {
       setShowRevise(false); setRevisionNote(''); fetchAll();
-    } else { const e = await r.json(); alert(e.detail); }
+    } else { alert(res.error); }
   };
 
   const handleSubmitApproval = async (sv: SampleVersion) => {
-    const r = await fetch(`${API}/sample-versions/${sv.version_id}/submit-approval?submitted_by=admin`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    const res = await api.submitSampleVersionApproval(sv.version_id, actor());
+    if (res.success) { fetchAll(); } else { alert(res.error); }
   };
 
   const handleApprove = async (sv: SampleVersion) => {
     const note = prompt('Catatan persetujuan (opsional):') ?? '';
-    const q = new URLSearchParams({ approved_by: 'manager', approval_note: note });
-    const r = await fetch(`${API}/sample-versions/${sv.version_id}/approve?${q}`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    const res = await api.approveSampleVersion(sv.version_id, APPROVER_ID, note);
+    if (res.success) { fetchAll(); } else { alert(res.error); }
   };
 
   const handleConvert = async (sv: SampleVersion) => {
     const orderId = prompt('Masukkan ID Order untuk konversi:');
     if (!orderId) return;
-    const q = new URLSearchParams({ order_id: orderId, converted_by: 'admin' });
-    const r = await fetch(`${API}/sample-versions/${sv.version_id}/convert-to-order?${q}`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    const res = await api.convertSampleVersionToOrder(sv.version_id, orderId, actor());
+    if (res.success) { fetchAll(); } else { alert(res.error); }
   };
 
   const handleSaveComponents = async () => {
     if (!selected) return;
-    const r = await fetch(`${API}/sample-versions/${selected.version_id}/components?updated_by=admin`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ components: editComponents }),
-    });
-    if (r.ok) { setShowCompModal(false); fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    const res = await api.updateSampleVersionComponents(selected.version_id, actor(), editComponents);
+    if (res.success) { setShowCompModal(false); fetchAll(); } else { alert(res.error); }
   };
 
   const handleSaveMaterials = async () => {
     if (!selected) return;
     // auto-calc total_cost
     const mats = editMaterials.map(m => ({ ...m, total_cost: m.estimated_usage * m.unit_cost }));
-    const r = await fetch(`${API}/sample-versions/${selected.version_id}/materials?updated_by=admin`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ materials: mats }),
-    });
-    if (r.ok) { setShowMatModal(false); fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    const res = await api.updateSampleVersionMaterials(selected.version_id, actor(), mats);
+    if (res.success) { setShowMatModal(false); fetchAll(); } else { alert(res.error); }
   };
 
   const openHistory = async (sv: SampleVersion) => {
-    const r = await fetch(`${API}/sample-versions/article/${sv.article_id}/history?tenant_id=tenant-001`);
-    if (r.ok) {
-      const j = await r.json();
-      setHistoryVersions(j.versions ?? []);
+    const res = await api.getSampleVersionHistory(sv.article_id, TENANT_ID);
+    if (res.success && res.data) {
+      setHistoryVersions(res.data);
       setShowHistory(true);
     }
   };

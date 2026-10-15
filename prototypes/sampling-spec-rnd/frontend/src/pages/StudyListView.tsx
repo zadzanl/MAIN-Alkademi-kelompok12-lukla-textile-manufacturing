@@ -6,8 +6,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import DataTable from '../components/DataTable';
 import { LucideIcon } from '../components/Sidebar';
 import type { TimeStudy, ExportCSV } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID } from '../services/identity';
+import { matchesQuery } from '../utils/filter';
 
 const fmtMs = (ms: number) => ms ? `${Math.round(ms).toLocaleString('id-ID')} ms` : '—';
 
@@ -19,26 +20,25 @@ const STATUS_STYLE: Record<string, string> = {
   archived:    'bg-[#f0f0f2] text-[#626269]',
 };
 
-interface Props { onExportCSV: ExportCSV; }
+interface Props { onExportCSV: ExportCSV; globalSearch?: string; }
 
-const StudyListView: React.FC<Props> = ({ onExportCSV }) => {
+const StudyListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
   const [studies, setStudies] = useState<TimeStudy[]>([]);
   const [tab, setTab]         = useState('all');
   const [search, setSearch]   = useState('');
 
   const fetchAll = useCallback(async () => {
-    const r = await fetch(`${API}/studies/all?tenant_id=tenant-001`);
-    if (r.ok) { const j = await r.json(); setStudies(j.data ?? []); }
+    const res = await api.listStudies(TENANT_ID);
+    if (res.success && res.data) setStudies(res.data);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const filtered = studies.filter(s => {
-    if (tab !== 'all' && s.status !== tab) return false;
-    if (search && !s.process_name.toLowerCase().includes(search.toLowerCase()) &&
-        !s.process_id.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const filtered = studies.filter(s =>
+    (tab === 'all' || s.status === tab) &&
+    matchesQuery(search, s.process_name, s.process_id) &&
+    matchesQuery(globalSearch, s.process_name, s.process_id)
+  );
 
   return (
     <div className="space-y-4">
