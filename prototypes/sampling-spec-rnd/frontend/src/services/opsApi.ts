@@ -22,6 +22,7 @@
  * VITE_LEDGER_API_URL / VITE_LEDGER_TOKEN to hit the real service. Shapes stay
  * identical to the contract so switching modes needs no UI change.
  */
+import { DATA_MODE as MODE, LEDGER_BASE as LIVE_BASE, LEDGER_TOKEN as LIVE_TOKEN } from './config';
 
 export type AssemblyStatus = 'MENUNGGU_QC' | 'REWORK' | 'QC_PASS' | 'REJECT_SCRAP';
 export type QcDisposition = 'PASS' | 'REPAIR' | 'REJECT';
@@ -46,11 +47,6 @@ export interface QcInspection extends QcRequest { id: string; }
 export interface Page<T> { items: T[]; nextCursor?: string | null; }
 
 export interface OpsResult<T> { ok: boolean; data?: T; error?: string; }
-
-const MODE: 'mock' | 'live' =
-  (import.meta.env.VITE_LEDGER_MODE as string) === 'live' ? 'live' : 'mock';
-const LIVE_BASE = (import.meta.env.VITE_LEDGER_API_URL as string) || '/api/v1';
-const LIVE_TOKEN = (import.meta.env.VITE_LEDGER_TOKEN as string) || '';
 
 export const isMockOps = MODE === 'mock';
 

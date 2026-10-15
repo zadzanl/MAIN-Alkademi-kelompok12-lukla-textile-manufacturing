@@ -6,8 +6,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
 import type { SpecVersion, DriftAnalysis, SpecDrift } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID } from '../services/identity';
 
 const SEV_COLOR: Record<string, { bg: string; text: string; bar: string }> = {
   low:      { bg: 'bg-[#e8f2ff]', text: 'text-[#0066cc]', bar: '#0071e3' },
@@ -38,8 +38,8 @@ const DriftAnalysisView: React.FC = () => {
   const [msg, setMsg] = useState('');
 
   const fetchSpecs = useCallback(async () => {
-    const r = await fetch(`${API}/specs/all?tenant_id=tenant-001`);
-    if (r.ok) { const j = await r.json(); setSpecs(j.data ?? []); }
+    const res = await api.listSpecs(TENANT_ID);
+    if (res.success && res.data) setSpecs(res.data);
   }, []);
 
   useEffect(() => { fetchSpecs(); }, [fetchSpecs]);
@@ -49,11 +49,11 @@ const DriftAnalysisView: React.FC = () => {
     setLoading(true);
     try {
       const [ra, rr] = await Promise.all([
-        fetch(`${API}/specs/${id}/drift-analysis`),
-        fetch(`${API}/specs/${id}/drift-report`),
+        api.getDriftAnalysis(id),
+        api.getDriftReport(id),
       ]);
-      if (ra.ok) { const j = await ra.json(); setAnalysis(j); }
-      if (rr.ok) { const j = await rr.json(); setReport(j.report); }
+      if (ra.success && ra.data) setAnalysis(ra.data);
+      if (rr.success && rr.data) setReport(rr.data as { drifts: SpecDrift[] });
     } finally { setLoading(false); }
   }, []);
 
@@ -69,28 +69,29 @@ const DriftAnalysisView: React.FC = () => {
     if (!parameter_name || !specification_limit || !measured_value) {
       alert('Parameter, Limit Spec, dan Nilai Terukur wajib diisi.'); return;
     }
-    const q = new URLSearchParams({
-      parameter_name, specification_limit, measured_value, severity, corrective_action,
+    const res = await api.recordDrift({
+      version_id: selectedId,
+      parameter_name,
+      specification_limit: Number(specification_limit),
+      measured_value: Number(measured_value),
+      severity: severity as 'low' | 'medium' | 'high' | 'critical',
+      corrective_action,
     });
-    const r = await fetch(`${API}/specs/${selectedId}/record-drift?${q}`, { method: 'POST' });
-    const j = await r.json();
-    if (r.ok) {
-      setMsg(`✓ ${j.message}`); setShowRecord(false);
+    if (res.success) {
+      setMsg(`✓ ${res.message ?? ''}`); setShowRecord(false);
       setDriftForm({ parameter_name:'', specification_limit:'', measured_value:'', severity:'low', corrective_action:'' });
       loadAnalysis(selectedId);
-    } else { alert(j.detail); }
+    } else { alert(res.error); }
     setTimeout(() => setMsg(''), 4000);
   };
 
   const handleResolveDrift = async () => {
     if (!resolveAction) { alert('Tindakan korektif wajib diisi.'); return; }
-    const q = new URLSearchParams({ corrective_action: resolveAction });
-    const r = await fetch(`${API}/specs/${selectedId}/resolve-drift/${resolveDriftId}?${q}`, { method: 'POST' });
-    const j = await r.json();
-    if (r.ok) {
-      setMsg(`✓ ${j.message}`); setShowResolve(false); setResolveAction('');
+    const res = await api.resolveDrift(selectedId, resolveDriftId, resolveAction);
+    if (res.success) {
+      setMsg(`✓ ${res.message ?? ''}`); setShowResolve(false); setResolveAction('');
       loadAnalysis(selectedId);
-    } else { alert(j.detail); }
+    } else { alert(res.error); }
     setTimeout(() => setMsg(''), 4000);
   };
 

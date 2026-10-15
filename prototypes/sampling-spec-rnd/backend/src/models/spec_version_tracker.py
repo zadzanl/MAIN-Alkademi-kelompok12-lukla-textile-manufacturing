@@ -3,15 +3,16 @@ Specification Version Tracker Model
 Tracks version history and spec drift for manufacturing specifications
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Dict, Any, List
 from enum import Enum
-import uuid
+from typing import Any
 
 
 class VersionStatus(Enum):
     """Status of a specification version"""
+
     DRAFT = "draft"
     REVIEW = "review"
     APPROVED = "approved"
@@ -22,6 +23,7 @@ class VersionStatus(Enum):
 
 class ChangeType(Enum):
     """Type of change made to specification"""
+
     CREATION = "creation"
     PARAMETER_UPDATE = "parameter_update"
     TOLERANCE_CHANGE = "tolerance_change"
@@ -33,6 +35,7 @@ class ChangeType(Enum):
 @dataclass
 class SpecChange:
     """Individual change to a specification"""
+
     change_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = field(default_factory=datetime.utcnow)
     change_type: ChangeType = ChangeType.OTHER
@@ -43,7 +46,7 @@ class SpecChange:
     reason: str = ""
     impact_assessment: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
             "change_id": self.change_id,
@@ -61,6 +64,7 @@ class SpecChange:
 @dataclass
 class SpecDrift:
     """Specification drift record"""
+
     drift_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = field(default_factory=datetime.utcnow)
     parameter_name: str = ""
@@ -70,9 +74,9 @@ class SpecDrift:
     severity: str = "low"  # low, medium, high, critical
     corrective_action: str = ""
     resolved: bool = False
-    resolved_at: Optional[datetime] = None
+    resolved_at: datetime | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
             "drift_id": self.drift_id,
@@ -91,6 +95,7 @@ class SpecDrift:
 @dataclass
 class SpecVersionTracker:
     """Main specification version tracking model"""
+
     version_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str = ""
     spec_id: str = ""
@@ -99,44 +104,44 @@ class SpecVersionTracker:
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     status: VersionStatus = VersionStatus.DRAFT
-    
+
     # Specification data
-    parameters: Dict[str, Any] = field(default_factory=dict)
-    tolerances: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    materials: List[str] = field(default_factory=list)
-    process_steps: List[str] = field(default_factory=list)
-    
+    parameters: dict[str, Any] = field(default_factory=dict)
+    tolerances: dict[str, dict[str, float]] = field(default_factory=dict)
+    materials: list[str] = field(default_factory=list)
+    process_steps: list[str] = field(default_factory=list)
+
     # Change tracking
-    changes: List[SpecChange] = field(default_factory=list)
-    change_history: Dict[str, List[Any]] = field(default_factory=dict)
-    
+    changes: list[SpecChange] = field(default_factory=list)
+    change_history: dict[str, list[Any]] = field(default_factory=dict)
+
     # Drift tracking
-    drifts: List[SpecDrift] = field(default_factory=list)
+    drifts: list[SpecDrift] = field(default_factory=list)
     total_drifts: int = 0
     critical_drifts: int = 0
-    
+
     # Metadata
     created_by: str = ""
-    approved_by: Optional[str] = None
-    approved_at: Optional[datetime] = None
+    approved_by: str | None = None
+    approved_at: datetime | None = None
     notes: str = ""
-    
+
     # Relationships
-    parent_version_id: Optional[str] = None
-    supersedes_version_id: Optional[str] = None
+    parent_version_id: str | None = None
+    supersedes_version_id: str | None = None
 
     def add_change(self, change: SpecChange) -> bool:
         """Record a change to the specification"""
         if self.status == VersionStatus.ARCHIVED:
             return False
-        
+
         self.changes.append(change)
-        
+
         # Track change history by parameter
         if change.parameter_name not in self.change_history:
             self.change_history[change.parameter_name] = []
         self.change_history[change.parameter_name].append(change.to_dict())
-        
+
         self.updated_at = datetime.utcnow()
         return True
 
@@ -144,10 +149,10 @@ class SpecVersionTracker:
         """Record a specification drift"""
         self.drifts.append(drift)
         self.total_drifts += 1
-        
+
         if drift.severity == "critical":
             self.critical_drifts += 1
-        
+
         self.updated_at = datetime.utcnow()
         return True
 
@@ -166,7 +171,7 @@ class SpecVersionTracker:
         """Submit version for review"""
         if self.status != VersionStatus.DRAFT:
             return False
-        
+
         self.status = VersionStatus.REVIEW
         self.updated_at = datetime.utcnow()
         return True
@@ -175,7 +180,7 @@ class SpecVersionTracker:
         """Approve the specification version"""
         if self.status not in [VersionStatus.REVIEW]:
             return False
-        
+
         self.status = VersionStatus.APPROVED
         self.approved_by = approver_id
         self.approved_at = datetime.utcnow()
@@ -186,7 +191,7 @@ class SpecVersionTracker:
         """Activate this version as the current specification"""
         if self.status != VersionStatus.APPROVED:
             return False
-        
+
         self.status = VersionStatus.ACTIVE
         self.updated_at = datetime.utcnow()
         return True
@@ -195,13 +200,13 @@ class SpecVersionTracker:
         """Mark this version as superseded"""
         if self.status != VersionStatus.ACTIVE:
             return False
-        
+
         self.status = VersionStatus.SUPERSEDED
         self.supersedes_version_id = new_version_id
         self.updated_at = datetime.utcnow()
         return True
 
-    def get_drift_summary(self) -> Dict[str, Any]:
+    def get_drift_summary(self) -> dict[str, Any]:
         """Get summary of drifts"""
         return {
             "total_drifts": self.total_drifts,
@@ -211,7 +216,7 @@ class SpecVersionTracker:
             "severity_distribution": self._get_severity_distribution(),
         }
 
-    def _get_severity_distribution(self) -> Dict[str, int]:
+    def _get_severity_distribution(self) -> dict[str, int]:
         """Calculate severity distribution of drifts"""
         distribution = {"low": 0, "medium": 0, "high": 0, "critical": 0}
         for drift in self.drifts:
@@ -219,7 +224,7 @@ class SpecVersionTracker:
                 distribution[drift.severity] += 1
         return distribution
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for storage/API"""
         return {
             "version_id": self.version_id,
@@ -247,7 +252,7 @@ class SpecVersionTracker:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "SpecVersionTracker":
+    def from_dict(cls, data: dict[str, Any]) -> "SpecVersionTracker":
         """Create instance from dictionary"""
         instance = cls(
             version_id=data.get("version_id", str(uuid.uuid4())),

@@ -20,10 +20,68 @@ permissions:
   contents: read
 
 jobs:
-  backend-quality:
-    name: Backend Quality (Ruff & Mypy) [Advisory]
+  # HARD GATE — regression net for the API contract. Keep green at all times.
+  backend-tests:
+    name: Backend Contract Tests (pytest)
     runs-on: ubuntu-latest
-    continue-on-error: true
+    defaults:
+      run:
+        working-directory: prototypes/sampling-spec-rnd/backend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: prototypes/sampling-spec-rnd/backend/requirements-dev.txt
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Contract Tests
+        run: pytest -q
+
+  # HARD GATE — frontend must type-check, lint, test, and build.
+  frontend-quality:
+    name: Frontend Quality (TypeScript, Lint, Tests & Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/sampling-spec-rnd/frontend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: TypeScript Type Check
+        run: npm run type-check
+
+      - name: ESLint Check
+        run: npm run lint
+
+      - name: Unit Tests
+        run: npm test
+
+      # Catches Vite build-time issues (e.g. import.meta.env replacement).
+      - name: Production Build
+        run: npm run build
+
+  # HARD GATE — backend lint, formatting and strict typing.
+  backend-quality:
+    name: Backend Quality (Ruff & Mypy)
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: prototypes/sampling-spec-rnd/backend
@@ -44,35 +102,10 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Ruff Linter Check
-        run: ruff check src/
+        run: ruff check .
 
       - name: Ruff Format Check
-        run: ruff format --check src/
+        run: ruff format --check .
 
       - name: Mypy Type Check
         run: mypy src/ --strict
-
-  frontend-quality:
-    name: Frontend Quality (TypeScript & Lint) [Advisory]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    defaults:
-      run:
-        working-directory: prototypes/sampling-spec-rnd/frontend
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: TypeScript Type Check
-        run: npm run type-check
-
-      - name: ESLint Check
-        run: npm run lint

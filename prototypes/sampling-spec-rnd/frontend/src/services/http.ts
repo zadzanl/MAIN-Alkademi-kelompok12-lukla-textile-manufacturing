@@ -1,0 +1,96 @@
+/**
+ * http.ts — Single HTTP transport for the sampling module.
+ *
+ * One place for: base URL, request timeout (AbortController), JSON handling,
+ * Idempotency-Key on writes, and error normalisation. Backend errors are
+ * surfaced as a typed `ApiError` so callers never parse raw responses.
+ *
+ * Supports both error shapes in this codebase:
+ *   - FastAPI sampling backend: { "detail": "..." }
+ *   - Lukla ops engine (RFC 7807): { "code": "...", "detail": "..." }
+ *
+ * Known ceiling: no retry/backoff yet; add only when a real need appears.
+ */
+import { SAMPLING_BASE } from './config';
+import { buildQuery } from './query';
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly detail: string;
+
+  constructor(status: number, detail: string, code?: string) {
+    super(detail);
+    this.name = 'ApiError';
+    this.status = status;
+    this.detail = detail;
+    this.code = code;
+  }
+}
+
+export interface RequestOptions {
+  params?: Record<string, unknown>;
+  body?: unknown;
+  timeoutMs?: number;
+  /** Set on writes so retries of the same logical request are replay-safe. */
+  idempotencyKey?: string;
+}
+
+function newIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID().replace(/-/g, '');
+  }
+  return `idem-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+async function request<T>(
+  method: 'GET' | 'POST' | 'PUT',
+  path: string,
+  options: RequestOptions = {},
+  base: string = SAMPLING_BASE,
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 10000);
+
+  const headers: Record<string, string> = {};
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (method !== 'GET') {
+    headers['Idempotency-Key'] = options.idempotencyKey ?? newIdempotencyKey();
+  }
+
+  try {
+    const response = await fetch(`${base}${path}${buildQuery(options.params)}`, {
+      method,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+    const raw: unknown = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+      const problem = (raw ?? {}) as { detail?: unknown; code?: unknown; title?: unknown };
+      const rawDetail = problem.detail ?? problem.title ?? `HTTP ${response.status}`;
+      const detail = typeof rawDetail === 'string' ? rawDetail : JSON.stringify(rawDetail);
+      const code = typeof problem.code === 'string' ? problem.code : undefined;
+      throw new ApiError(response.status, detail, code);
+    }
+
+    return raw as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export const http = {
+  get: <T>(path: string, options?: RequestOptions) => request<T>('GET', path, options),
+  post: <T>(path: string, options?: RequestOptions) => request<T>('POST', path, options),
+  put: <T>(path: string, options?: RequestOptions) => request<T>('PUT', path, options),
+};
+
+/** Human-readable message for any thrown value (ApiError or network error). */
+export function errorMessage(error: unknown): string {
+  if (error instanceof ApiError) return error.detail;
+  return String(error);
+}

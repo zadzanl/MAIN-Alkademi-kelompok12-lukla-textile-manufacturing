@@ -1,7 +1,9 @@
 /**
- * API Service — Sampling & Spec R&D
- * Covers all 24 backend endpoints, normalizes responses.
- * Base URL from VITE_API_URL env or defaults to proxy path.
+ * API Service — Sampling & Spec R&D.
+ *
+ * Single client for all 33 sampling endpoints. Built on services/http.ts so
+ * every call shares one base URL, timeout, and error shape. Returns the same
+ * `ApiResult<T>` envelope the pages already rely on.
  */
 
 import type {
@@ -10,9 +12,28 @@ import type {
   SpecVersion,
   DriftAnalysis,
   WorkflowSummary,
+  SampleVersion,
+  GarmentComponent,
+  MaterialEstimation,
 } from '@/types';
-
-const BASE = import.meta.env.VITE_API_URL || '/api/sampling-spec-rnd';
+import { http, errorMessage } from './http';
+import type {
+  CreateStudyRaw,
+  CreateSpecRaw,
+  StudyDataRaw,
+  SpecDataRaw,
+  StatsRaw,
+  ListRaw,
+  DriftReportRaw,
+  DriftAnalysisRaw,
+  ChangeHistoryRaw,
+  WorkflowRaw,
+  HealthRaw,
+  OkRaw,
+  SampleVersionRaw,
+  SampleVersionDataRaw,
+  SampleVersionHistoryRaw,
+} from '@/types/api';
 
 // ─── Generic response shape ───────────────────────────────────────────────────
 export interface ApiResult<T = unknown> {
@@ -23,56 +44,47 @@ export interface ApiResult<T = unknown> {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function qs(params: Record<string, unknown>): string {
-  const p = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== '') p.append(k, String(v));
+async function get<T>(path: string, params?: Record<string, unknown>): Promise<ApiResult<T>> {
+  try {
+    const raw = await http.get<T>(path, { params });
+    return { success: (raw as { success?: boolean })?.success ?? true, data: raw };
+  } catch (error) {
+    return { success: false, error: errorMessage(error) };
   }
-  const s = p.toString();
-  return s ? `?${s}` : '';
 }
 
 async function post<T>(path: string, params?: Record<string, unknown>): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(`${BASE}${path}${params ? qs(params) : ''}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const raw = await res.json();
-    if (!res.ok) return { success: false, error: raw.detail ?? `HTTP ${res.status}` };
-    return { success: raw.success ?? true, data: raw as T, message: raw.message };
-  } catch (e) {
-    return { success: false, error: String(e) };
+    const raw = await http.post<T>(path, { params });
+    return {
+      success: (raw as { success?: boolean })?.success ?? true,
+      data: raw,
+      message: (raw as { message?: string })?.message,
+    };
+  } catch (error) {
+    return { success: false, error: errorMessage(error) };
   }
 }
 
-async function get<T>(path: string, params?: Record<string, unknown>): Promise<ApiResult<T>> {
+async function put<T>(path: string, params?: Record<string, unknown>, body?: unknown): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(`${BASE}${path}${params ? qs(params) : ''}`);
-    const raw = await res.json();
-    if (!res.ok) return { success: false, error: raw.detail ?? `HTTP ${res.status}` };
-    return { success: raw.success ?? true, data: raw as T };
-  } catch (e) {
-    return { success: false, error: String(e) };
+    const raw = await http.put<T>(path, { params, body });
+    return { success: (raw as { success?: boolean })?.success ?? true, data: raw };
+  } catch (error) {
+    return { success: false, error: errorMessage(error) };
   }
 }
-
-// ─── Raw response shapes from backend ────────────────────────────────────────
-interface CreateStudyRaw  { success: boolean; study_id: string; status: string; message: string }
-interface CreateSpecRaw   { success: boolean; version_id: string; status: string; message: string }
-interface StudyDataRaw    { success: boolean; data: TimeStudy }
-interface SpecDataRaw     { success: boolean; data: SpecVersion }
-interface StatsRaw        { success: boolean; statistics: TimeStudyStats }
-interface DriftReportRaw  { success: boolean; report: unknown }
-interface DriftAnalysisRaw{ success: boolean; version_id: string; analysis: DriftAnalysis; risk_score: number }
-interface ChangeHistoryRaw{ success: boolean; history: unknown }
-interface WorkflowRaw     { success: boolean; summary: WorkflowSummary }
-interface HealthRaw       { status: string; module: string }
-interface OkRaw           { success: boolean; message: string }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TIME STUDY
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/** GET /studies/all → TimeStudy[] */
+export async function listStudies(tenant_id: string): Promise<ApiResult<TimeStudy[]>> {
+  const res = await get<ListRaw<TimeStudy>>('/studies/all', { tenant_id });
+  if (!res.success || !res.data) return res as unknown as ApiResult<TimeStudy[]>;
+  return { success: true, data: res.data.data ?? [] };
+}
 
 /** POST /studies/create → { study_id, status } */
 export async function createStudy(p: {
@@ -136,6 +148,13 @@ export async function getStudyStats(studyId: string): Promise<ApiResult<TimeStud
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPEC VERSION
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/** GET /specs/all → SpecVersion[] */
+export async function listSpecs(tenant_id: string): Promise<ApiResult<SpecVersion[]>> {
+  const res = await get<ListRaw<SpecVersion>>('/specs/all', { tenant_id });
+  if (!res.success || !res.data) return res as unknown as ApiResult<SpecVersion[]>;
+  return { success: true, data: res.data.data ?? [] };
+}
 
 /** POST /specs/create → { version_id, status } */
 export async function createSpec(p: {
@@ -227,6 +246,75 @@ export async function getChangeHistory(versionId: string, parameter_name?: strin
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SAMPLE VERSIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** GET /sample-versions/all → SampleVersion[] */
+export async function listSampleVersions(tenant_id: string): Promise<ApiResult<SampleVersion[]>> {
+  const res = await get<ListRaw<SampleVersion>>('/sample-versions/all', { tenant_id });
+  if (!res.success || !res.data) return res as unknown as ApiResult<SampleVersion[]>;
+  return { success: true, data: res.data.data ?? [] };
+}
+
+/** GET /sample-versions/{id} → SampleVersion */
+export async function getSampleVersion(versionId: string): Promise<ApiResult<SampleVersion>> {
+  const res = await get<SampleVersionDataRaw>(`/sample-versions/${versionId}`);
+  if (!res.success || !res.data) return res as unknown as ApiResult<SampleVersion>;
+  return { success: true, data: res.data.data };
+}
+
+/** GET /sample-versions/article/{article_id}/history → SampleVersion[] */
+export async function getSampleVersionHistory(articleId: string, tenant_id: string): Promise<ApiResult<SampleVersion[]>> {
+  const res = await get<SampleVersionHistoryRaw>(`/sample-versions/article/${articleId}/history`, { tenant_id });
+  if (!res.success || !res.data) return res as unknown as ApiResult<SampleVersion[]>;
+  return { success: true, data: res.data.versions ?? [] };
+}
+
+/** POST /sample-versions/create */
+export async function createSampleVersion(p: {
+  tenant_id: string;
+  article_id: string;
+  article_name: string;
+  client_id: string;
+  created_by: string;
+  notes?: string;
+}): Promise<ApiResult<{ version_id: string; version_label: string }>> {
+  const res = await post<SampleVersionRaw>('/sample-versions/create', p);
+  if (!res.success || !res.data) return res as unknown as ApiResult<{ version_id: string; version_label: string }>;
+  return { success: true, data: { version_id: res.data.version_id, version_label: res.data.version_label ?? '' } };
+}
+
+/** POST /sample-versions/{id}/new-revision */
+export async function createSampleVersionRevision(versionId: string, revised_by: string, revision_note: string): Promise<ApiResult<SampleVersionRaw>> {
+  return post<SampleVersionRaw>(`/sample-versions/${versionId}/new-revision`, { revised_by, revision_note });
+}
+
+/** POST /sample-versions/{id}/submit-approval */
+export async function submitSampleVersionApproval(versionId: string, submitted_by: string): Promise<ApiResult<SampleVersionRaw>> {
+  return post<SampleVersionRaw>(`/sample-versions/${versionId}/submit-approval`, { submitted_by });
+}
+
+/** POST /sample-versions/{id}/approve */
+export async function approveSampleVersion(versionId: string, approved_by: string, approval_note = ''): Promise<ApiResult<SampleVersionRaw>> {
+  return post<SampleVersionRaw>(`/sample-versions/${versionId}/approve`, { approved_by, approval_note });
+}
+
+/** POST /sample-versions/{id}/convert-to-order */
+export async function convertSampleVersionToOrder(versionId: string, order_id: string, converted_by: string): Promise<ApiResult<SampleVersionRaw>> {
+  return post<SampleVersionRaw>(`/sample-versions/${versionId}/convert-to-order`, { order_id, converted_by });
+}
+
+/** PUT /sample-versions/{id}/components */
+export async function updateSampleVersionComponents(versionId: string, updated_by: string, components: GarmentComponent[]): Promise<ApiResult<SampleVersionRaw>> {
+  return put<SampleVersionRaw>(`/sample-versions/${versionId}/components`, { updated_by }, { components });
+}
+
+/** PUT /sample-versions/{id}/materials */
+export async function updateSampleVersionMaterials(versionId: string, updated_by: string, materials: MaterialEstimation[]): Promise<ApiResult<SampleVersionRaw>> {
+  return put<SampleVersionRaw>(`/sample-versions/${versionId}/materials`, { updated_by }, { materials });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // WORKFLOW
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -242,23 +330,19 @@ export async function getWorkflowSummary(tenant_id: string): Promise<ApiResult<W
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /** GET /health */
-export async function checkHealth(): Promise<ApiResult<{ status: string; module: string }>> {
+export async function checkHealth(): Promise<ApiResult<HealthRaw>> {
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
-    const res = await fetch(`${BASE}/health`, { signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!res.ok) return { success: false, error: `HTTP ${res.status}` };
-    const raw: HealthRaw = await res.json();
+    const raw = await http.get<HealthRaw>('/health', { timeoutMs: 5000 });
     return { success: raw.status === 'healthy', data: raw };
-  } catch (e) {
-    return { success: false, error: String(e) };
+  } catch (error) {
+    return { success: false, error: errorMessage(error) };
   }
 }
 
 // ─── Legacy class-style export for backward compat ───────────────────────────
 export const api = {
   checkHealth,
+  listStudies,
   createStudy,
   startStudy,
   pauseStudy,
@@ -267,6 +351,7 @@ export const api = {
   addSample,
   getStudyData,
   getStudyStats,
+  listSpecs,
   createSpec,
   recordSpecChange,
   recordDrift,
@@ -278,6 +363,16 @@ export const api = {
   getDriftReport,
   getDriftAnalysis,
   getChangeHistory,
+  listSampleVersions,
+  getSampleVersion,
+  getSampleVersionHistory,
+  createSampleVersion,
+  createSampleVersionRevision,
+  submitSampleVersionApproval,
+  approveSampleVersion,
+  convertSampleVersionToOrder,
+  updateSampleVersionComponents,
+  updateSampleVersionMaterials,
   getWorkflowSummary,
 };
 

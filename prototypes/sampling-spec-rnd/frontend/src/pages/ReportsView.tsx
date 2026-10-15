@@ -6,8 +6,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import type { TimeStudy, SampleVersion, ExportCSV } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import * as api from '../services/api';
+import { TENANT_ID } from '../services/identity';
 
 const fmtMs  = (ms: number)   => ms ? `${Math.round(ms).toLocaleString('id-ID')} ms` : '—';
 const fmtRp  = (n: number)    => `Rp ${n.toLocaleString('id-ID')}`;
@@ -30,11 +30,11 @@ const ReportsView: React.FC<Props> = ({ onExportCSV }) => {
 
   const fetchAll = useCallback(async () => {
     const [rs, rv] = await Promise.all([
-      fetch(`${API}/studies/all?tenant_id=tenant-001`),
-      fetch(`${API}/sample-versions/all?tenant_id=tenant-001`),
+      api.listStudies(TENANT_ID),
+      api.listSampleVersions(TENANT_ID),
     ]);
-    if (rs.ok) { const j = await rs.json(); setStudies(j.data ?? []); }
-    if (rv.ok) { const j = await rv.json(); setSvList(j.data ?? []); }
+    if (rs.success && rs.data) setStudies(rs.data);
+    if (rv.success && rv.data) setSvList(rv.data);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);

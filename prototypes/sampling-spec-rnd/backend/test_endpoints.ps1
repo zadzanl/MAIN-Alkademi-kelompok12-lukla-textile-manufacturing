@@ -1,10 +1,10 @@
 # =============================================================================
 # API Endpoint Test Script - Sampling & Spec R&D
 # Jalankan: .\test_endpoints.ps1
-# Pastikan backend sudah running di port 8007 sebelum test
+# Pastikan backend sudah running di port 8009 sebelum test
 # =============================================================================
 
-$BASE = "http://127.0.0.1:8007/api/sampling-spec-rnd"
+$BASE = "http://127.0.0.1:8009/api/sampling-spec-rnd"
 $PASS = 0
 $FAIL = 0
 
@@ -260,6 +260,6 @@ if ($FAIL -eq 0) {
     Write-Host "  🎉 ALL TESTS PASSED! Backend is fully functional." -ForegroundColor Green
 } else {
     Write-Host "  ⚠️  Some tests failed. Check backend logs for details." -ForegroundColor Yellow
-    Write-Host "  Tip: Make sure backend is running: uvicorn src.main:app --reload --port 8007" -ForegroundColor DarkYellow
+    Write-Host "  Tip: Make sure backend is running: uvicorn src.main:app --reload --port 8009" -ForegroundColor DarkYellow
 }
 Write-Host ""
