@@ -51,6 +51,7 @@ Due to root isolation rules (`scripts/check_workspace_hygiene.py`), Playwright i
      cd prototypes/sampling-spec-rnd/frontend
      npm run test:e2e
      ```
+
 ### Working With a Multiple Developer Seniority and Discipline
 
 This repository are maintained by multiple maintainers. Some of them are senior, but most of them are junior. Some of them comes from system , embedded, or data engineering. Always adjust the communication, planning, and report to be understandable by any developer, regardless of seniority or backgrounds. 
