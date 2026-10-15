@@ -111,3 +111,32 @@ The system SHALL produce the quality summary consumed by the operations dashboar
 #### Scenario: Awaiting inspection is not a disposition
 - **WHEN** the queue contains assemblies in `MENUNGGU_QC`
 - **THEN** the summary SHALL leave all three counters unchanged for them
+
+---
+
+### Requirement: Database-Enforced QC Invariants
+The system SHALL enforce the assembly state transitions, the append-only inspection log, the defect rules, the single-allocation rule, and tenant isolation in the database itself, so that a caller writing SQL directly as the runtime role cannot bypass them. The runtime role MUST NOT hold any privilege to edit or delete a recorded inspection or defect, and MUST NOT hold a general update privilege on the shop-floor tables it reads.
+
+#### Scenario: The database refuses an override
+- **WHEN** an inspection row is inserted for an assembly already in `QC_PASS` or `REJECT_SCRAP`
+- **THEN** the database SHALL refuse the row and SHALL leave the recorded inspection history unchanged
+
+#### Scenario: The database refuses an unready assembly
+- **WHEN** an inspection row is inserted for an assembly still in `ASSEMBLING`
+- **THEN** the database SHALL refuse the row
+
+#### Scenario: A disposition moves the pieces with the assembly
+- **WHEN** a first `PASS` is recorded
+- **THEN** the assembly and every component piece allocated to it SHALL hold the disposition's status within the same transaction, so that the payroll engine's quality-passed filter sees them
+
+#### Scenario: The inspection log cannot be rewritten
+- **WHEN** the runtime role attempts to update or delete a recorded inspection or defect
+- **THEN** the database SHALL deny the statement
+
+#### Scenario: A tenant without context reads nothing
+- **WHEN** the runtime role reads the QC tables without an installed tenant context
+- **THEN** the database SHALL return zero rows
+
+#### Scenario: An allocation cannot cross tenants
+- **WHEN** a component allocation references a piece or an assembly belonging to another tenant
+- **THEN** the database SHALL refuse the row at the relational layer
