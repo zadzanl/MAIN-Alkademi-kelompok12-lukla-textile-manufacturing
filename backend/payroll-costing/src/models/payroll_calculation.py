@@ -24,7 +24,7 @@ class PayrollResultStatus(StrEnum):
 class RuleRequest(ContractModel):
     """Body of ``calculateWeeklyPayroll`` and ``calculateOverhead``."""
 
-    rule_version: str
+    rule_version: UUID
 
 
 class PayrollResult(ContractModel):

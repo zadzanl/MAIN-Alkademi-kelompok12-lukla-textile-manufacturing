@@ -22,26 +22,26 @@ Still open after this chain: persistence and migrations (phase 3), the HTTP laye
 
 Implemented on branch `chore/hygiene-allow-backend`; tick these boxes once that branch merges, since root artifacts are integrated after workstream review.
 
-- [ ] 1.1 Extend `scripts/check_workspace_hygiene.py` `ALLOWED_ROOT_DIRS` with `backend` and document the reason inline.
-- [ ] 1.2 Create `backend/payroll-costing/` with `README.md`, `API_CONTRACTS.md`, and the `src/{models,services,utils,api}` layout named in `docs/MODULES_ARCHITECTURE.md`.
-- [ ] 1.3 Add a payroll CI job (ruff check, ruff format --check, mypy --strict) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job. pytest joined this job on `feat/payroll-rule-registry`, where the first tests landed.
-- [ ] 1.4 Verify: `python scripts/check_workspace_hygiene.py` exits 0 with the module present, and the new CI job fails on a deliberately broken lint input, then passes once reverted.
+- [x] 1.1 Extend `scripts/check_workspace_hygiene.py` `ALLOWED_ROOT_DIRS` with `backend` and document the reason inline.
+- [x] 1.2 Create `backend/payroll-costing/` with `README.md`, `API_CONTRACTS.md`, and the `src/{models,services,utils,api}` layout named in `docs/MODULES_ARCHITECTURE.md`.
+- [x] 1.3 Add a payroll CI job (ruff check, ruff format --check, mypy --strict) scoped to `backend/payroll-costing/**` in `.github/workflows/ci.yml` as a blocking job. pytest joined this job on `feat/payroll-rule-registry`, where the first tests landed.
+- [x] 1.4 Verify: `python scripts/check_workspace_hygiene.py` exits 0 with the module present, and the new CI job fails on a deliberately broken lint input, then passes once reverted.
 
 ## 2. Recorded Design Decisions Before DDL
 
-- [ ] 2.1 Confirm Decision 2 (`payroll_periods` container plus versioned `payroll_runs`) against `11-database-schema-spec.md` §4 and §8, and note the resolution in the module `README.md`.
-- [ ] 2.2 Confirm Decision 3 (`overhead_events` cost log plus `overhead_periods` allocation snapshot) and record it in the module `README.md`.
-- [ ] 2.3 Confirm Decision 4 (module location and allow-list amendment) with the maintainers, since it changes a shared CI gate.
-- [ ] 2.4 Verify: both decisions are written down with their alternatives, and no migration is authored before this step is done.
+- [x] 2.1 Confirm Decision 2 (`payroll_periods` container plus versioned `payroll_runs`) against `11-database-schema-spec.md` §4 and §8, and note the resolution in the module `README.md`.
+- [x] 2.2 Confirm Decision 3 (`overhead_events` cost log plus `overhead_periods` allocation snapshot) and record it in the module `README.md`.
+- [x] 2.3 Confirm Decision 4 (module location and allow-list amendment) with the maintainers, since it changes a shared CI gate.
+- [x] 2.4 Verify: both decisions are written down with their alternatives, and no migration is authored before this step is done.
 
 ## 3. Database Migrations and Invariants
 
-- [ ] 3.1 Author M006: `rate_cards` exclusion constraint plus `piece_rate_snapshots` and `garment_units` with the one-snapshot-per-unit rule.
-- [ ] 3.2 Author M007: `garment_assemblies`, `assembly_components`, `qc_inspections`, and `qc_defects`.
-- [ ] 3.3 Author M008: `ledger_accounts`, `ledger_transactions`, `ledger_entries` with the no-UPDATE/no-DELETE trigger, same-`created_xid` rule, and deferred balanced-transaction check.
-- [ ] 3.4 Author M009: `financial_rule_versions`, `eligibility_events`, `payroll_periods`, `payroll_runs`, `payroll_run_credits`, `payroll_items`, `payroll_payments`, `wage_credits`, `payroll_adjustments`, `qc_bonus_accruals`, `overhead_events`, and `overhead_periods`.
-- [ ] 3.5 Author M011: `job_runs` and `idempotency_records` with the `(tenant_id, key, operation_id)` unique constraint.
-- [ ] 3.6 Author M012: `set_request_context`, `calculate_weekly_payroll`, `calculate_overhead_allocation`, grants, and `ENABLE`/`FORCE ROW LEVEL SECURITY` policies for every tenant-scoped payroll table.
+- [x] 3.1 Author M006: `rate_cards` exclusion constraint plus `piece_rate_snapshots` and `garment_units` with the one-snapshot-per-unit rule.
+- [x] 3.2 Author M007: `garment_assemblies`, `assembly_components`, `qc_inspections`, and `qc_defects`.
+- [x] 3.3 Author M008: `ledger_accounts`, `ledger_transactions`, `ledger_entries` with the no-UPDATE/no-DELETE trigger, same-`created_xid` rule, and deferred balanced-transaction check.
+- [x] 3.4 Author M009: `financial_rule_versions`, `eligibility_events`, `payroll_periods`, `payroll_runs`, `payroll_run_credits`, `payroll_items`, `payroll_payments`, `wage_credits`, `payroll_adjustments`, `qc_bonus_accruals`, `overhead_events`, and `overhead_periods`.
+- [x] 3.5 Author M011: `job_runs` and `idempotency_records` with the `(tenant_id, key, operation_id)` unique constraint.
+- [x] 3.6 Author M012: `set_request_context`, `calculate_weekly_payroll`, `calculate_overhead_allocation`, grants, and `ENABLE`/`FORCE ROW LEVEL SECURITY` policies for every tenant-scoped payroll table.
 - [ ] 3.7 Verify with pgTAP: ledger UPDATE/DELETE rejected with `LEDGER_IMMUTABLE`; a second `wage_credits` row for the same `garment_unit_id` rejected; a second `qc_bonus_accruals` row for the same `assembly_id` rejected; the same read under the non-owner role returns zero rows without tenant context.
 
 ## 4. Contract Operations (Employee-Facing)

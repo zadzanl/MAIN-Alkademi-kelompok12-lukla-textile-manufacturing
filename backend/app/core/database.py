@@ -1,8 +1,9 @@
 import uuid
-from typing import Optional, Generator
+from contextlib import AbstractContextManager
+from typing import Optional, Generator, Protocol
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import Pool
+from sqlalchemy.pool import Pool, PoolResetState
 from .config import settings
 
 # Engine for application database access
@@ -14,7 +15,23 @@ engine = create_engine(
 )
 
 @event.listens_for(Pool, "reset")
-def receive_reset(dbapi_connection, connection_record, reset_state):
+class _Cursor(Protocol):
+    def execute(self, statement: str) -> object: ...
+
+
+class _DBAPIConnection(Protocol):
+    autocommit: bool
+
+    def rollback(self) -> None: ...
+
+    def cursor(self) -> AbstractContextManager[_Cursor]: ...
+
+
+def receive_reset(
+    dbapi_connection: _DBAPIConnection,
+    connection_record: object,
+    reset_state: PoolResetState,
+) -> None:
     """
     Execute RESET ALL / rollback on pool return.
     Ensures transaction-local GUCs (app.tenant_id) never leak across pooled connections.
