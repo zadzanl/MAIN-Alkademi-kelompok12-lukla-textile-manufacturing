@@ -154,3 +154,27 @@ def test_copilot_disabled_guard(client, monkeypatch):
     assert response.headers["content-type"] == "application/problem+json"
     problem = response.json()
     assert problem["code"] == "SERVICE_SCOPE_REQUIRED"
+
+def test_copilot_web_ui_returns_200_html(client):
+    """
+    Test 8: GET /copilot and GET /api/v1/copilot return HTTP 200 with HTML content
+    and required testid anchors for browser/Playwright verification.
+    """
+    # 1. Test root mounted route /copilot
+    resp_root = client.get("/copilot")
+    assert resp_root.status_code == 200
+    assert "text/html" in resp_root.headers.get("content-type", "")
+    html = resp_root.text
+    assert "Lukla Operations Copilot" in html
+    assert 'data-testid="copilot-chat"' in html
+    assert 'data-testid="copilot-role-select"' in html
+    assert 'data-testid="copilot-input"' in html
+    assert 'data-testid="copilot-send"' in html
+    assert 'data-testid="copilot-message"' in html
+    assert 'data-testid="action-shortcut-card"' in html
+
+    # 2. Test api/v1 mounted route /api/v1/copilot
+    resp_api = client.get("/api/v1/copilot")
+    assert resp_api.status_code == 200
+    assert "text/html" in resp_api.headers.get("content-type", "")
+
