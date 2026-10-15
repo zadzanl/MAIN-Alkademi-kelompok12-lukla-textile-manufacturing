@@ -102,8 +102,7 @@ def test_create_uses_caller_session_and_reads_its_insert(
     assert "payroll_context_tenant" in calls[0][0]
     assert any("payroll_read_rows" in c[0] and c[1].get("rule_id") == RULE for c in calls)
     assert any(
-        "INSERT INTO payroll_periods" in c[0] and c[1].get("tenant_id") == TENANT
-        for c in calls
+        "INSERT INTO payroll_periods" in c[0] and c[1].get("tenant_id") == TENANT for c in calls
     )
     assert any("payroll_read_rows" in c[0] and c[1].get("period_id") is not None for c in calls)
     db.commit.assert_not_called()
