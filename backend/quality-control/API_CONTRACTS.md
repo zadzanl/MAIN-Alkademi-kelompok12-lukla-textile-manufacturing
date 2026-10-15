@@ -58,6 +58,25 @@ Invariants the domain service enforces, in this order:
 `qc_inspections` is append-only with `unique (assembly_id, sequence_no)`; the service returns the
 next `sequence_no` for the caller to persist.
 
+## Database error mapping (phase 4 implements this)
+
+`M007` raises a named code for every rule it enforces. The API layer maps them to the contract's
+`Problem` codes; nothing here needs a new response shape.
+
+| Raised by the database | SQLSTATE | `Problem.code` | Status |
+| --- | --- | --- | --- |
+| `QC_ASSEMBLY_NOT_FOUND` | `02000` | `VALIDATION_ERROR` | `400` |
+| `QC_ASSEMBLY_NOT_READY` | `55000` | `INVALID_STATE` | `409` |
+| `QC_DISPOSITION_TERMINAL` | `55000` | `INVALID_STATE` | `409` |
+| `QC_DEFECT_REQUIRED`, `QC_DEFECT_NOT_ALLOWED` | `23514` | `VALIDATION_ERROR` | `400` |
+| `QC_DEFECT_FOREIGN_COMPONENT` | `23514` | `VALIDATION_ERROR` | `400` |
+| `QC_INSPECTION_NOT_FOUND` | `02000` | `VALIDATION_ERROR` | `400` |
+| `uq_qc_inspections_sequence` (unique violation) | `23505` | `IDEMPOTENCY_CONFLICT` | `409` |
+| `uq_assembly_components_unit` (unique violation) | `23505` | `VALIDATION_ERROR` | `400` |
+| foreign key violation | `23503` | `VALIDATION_ERROR` | `400` |
+| row level security violation | `42501` | `TENANT_CONTEXT_MISSING` | `400` |
+| `QC_INSPECTION_IMMUTABLE` | `55000` | — | never reachable through the API: `lukla_app` holds no `UPDATE`/`DELETE` privilege, so the statement is denied first |
+
 ## Contract gaps (escalated, not patched)
 
 - `Defect` has no operator field, so a caller cannot supply the repair operator; the schema rule

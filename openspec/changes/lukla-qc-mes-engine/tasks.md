@@ -9,8 +9,8 @@ The work is delivered as a linear stack. Each branch adds commits over its paren
 | Order | Branch | Pull request base | Delivers |
 | --- | --- | --- | --- |
 | 1 | `feat/qc-mes-engine` | `master` | Tasks 1.1–1.4, 2.1–2.5, and the contract models plus the classification, routing, and summary services with their tests (task 4.1, 4.8, 4.9 partially) |
-| 2 | `feat/qc-mes-migrations` | `feat/qc-mes-engine` | Tasks 3.1–3.4: `M007`, the `classify_qc_unit` routine, RLS policies, and their pgTAP checks |
-| 3 | `feat/qc-mes-api` | `feat/qc-mes-migrations` | Tasks 4.2–4.7: the FastAPI routers, authentication, tenant context, idempotency reservation, and the taxonomy read |
+| 2 | `feat/qc-mes-migrations` | `feat/qc-mes-engine` | Tasks 3.1, 3.3, 3.4: `M007`, its RLS policies, its append-only triggers, and the database invariant suite |
+| 3 | `feat/qc-mes-api` | `feat/qc-mes-migrations` | Tasks 3.2 (once `M009` exists), 4.2–4.7: the FastAPI routers, authentication, tenant context, idempotency reservation, and the taxonomy read |
 | 4 | `feat/qc-mes-terminal` | `feat/qc-mes-api` | Tasks 6.1–6.3: `VIEW-05` |
 
 Set each pull request's base to the branch above it, not to `master`. GitHub retargets the remaining pull requests automatically as each one merges, so no rebase is needed; merging out of order is what makes a diff carry another branch's commit.
@@ -33,10 +33,13 @@ Set each pull request's base to the branch above it, not to `master`. GitHub ret
 
 ## 3. Database Migrations and Invariants
 
-- [ ] 3.1 Author `M007`: `garment_assemblies` (unique `(tenant_id, serial_code)`, status enum), `assembly_components` (unique `garment_unit_id`), `qc_inspections` (unique `(assembly_id, sequence_no)`, append-only trigger), and `qc_defects` (FK to inspection and component, component must belong to the inspection's assembly).
-- [ ] 3.2 Author the `classify_qc_unit(p_assembly_id uuid, p_disposition text, p_defects jsonb, p_idempotency_key text)` routine: lock the assembly row, enforce `MENUNGGU_QC | REWORK → PASS | REPAIR | REJECT`, refuse to override a terminal disposition, and write the first-`PASS` eligibility event, wage credits, and bonus accrual in one transaction.
-- [ ] 3.3 Add `ENABLE`/`FORCE ROW LEVEL SECURITY` policies for the four `M007` tables reading `current_setting('app.tenant_id', true)`, plus the `qc_inspections`/`qc_defects` no-`UPDATE`/no-`DELETE` trigger raising `LEDGER_IMMUTABLE`-style append-only errors.
-- [ ] 3.4 Verify with pgTAP: a second inspection for a terminal assembly is refused; a second `qc_bonus_accruals` row for the same `assembly_id` is refused; a second `wage_credits` row for the same `garment_unit_id` is refused; a `qc_defects` row naming a component of another assembly is refused; the same read under the non-owner role without tenant context returns zero rows.
+Delivered on `feat/qc-mes-migrations`; the boxes stay unchecked until that branch merges, per the
+rule at the top of this file.
+
+- [ ] 3.1 Author `M007`: `garment_assemblies` (unique `(tenant_id, serial_code)`, status enum), `assembly_components` (unique `garment_unit_id`), `qc_inspections` (unique `(assembly_id, sequence_no)`, append-only trigger), and `qc_defects` (FK to inspection and component, component must belong to the inspection's assembly). Delivered as `backend/migrations/007_assemblies_and_qc.sql`, with the assembly row lock, the sequence assignment, the disposition transition, and the deferred defect rule as triggers.
+- [ ] 3.2 Author the `classify_qc_unit(p_assembly_id uuid, p_disposition text, p_defects jsonb, p_idempotency_key text)` routine: lock the assembly row, enforce `MENUNGGU_QC | REWORK → PASS | REPAIR | REJECT`, refuse to override a terminal disposition, and write the first-`PASS` eligibility event, wage credits, and bonus accrual in one transaction. **Rescoped to `feat/qc-mes-api`:** the tables it writes (`eligibility_events`, `wage_credits`, `qc_bonus_accruals`) are the payroll migration `M009`, which does not exist yet, so a routine authored now would be a runtime landmine. The locking, the transition, and the terminal refusal are already in `M007`'s triggers, so the routine that remains is the money block.
+- [ ] 3.3 Add `ENABLE`/`FORCE ROW LEVEL SECURITY` policies for the four `M007` tables reading `current_setting('app.tenant_id', true)`, plus the `qc_inspections`/`qc_defects` no-`UPDATE`/no-`DELETE` trigger raising `LEDGER_IMMUTABLE`-style append-only errors. Delivered, with column-level `UPDATE` grants to `lukla_app` instead of table-level ones, and no `SECURITY DEFINER` function that would bypass row level security.
+- [ ] 3.4 Verify: a second inspection for a terminal assembly is refused; an assembly still `ASSEMBLING` is refused; a piece cannot be allocated to two assemblies; a `qc_defects` row naming a component of another assembly is refused; `REPAIR`/`REJECT` without a defect and `PASS` with one are refused at `COMMIT`; `UPDATE`/`DELETE` on the inspection log is refused for the owner and denied for `lukla_app`; a component allocation cannot cross tenants; and the runtime role without tenant context reads zero rows. Delivered as `tests/test_m007_invariants.py` (17 checks, pytest and psycopg2 against a real server) rather than pgTAP, because the module's toolchain is already pytest and the extension would be a second prerequisite to install.
 
 ## 4. Contract Operations
 

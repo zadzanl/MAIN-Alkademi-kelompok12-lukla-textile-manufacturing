@@ -3,3 +3,6 @@
 ruff>=0.1.6
 mypy>=1.7.0
 pytest>=8.0
+# Only the M007 database invariant test needs a driver; that test skips when no server
+# is reachable, which is what keeps the blocking CI job green on a runner without PostgreSQL.
+psycopg2-binary>=2.9
