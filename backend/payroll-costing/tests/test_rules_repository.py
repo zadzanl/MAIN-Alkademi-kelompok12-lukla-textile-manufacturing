@@ -157,7 +157,7 @@ def test_approval_checks_context_and_uses_routine_then_reader(
     assert len(calls) == 1
     db, calls = _session([], role="FinancePayroll")
     with pytest.raises(ValueError, match="role"):
-        approve_financial_rule(db, TENANT, ACTOR, "Owner", UUID(int=1), approval)
+        approve_financial_rule(db, TENANT, ACTOR, "Owner", UUID(int=1), approval, request_id)
     assert len(calls) == 2
 
 

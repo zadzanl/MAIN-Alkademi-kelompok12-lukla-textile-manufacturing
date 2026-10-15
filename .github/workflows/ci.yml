@@ -81,3 +81,37 @@ jobs:
       - name: Pytest
         run: pytest -q
 
+  qc-mes-quality:
+    name: QC & MES Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/quality-control
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/quality-control/requirements-dev.txt
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Ruff Linter Check
+        run: ruff check .
+
+      - name: Ruff Format Check
+        run: ruff format --check .
+
+      - name: Mypy Type Check
+        run: mypy src/ --strict
+
+      - name: Pytest
+        run: pytest -q
+
