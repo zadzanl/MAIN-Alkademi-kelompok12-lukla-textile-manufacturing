@@ -12,7 +12,7 @@
 **Backend Server**
 - Running: ✅ YES
 - Address: `http://127.0.0.1:8009`
-- Port: `8007`
+- Port: `8009`
 - Status: Uvicorn running with auto-reload
 
 **Frontend Integration**
@@ -38,6 +38,21 @@ POST /api/sampling-spec-rnd/studies/create  → Create study
 POST /api/sampling-spec-rnd/studies/{id}/start → Start study
 ...
 ```
+
+### Portal Auth Endpoints (added)
+```
+GET  /api/auth/health                     → auth module + email mode
+POST /api/auth/register                   → ajukan akun (pending)
+POST /api/auth/login                      → identifier + password
+POST /api/auth/logout | GET /api/auth/me  → sesi (Bearer)
+POST /api/auth/change-password            → ganti password (Bearer)
+POST /api/auth/forgot-password            → kirim OTP
+POST /api/auth/reset-password             → setel ulang dengan OTP
+GET  /api/auth/admin/registrations        → antrean verifikasi (admin)
+POST /api/auth/admin/registrations/{id}/approve|reject (admin)
+```
+In-memory store (`src/services/auth_store.py`), stdlib scrypt + SMTP, no new deps.
+Seed admin default: `admin@luka.local` / `Admin#12345`. Tests: `pytest tests/test_auth.py -q`.
 
 ### Frontend Integration
 - **API Service**: `src/services/api.ts`
@@ -72,5 +87,5 @@ npm run dev
 ### Verification
 - Backend import test: ✅ PASS
 - Backend server start: ✅ PASS (Uvicorn running)
-- Frontend dev server: ✅ PASS (Vite running on 3007)
-- CORS configured: ✅ YES (localhost:3007 allowed)
+- Frontend dev server: ✅ PASS (Vite running on 3009)
+- CORS configured: ✅ YES (localhost:3009 allowed)

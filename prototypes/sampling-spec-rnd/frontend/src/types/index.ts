@@ -2,7 +2,6 @@
  * Type definitions for Sampling & Spec R&D
  * Includes: TimeStudy, SpecVersion, SampleVersion, WorkflowSummary
  */
-import React from 'react';
 
 // ─────────────────────────────────────────────
 // TIME STUDY
@@ -13,7 +12,7 @@ export interface TimeSample {
   timestamp: string;
   cycle_time_ms: number;
   element_name: string;
-  observations: Record<string, any>;
+  observations: Record<string, unknown>;
   operator_id: string | null;
   machine_id: string | null;
   is_abnormal: boolean;
@@ -97,7 +96,7 @@ export interface SpecVersion {
   created_at: string;
   updated_at: string;
   status: 'draft' | 'review' | 'approved' | 'active' | 'superseded' | 'archived';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   tolerances: Record<string, { min: number; max: number }>;
   materials: string[];
   process_steps: string[];
@@ -207,38 +206,8 @@ export interface WorkflowSummary {
 }
 
 // ─────────────────────────────────────────────
-// COMPONENT PROPS
+// SHARED CALLBACKS
 // ─────────────────────────────────────────────
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
-  children: React.ReactNode;
-}
-
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glass' | 'outlined';
-  children: React.ReactNode;
-}
-
-export interface ModalProps {
-  isOpen: boolean;
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-  footer?: React.ReactNode;
-}
-
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  variant?: 'outlined' | 'filled';
-}
-
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  options: Array<{ label: string; value: string | number }>;
-}
+/** CSV export handler shared by App and page views. */
+export type ExportCSV = (data: unknown[], filename: string) => void;

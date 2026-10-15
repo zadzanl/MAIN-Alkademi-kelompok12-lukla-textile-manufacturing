@@ -10,7 +10,7 @@ Modul **Sampling & Spec R&D** adalah frontend **production-ready** yang dibangun
 
 - **Vite + React 18 + TypeScript**
 - **Tailwind CSS** dengan **Apple Human Interface Guidelines (HIG)**
-- **24 Backend Endpoints** terintegrasi penuh via FastAPI (port 8009)
+- **33 Backend Endpoints** terintegrasi penuh via FastAPI (port 8009)
 - **SF Pro Font Stack**, Glassmorphism, Borderless Design
 
 Modul ini siap untuk **sprint lanjutan** dan mudah di-extend oleh tim untuk proyek Lukla lebih lanjut.
@@ -63,7 +63,7 @@ frontend/sampling-spec-rnd/
 ├── src/
 │   ├── components/         # UI components (Button, Card, Input)
 │   ├── pages/              # TimeStudyPage, SpecVersionPage
-│   ├── services/           # api.ts (24 backend endpoints)
+│   ├── services/           # api.ts (33 backend endpoints)
 │   ├── styles/             # globals.css (Apple HIG utilities)
 │   ├── types/              # TypeScript types
 │   ├── App.tsx             # Root dengan navigation tabs
@@ -80,41 +80,60 @@ frontend/sampling-spec-rnd/
 
 ## 🔌 Backend API Integration
 
-**Base URL:** `http://localhost:8009` (configurable via `.env`)
+**Base URL (dev):** path relatif `/api/sampling-spec-rnd` via Vite proxy → `http://localhost:8009`.
+Diatur lewat `VITE_API_URL` (lihat `.env.example`).
 
-### Endpoints Terintegrasi (24 total)
+### Endpoints Terintegrasi (33 total)
 
-#### Time Study (8 endpoints)
+Semua path di bawah relatif terhadap `/api/sampling-spec-rnd`.
+
+#### Health & Workflow (2)
 ```typescript
-POST   /time-study/create           // Buat studi baru
-POST   /time-study/{id}/start       // Mulai studi
-POST   /time-study/{id}/add-sample  // Tambah sampel
-POST   /time-study/{id}/pause       // Jeda studi
-POST   /time-study/{id}/resume      // Lanjutkan studi
-POST   /time-study/{id}/complete    // Selesaikan studi
-GET    /time-study/{id}/stats       // Statistik studi
-GET    /time-study/{id}             // Data lengkap studi
+GET    /health
+GET    /workflow/summary?tenant_id=...
 ```
 
-#### Spec Version (13 endpoints)
+#### Time Study (9)
 ```typescript
-POST   /spec-version/create              // Buat spec baru
-POST   /spec-version/{id}/record-change  // Catat perubahan parameter
-POST   /spec-version/{id}/record-drift   // Catat drift
-POST   /spec-version/{id}/drift/{drift_id}/resolve  // Resolve drift
-POST   /spec-version/{id}/submit-review  // Submit untuk review
-POST   /spec-version/{id}/approve        // Approve spec
-POST   /spec-version/{id}/activate       // Aktifkan spec
-GET    /spec-version/{id}/drift-report   // Laporan drift
-GET    /spec-version/{id}/drift-analysis // Analisis drift
-GET    /spec-version/{id}/change-history // Riwayat perubahan
-GET    /spec-version/{id}                // Data lengkap spec
+GET    /studies/all?tenant_id=...
+POST   /studies/create?tenant_id=&process_id=&process_name=&operator_id=&target_sample_size=
+POST   /studies/{id}/start
+POST   /studies/{id}/pause
+POST   /studies/{id}/resume
+POST   /studies/{id}/complete
+POST   /studies/{id}/add-sample?cycle_time_ms=&element_name=&is_abnormal=&notes=
+GET    /studies/{id}/stats
+GET    /studies/{id}/data
 ```
 
-#### Workflow (2 endpoints)
+#### Spec Version (12)
 ```typescript
-GET    /workflow/summary/{tenant_id}  // Summary dashboard
-GET    /health                         // Health check
+GET    /specs/all?tenant_id=...
+POST   /specs/create?tenant_id=&spec_id=&spec_name=&created_by=&version_number=
+POST   /specs/{id}/record-change?change_type=&parameter_name=&old_value=&new_value=&changed_by=
+POST   /specs/{id}/record-drift?parameter_name=&specification_limit=&measured_value=&severity=
+POST   /specs/{id}/resolve-drift/{drift_id}?corrective_action=
+POST   /specs/{id}/submit-review?reviewer_id=
+POST   /specs/{id}/approve?approver_id=
+POST   /specs/{id}/activate
+GET    /specs/{id}/drift-report
+GET    /specs/{id}/drift-analysis
+GET    /specs/{id}/change-history
+GET    /specs/{id}/data
+```
+
+#### Sample Versions (10)
+```typescript
+GET    /sample-versions/all?tenant_id=...
+POST   /sample-versions/create?tenant_id=&article_id=&article_name=&client_id=&created_by=
+GET    /sample-versions/article/{article_id}/history?tenant_id=...
+GET    /sample-versions/{id}
+POST   /sample-versions/{id}/new-revision?revised_by=&revision_note=
+POST   /sample-versions/{id}/submit-approval?submitted_by=
+POST   /sample-versions/{id}/approve?approved_by=&approval_note=
+POST   /sample-versions/{id}/convert-to-order?order_id=&converted_by=
+PUT    /sample-versions/{id}/components?updated_by=   (JSON body: { components })
+PUT    /sample-versions/{id}/materials?updated_by=    (JSON body: { materials })
 ```
 
 ### API Service Layer
@@ -141,6 +160,70 @@ if (res.success && res.data) {
 
 **Error Handling:** Semua network errors di-catch, backend errors di-forward dalam `res.error`.
 
+### Mock vs Live (ops / ledger / payroll)
+
+Endpoint sampling (studies/specs/sample-versions) **selalu** memakai backend live.
+Tiga modul lain berjalan dalam **mode mock (in-memory)** selama service HTTP-nya
+belum di-wire oleh tim backend:
+
+| Modul | Client | Flag |
+| :--- | :--- | :--- |
+| Sewing floor & QC | `src/services/opsApi.ts` | `VITE_LEDGER_MODE` |
+| Buku besar (double-entry) | `src/services/ledgerApi.ts` | `VITE_LEDGER_MODE` |
+| Payroll & costing | `src/services/payrollApi.ts` | `VITE_LEDGER_MODE` |
+
+Saat backend siap, cukup ubah `.env` (tanpa perubahan UI — bentuk request/response
+sudah identik dengan kontrak `openspec/.../contracts/openapi.yaml`):
+
+```env
+VITE_LEDGER_MODE=live
+VITE_LEDGER_API_URL=http://localhost:8000/api/v1
+VITE_LEDGER_TOKEN=<signed JWT>
+```
+
+**Verifikasi "berhasil atau tidak":**
+1. `npm test` → test `contract.test.ts` memastikan mock tetap sesuai kontrak.
+2. Jalankan app; banner kuning **"Mode mock aktif"** (`components/MockModeBanner.tsx`)
+   harus **hilang** di halaman Produksi/QC/Ledger/Payroll ketika mode `live`.
+3. Buka DevTools → Network: request harus menuju `VITE_LEDGER_API_URL`, bukan mock.
+
+---
+
+## 🔐 Portal Auth (Login / Registrasi / Lupa Akses)
+
+Halaman portal (`pages/PortalAuthView.tsx`) tampil sebagai **auth gate** sebelum dashboard:
+selama belum ada sesi, `App.tsx` hanya merender halaman portal. Setelah login, dashboard lama
+muncul seperti biasa.
+
+**Alur:**
+1. **Registrasi** — isi Nama, Email, Nomor karyawan, NIK/KTP (16 digit), Nomor HP, Departemen,
+   Password + Konfirmasi, centang persetujuan. Akun masuk status **pending**.
+2. **Verifikasi Admin IT** — login sebagai admin → chapter **Administrasi → Persetujuan Akses** →
+   Setujui/Tolak. Hanya setelah disetujui akun bisa login.
+3. **Login** — identitas bisa berupa **Nomor karyawan, NIK/KTP, email, atau Nomor HP** + password.
+4. **Lupa akses** — masukkan identitas → kode OTP dikirim ke email (mode dev: tercetak di log
+   backend) → masukkan OTP + password baru.
+5. **Ganti password** — Settings → kartu **Keamanan** (sesi dicabut, lalu login ulang).
+
+**Endpoint** (prefix `/api/auth`, `services/authApi.ts`):
+```
+POST /register  POST /login  POST /logout  GET /me
+POST /change-password  POST /forgot-password  POST /reset-password
+GET  /admin/registrations  POST /admin/registrations/{id}/approve|reject
+```
+
+**Akun admin default:** `admin@luka.local` / `Admin#12345` (ubah via `.env` backend:
+`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`).
+
+**Layer terkait:** `services/authRules.ts` (validasi murni, diuji `tests/auth.test.ts`),
+`services/authSession.ts` (token opaque di memori + `sessionStorage`), `services/identity.ts`
+(`actor()` membaca pengguna aktif).
+
+**"Did it work?" check:**
+1. `curl http://localhost:8009/api/auth/health` → `{"status":"healthy","module":"portal-auth",...}`.
+2. Buka `http://localhost:3009` → halaman portal muncul (bukan dashboard).
+3. Registrasi → login gagal (pending) → setujui sebagai admin → login berhasil → dashboard muncul.
+
 ---
 
 ## 🚀 Development Workflow
@@ -156,9 +239,11 @@ npm install
 ```
 
 ### Environment Variables
-File `.env`:
+File `.env` (lihat `.env.example`):
 ```env
-VITE_API_BASE_URL=http://localhost:8009
+# Path relatif agar lewat Vite proxy (JANGAN pakai http://localhost:...)
+VITE_API_URL=/api/sampling-spec-rnd
+VITE_AUTH_URL=/api/auth
 ```
 
 ### Development
@@ -167,6 +252,8 @@ npm run dev         # Start dev server (port 3009)
 npm run build       # Production build
 npm run preview     # Preview production build
 npm run type-check  # TypeScript validation
+npm run lint        # ESLint (0 warnings allowed)
+npm test            # Unit + contract tests (node --test)
 ```
 
 ### Testing Backend Connection
@@ -244,7 +331,7 @@ import { Button, Card, Input } from '@/components';
 4. **API service pattern:**
 ```typescript
 // payroll/src/services/api.ts
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8010';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8010';
 
 export async function getPayrollData(id: string): Promise<ApiResponse<PayrollData>> {
   try {
@@ -294,7 +381,7 @@ server {
 
 ### Environment Variables (production):
 ```env
-VITE_API_BASE_URL=https://api.lukla.com
+VITE_API_URL=https://api.lukla.com/api/sampling-spec-rnd
 ```
 
 ---

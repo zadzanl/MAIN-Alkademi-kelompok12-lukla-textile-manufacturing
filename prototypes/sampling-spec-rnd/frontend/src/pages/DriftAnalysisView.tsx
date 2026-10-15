@@ -1,26 +1,27 @@
-﻿/**
+/**
  * DriftAnalysisView — Drift severity chart + record & resolve corrective actions
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
-import type { SpecVersion } from '../types';
-
-const API = 'http://localhost:8009/api/sampling-spec-rnd';
+import type { SpecVersion, DriftAnalysis, SpecDrift } from '../types';
+import * as api from '../services/api';
+import { toast } from '../services/toast';
+import { TENANT_ID } from '../services/identity';
 
 const SEV_COLOR: Record<string, { bg: string; text: string; bar: string }> = {
-  low:      { bg: 'bg-[#e8f2ff]', text: 'text-[#0066cc]', bar: '#0071e3' },
-  medium:   { bg: 'bg-[#fff4e6]', text: 'text-[#ff9500]', bar: '#ff9500' },
-  high:     { bg: 'bg-[#ffebee]', text: 'text-[#ff3b30]', bar: '#ff3b30' },
-  critical: { bg: 'bg-[#ff3b30]', text: 'text-white',     bar: '#cc0000' },
+  low:      { bg: 'bg-brand-bg', text: 'text-brand', bar: '#0071e3' },
+  medium:   { bg: 'bg-warn-bg', text: 'text-warn', bar: '#ff9500' },
+  high:     { bg: 'bg-bad-bg', text: 'text-bad', bar: '#ff3b30' },
+  critical: { bg: 'bg-bad', text: 'text-white',     bar: '#cc0000' },
 };
 
 const DriftAnalysisView: React.FC = () => {
   const [specs, setSpecs]             = useState<SpecVersion[]>([]);
   const [selectedId, setSelectedId]   = useState('');
-  const [analysis, setAnalysis]       = useState<any>(null);
-  const [report, setReport]           = useState<any>(null);
+  const [analysis, setAnalysis]       = useState<{ analysis: DriftAnalysis; risk_score: number } | null>(null);
+  const [report, setReport]           = useState<{ drifts: SpecDrift[] } | null>(null);
   const [loading, setLoading]         = useState(false);
 
   // Record drift form
@@ -38,8 +39,8 @@ const DriftAnalysisView: React.FC = () => {
   const [msg, setMsg] = useState('');
 
   const fetchSpecs = useCallback(async () => {
-    const r = await fetch(`${API}/specs/all?tenant_id=tenant-001`);
-    if (r.ok) { const j = await r.json(); setSpecs(j.data ?? []); }
+    const res = await api.listSpecs(TENANT_ID);
+    if (res.success && res.data) setSpecs(res.data);
   }, []);
 
   useEffect(() => { fetchSpecs(); }, [fetchSpecs]);
@@ -49,11 +50,11 @@ const DriftAnalysisView: React.FC = () => {
     setLoading(true);
     try {
       const [ra, rr] = await Promise.all([
-        fetch(`${API}/specs/${id}/drift-analysis`),
-        fetch(`${API}/specs/${id}/drift-report`),
+        api.getDriftAnalysis(id),
+        api.getDriftReport(id),
       ]);
-      if (ra.ok) { const j = await ra.json(); setAnalysis(j); }
-      if (rr.ok) { const j = await rr.json(); setReport(j.report); }
+      if (ra.success && ra.data) setAnalysis(ra.data);
+      if (rr.success && rr.data) setReport(rr.data as { drifts: SpecDrift[] });
     } finally { setLoading(false); }
   }, []);
 
@@ -67,49 +68,51 @@ const DriftAnalysisView: React.FC = () => {
   const handleRecordDrift = async () => {
     const { parameter_name, specification_limit, measured_value, severity, corrective_action } = driftForm;
     if (!parameter_name || !specification_limit || !measured_value) {
-      alert('Parameter, Limit Spec, dan Nilai Terukur wajib diisi.'); return;
+      toast.error('Parameter, Limit Spec, dan Nilai Terukur wajib diisi.'); return;
     }
-    const q = new URLSearchParams({
-      parameter_name, specification_limit, measured_value, severity, corrective_action,
+    const res = await api.recordDrift({
+      version_id: selectedId,
+      parameter_name,
+      specification_limit: Number(specification_limit),
+      measured_value: Number(measured_value),
+      severity: severity as 'low' | 'medium' | 'high' | 'critical',
+      corrective_action,
     });
-    const r = await fetch(`${API}/specs/${selectedId}/record-drift?${q}`, { method: 'POST' });
-    const j = await r.json();
-    if (r.ok) {
-      setMsg(`✓ ${j.message}`); setShowRecord(false);
+    if (res.success) {
+      setMsg(`✓ ${res.message ?? ''}`); setShowRecord(false);
       setDriftForm({ parameter_name:'', specification_limit:'', measured_value:'', severity:'low', corrective_action:'' });
       loadAnalysis(selectedId);
-    } else { alert(j.detail); }
+    } else { toast.error(res.error ?? 'Gagal mencatat drift.'); }
     setTimeout(() => setMsg(''), 4000);
   };
 
   const handleResolveDrift = async () => {
-    if (!resolveAction) { alert('Tindakan korektif wajib diisi.'); return; }
-    const q = new URLSearchParams({ corrective_action: resolveAction });
-    const r = await fetch(`${API}/specs/${selectedId}/resolve-drift/${resolveDriftId}?${q}`, { method: 'POST' });
-    const j = await r.json();
-    if (r.ok) {
-      setMsg(`✓ ${j.message}`); setShowResolve(false); setResolveAction('');
+    if (!resolveAction) { toast.error('Tindakan korektif wajib diisi.'); return; }
+    const res = await api.resolveDrift(selectedId, resolveDriftId, resolveAction);
+    if (res.success) {
+      setMsg(`✓ ${res.message ?? ''}`); setShowResolve(false); setResolveAction('');
       loadAnalysis(selectedId);
-    } else { alert(j.detail); }
+    } else { toast.error(res.error ?? 'Gagal menyelesaikan drift.'); }
     setTimeout(() => setMsg(''), 4000);
   };
 
   const sev = analysis?.analysis?.severity_distribution ?? {};
-  const total = Object.values(sev).reduce((s: any, v: any) => s + v, 0) as number;
+  const total = Object.values(sev).reduce((s: number, v) => s + (typeof v === 'number' ? v : 0), 0);
+  const reportDrifts = report?.drifts ?? [];
 
   const TREND_COLOR: Record<string, string> = {
-    stable:     'text-[#34c759]',
-    concerning: 'text-[#ff9500]',
-    worsening:  'text-[#ff3b30]',
-    critical:   'text-[#ff3b30]',
+    stable:     'text-ok',
+    concerning: 'text-warn',
+    worsening:  'text-bad',
+    critical:   'text-bad',
   };
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Analisis Drift Spesifikasi</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">Pantau penyimpangan parameter dan tindakan korektif</p>
+          <h2 className="text-2xl font-semibold text-ink">Analisis Drift Spesifikasi</h2>
+          <p className="text-ink-muted text-sm mt-1">Pantau penyimpangan parameter dan tindakan korektif</p>
         </div>
         {selectedId && (
           <button onClick={() => setShowRecord(true)}
@@ -120,14 +123,14 @@ const DriftAnalysisView: React.FC = () => {
       </div>
 
       {msg && (
-        <div className="bg-[#e8f5e9] border border-[#34c759] rounded-[10px] px-4 py-2.5 text-[13px] text-[#1a7a34] font-medium">{msg}</div>
+        <div className="bg-ok-bg border border-ok rounded-[10px] px-4 py-2.5 text-[13px] text-ok-2 font-medium">{msg}</div>
       )}
 
       {/* Spec selector */}
-      <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
-        <label className="block text-sm font-medium text-[#1d1d1f] mb-2">Pilih Spec Version</label>
-        <select value={selectedId} onChange={e => handleSelectSpec(e.target.value)}
-          className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
+      <div className="bg-white border border-hair rounded-[18px] p-5">
+        <label className="block text-sm font-medium text-ink mb-2">Pilih Spec Version</label>
+        <select value={selectedId} onChange={e => handleSelectSpec(e.target.value)} aria-label="Pilih Spec Version"
+          className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft">
           <option value="">— Pilih spec version —</option>
           {specs.map(s => (
             <option key={s.version_id} value={s.version_id}>
@@ -139,7 +142,7 @@ const DriftAnalysisView: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-8 text-center text-[#6e6e73]">
+        <div className="bg-white border border-hair rounded-[18px] p-8 text-center text-ink-muted">
           Memuat analisis…
         </div>
       )}
@@ -154,12 +157,12 @@ const DriftAnalysisView: React.FC = () => {
                 { label: 'Total Drifts', value: total,                         highlight: false,                    trendCls: '' },
                 { label: 'Kritis',       value: sev.critical ?? 0,             highlight: (sev.critical ?? 0) > 0, trendCls: '' },
                 { label: 'Trend',        value: analysis.analysis?.trend ?? '—', highlight: false,
-                  trendCls: TREND_COLOR[analysis.analysis?.trend as string] ?? 'text-[#1d1d1f]' },
+                  trendCls: TREND_COLOR[analysis.analysis?.trend as string] ?? 'text-ink' },
               ] as { label: string; value: string | number; highlight: boolean; trendCls: string }[]
             ).map(({ label, value, highlight, trendCls }) => (
-              <div key={label} className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-                <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-2">{label}</p>
-                <p className={`text-[28px] font-semibold tracking-tight ${highlight ? 'text-[#ff3b30]' : (trendCls || 'text-[#1d1d1f]')}`}>
+              <div key={label} className="bg-white border border-hair rounded-[18px] p-5 text-center">
+                <p className="text-xs text-ink-muted uppercase tracking-wider mb-2">{label}</p>
+                <p className={`text-[28px] font-semibold tracking-tight ${highlight ? 'text-bad' : (trendCls || 'text-ink')}`}>
                   {String(value)}
                 </p>
               </div>
@@ -167,8 +170,8 @@ const DriftAnalysisView: React.FC = () => {
           </div>
 
           {/* Severity distribution bar chart */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
-            <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-4">Distribusi Severity</h3>
+          <div className="bg-white border border-hair rounded-[18px] p-5">
+            <h3 className="text-[15px] font-semibold text-ink mb-4">Distribusi Severity</h3>
             <div className="space-y-3">
               {['critical','high','medium','low'].map(sev_key => {
                 const count = sev[sev_key] ?? 0;
@@ -178,9 +181,9 @@ const DriftAnalysisView: React.FC = () => {
                   <div key={sev_key}>
                     <div className="flex justify-between text-[13px] mb-1">
                       <span className={`font-medium capitalize ${c.text} ${c.bg} px-2 py-0.5 rounded-full text-[11px]`}>{sev_key}</span>
-                      <span className="font-semibold text-[#1d1d1f]">{count}</span>
+                      <span className="font-semibold text-ink">{count}</span>
                     </div>
-                    <div className="h-2 bg-[#f0f0f2] rounded-full overflow-hidden">
+                    <div className="h-2 bg-panel-2 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: c.bar }} />
                     </div>
                   </div>
@@ -191,28 +194,28 @@ const DriftAnalysisView: React.FC = () => {
 
           {/* Per-parameter table */}
           {analysis.analysis?.by_parameter && Object.keys(analysis.analysis.by_parameter).length > 0 && (
-            <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#f0f0f2]">
-                <h3 className="text-[15px] font-semibold text-[#1d1d1f]">Drift per Parameter</h3>
+            <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+              <div className="px-5 py-4 border-b border-panel-2">
+                <h3 className="text-[15px] font-semibold text-ink">Drift per Parameter</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px] border-collapse">
                   <thead>
                     <tr>
                       {['Parameter','Total Drift','Kritis','Tindakan'].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(analysis.analysis.by_parameter).map(([param, data]: [string, any]) => (
-                      <tr key={param} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-4 py-3 font-medium text-[#1d1d1f]">{param}</td>
-                        <td className="px-4 py-3 text-[#626269]">{data.count}</td>
-                        <td className={`px-4 py-3 font-semibold ${data.critical > 0 ? 'text-[#ff3b30]' : 'text-[#6e6e73]'}`}>{data.critical}</td>
+                    {Object.entries(analysis.analysis.by_parameter).map(([param, data]: [string, { count: number; critical: number }]) => (
+                      <tr key={param} className="border-b border-panel-2 last:border-0">
+                        <td className="px-4 py-3 font-medium text-ink">{param}</td>
+                        <td className="px-4 py-3 text-ink-muted">{data.count}</td>
+                        <td className={`px-4 py-3 font-semibold ${data.critical > 0 ? 'text-bad' : 'text-ink-muted'}`}>{data.critical}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => { /* open resolve by param */ }}
-                            className="text-xs text-[#0066cc] hover:underline">Tindak lanjut</button>
+                            className="text-xs text-brand hover:underline">Tindak lanjut</button>
                         </td>
                       </tr>
                     ))}
@@ -223,29 +226,29 @@ const DriftAnalysisView: React.FC = () => {
           )}
 
           {/* Drift list from report */}
-          {report?.drifts?.length > 0 && (
-            <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#f0f0f2]">
-                <h3 className="text-[15px] font-semibold text-[#1d1d1f]">Semua Drift Tercatat</h3>
+          {reportDrifts.length > 0 && (
+            <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+              <div className="px-5 py-4 border-b border-panel-2">
+                <h3 className="text-[15px] font-semibold text-ink">Semua Drift Tercatat</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px] border-collapse">
                   <thead>
                     <tr>
                       {['Parameter','Limit','Terukur','Deviasi %','Severity','Status','Aksi'].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2] whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {report.drifts.map((d: any) => {
+                    {reportDrifts.map((d: SpecDrift) => {
                       const c = SEV_COLOR[d.severity] ?? SEV_COLOR.low;
                       return (
-                        <tr key={d.drift_id} className="border-b border-[#f0f0f2] last:border-0">
-                          <td className="px-4 py-3 font-medium text-[#1d1d1f]">{d.parameter_name}</td>
-                          <td className="px-4 py-3 font-mono text-[#6e6e73]">{d.specification_limit}</td>
-                          <td className="px-4 py-3 font-mono text-[#1d1d1f]">{d.measured_value}</td>
-                          <td className={`px-4 py-3 font-semibold ${d.deviation_percent > 20 ? 'text-[#ff3b30]' : 'text-[#ff9500]'}`}>
+                        <tr key={d.drift_id} className="border-b border-panel-2 last:border-0">
+                          <td className="px-4 py-3 font-medium text-ink">{d.parameter_name}</td>
+                          <td className="px-4 py-3 font-mono text-ink-muted">{d.specification_limit}</td>
+                          <td className="px-4 py-3 font-mono text-ink">{d.measured_value}</td>
+                          <td className={`px-4 py-3 font-semibold ${d.deviation_percent > 20 ? 'text-bad' : 'text-warn'}`}>
                             {d.deviation_percent?.toFixed(1)}%
                           </td>
                           <td className="px-4 py-3">
@@ -253,8 +256,8 @@ const DriftAnalysisView: React.FC = () => {
                           </td>
                           <td className="px-4 py-3">
                             {d.resolved
-                              ? <span className="text-[#34c759] font-semibold text-xs">✓ Resolved</span>
-                              : <span className="text-[#ff9500] text-xs font-medium">Open</span>}
+                              ? <span className="text-ok font-semibold text-xs">✓ Resolved</span>
+                              : <span className="text-warn text-xs font-medium">Open</span>}
                           </td>
                           <td className="px-4 py-3">
                             {!d.resolved && (
@@ -276,7 +279,7 @@ const DriftAnalysisView: React.FC = () => {
       )}
 
       {!selectedId && !loading && (
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-10 text-center text-[#6e6e73]">
+        <div className="bg-white border border-hair rounded-[18px] p-10 text-center text-ink-muted">
           Pilih spec version di atas untuk melihat analisis drift.
         </div>
       )}
@@ -286,44 +289,44 @@ const DriftAnalysisView: React.FC = () => {
         footer={
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowRecord(false)}
-              className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
+              className="border border-hair-4 bg-white text-ink-muted rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
             <button onClick={handleRecordDrift}
               className="btn-danger">Catat Drift</button>
           </div>
         }>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Nama Parameter *</label>
-            <input value={driftForm.parameter_name} placeholder="e.g. ketebalan_kain, lebar_jahitan"
+            <label className="block text-sm font-medium text-ink mb-1">Nama Parameter *</label>
+            <input value={driftForm.parameter_name} placeholder="e.g. ketebalan_kain, lebar_jahitan" aria-label="Nama Parameter"
               onChange={e => setDriftForm(f => ({ ...f, parameter_name: e.target.value }))}
-              className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+              className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Limit Spesifikasi *</label>
-              <input type="number" value={driftForm.specification_limit}
+              <label className="block text-sm font-medium text-ink mb-1">Limit Spesifikasi *</label>
+              <input type="number" value={driftForm.specification_limit} aria-label="Limit Spesifikasi"
                 onChange={e => setDriftForm(f => ({ ...f, specification_limit: e.target.value }))}
-                className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Nilai Terukur *</label>
-              <input type="number" value={driftForm.measured_value}
+              <label className="block text-sm font-medium text-ink mb-1">Nilai Terukur *</label>
+              <input type="number" value={driftForm.measured_value} aria-label="Nilai Terukur"
                 onChange={e => setDriftForm(f => ({ ...f, measured_value: e.target.value }))}
-                className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Severity</label>
-            <select value={driftForm.severity} onChange={e => setDriftForm(f => ({ ...f, severity: e.target.value }))}
-              className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
+            <label className="block text-sm font-medium text-ink mb-1">Severity</label>
+            <select value={driftForm.severity} onChange={e => setDriftForm(f => ({ ...f, severity: e.target.value }))} aria-label="Severity"
+              className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft">
               {['low','medium','high','critical'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Tindakan Korektif</label>
-            <textarea rows={2} value={driftForm.corrective_action}
+            <label className="block text-sm font-medium text-ink mb-1">Tindakan Korektif</label>
+            <textarea rows={2} value={driftForm.corrective_action} aria-label="Tindakan Korektif"
               onChange={e => setDriftForm(f => ({ ...f, corrective_action: e.target.value }))}
-              className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]"
+              className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft"
               placeholder="Opsional — bisa diisi nanti saat resolve" />
           </div>
         </div>
@@ -334,16 +337,16 @@ const DriftAnalysisView: React.FC = () => {
         footer={
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowResolve(false)}
-              className="border border-[#d5d5da] bg-white text-[#626269] rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
+              className="border border-hair-4 bg-white text-ink-muted rounded-[10px] px-4 py-2.5 text-[13px]">Batal</button>
             <button onClick={handleResolveDrift}
               className="btn-success">Resolve</button>
           </div>
         }>
         <div>
-          <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Tindakan Korektif yang Diambil *</label>
-          <textarea rows={3} value={resolveAction}
+          <label className="block text-sm font-medium text-ink mb-1">Tindakan Korektif yang Diambil *</label>
+          <textarea rows={3} value={resolveAction} aria-label="Tindakan Korektif yang Diambil"
             onChange={e => setResolveAction(e.target.value)}
-            className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]"
+            className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft"
             placeholder="Jelaskan tindakan yang sudah diambil untuk mengatasi drift ini…" />
         </div>
       </Modal>

@@ -62,15 +62,16 @@ class SpecVersionTracker:
         """Get approved spec untuk manufacturing"""
         # Return: {version, specification, time_standards}
         pass
-    
+
     def broadcast_spec_change(self, version_id):
         """Broadcast ke Manufacturing Execution saat ada perubahan"""
         # Trigger: EventQueue atau RabbitMQ
         # Payload: spec_id, version, effective_date
         pass
 
+
 # backend/sampling-spec-rnd/src/api/spec_version_routes.py
-@spec_bp.route('/<version_id>/publish', methods=['POST'])
+@spec_bp.route("/<version_id>/publish", methods=["POST"])
 def publish_spec_to_manufacturing():
     """Publikasikan spec ke Manufacturing module"""
     # 1. Validate spec compliance
@@ -115,8 +116,9 @@ def detect_quality_correlation(time_study, defect_data):
     # Output: correlation score, recommendation
     pass
 
+
 # backend/sampling-spec-rnd/src/api/time_study_routes.py
-@time_study_bp.route('/<ts_id>/correlate-defects', methods=['POST'])
+@time_study_bp.route("/<ts_id>/correlate-defects", methods=["POST"])
 def correlate_with_defects():
     """Check defect correlation untuk specific time study"""
     # 1. Get time study
@@ -154,7 +156,7 @@ Payroll Rate Calculation
 **Integration Points**:
 ```python
 # backend/sampling-spec-rnd/src/api/time_study_routes.py
-@time_study_bp.route('/<ts_id>/to-payroll', methods=['GET'])
+@time_study_bp.route("/<ts_id>/to-payroll", methods=["GET"])
 def export_for_payroll():
     """Export time study standard untuk payroll calculation"""
     # Return: {
@@ -165,10 +167,11 @@ def export_for_payroll():
     # }
     pass
 
+
 # In Payroll Module
 def calculate_worker_rate(spec_version, actual_output):
     """Calculate rate berdasarkan spec time standard"""
-    standard_time = spec_version.time_standards['total']
+    standard_time = spec_version.time_standards["total"]
     efficiency = actual_output / (target_output_from_standard_time)
     base_rate = get_base_rate(spec_version.product_id)
     return base_rate * efficiency * quality_factor
@@ -215,8 +218,9 @@ def calculate_cost_impact(old_spec, new_spec):
     # Return: cost_delta, financial_accounts_affected
     pass
 
+
 # backend/sampling-spec-rnd/src/api/spec_version_routes.py
-@spec_bp.route('/<version_id>/cost-impact', methods=['GET'])
+@spec_bp.route("/<version_id>/cost-impact", methods=["GET"])
 def get_cost_impact():
     """Get financial impact dari spec version"""
     # Return: {
@@ -261,8 +265,9 @@ class SpecVersionTracker:
         self.client_id = client_id  # Multi-tenant support
         pass
 
+
 # backend/sampling-spec-rnd/src/api/spec_version_routes.py
-@spec_bp.route('', methods=['GET'])
+@spec_bp.route("", methods=["GET"])
 def list_spec_versions():
     """List dengan multi-tenant filtering"""
     # Query params: product_id, client_id
@@ -359,8 +364,9 @@ def get_time_studies(client_id, product_id, filters):
     return TimeStudy.query.filter(
         TimeStudy.client_id == client_id,  # ALWAYS first
         TimeStudy.product_id == product_id,
-        TimeStudy.spec_id == filters.get('spec_id')
+        TimeStudy.spec_id == filters.get("spec_id"),
     )
+
 
 # ✅ BETTER: Use middleware
 @app.before_request
@@ -378,13 +384,10 @@ def enforce_client_isolation():
 def update_spec(version_id, changes):
     # Create new version, mark old as deprecated
     old = get_version(version_id)
-    new = create_new_version(
-        based_on=old,
-        changes=changes,
-        change_reason="Spec correction"
-    )
-    old.status = 'deprecated'
+    new = create_new_version(based_on=old, changes=changes, change_reason="Spec correction")
+    old.status = "deprecated"
     return new
+
 
 # ❌ WRONG:
 def update_spec(version_id, changes):

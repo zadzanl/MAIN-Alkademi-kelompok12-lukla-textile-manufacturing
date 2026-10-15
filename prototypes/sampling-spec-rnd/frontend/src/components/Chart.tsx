@@ -50,16 +50,16 @@ const Chart: React.FC<ChartProps> = ({
   };
 
   return (
-    <section className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 shadow-sm">
+    <section className="bg-white border border-hair rounded-[18px] p-5 shadow-sm">
       {/* Header */}
       <div className="flex justify-between items-start gap-3 mb-6">
         <div>
-          <h2 className="text-[17px] font-semibold text-[#111827] tracking-tight">
+          <h2 className="text-[17px] font-semibold text-ink tracking-tight">
             {title}
           </h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">{subtitle}</p>
+          <p className="text-[12px] text-ink-muted mt-0.5">{subtitle}</p>
         </div>
-        <span className="bg-[#dbeafe] text-[#1d4ed8] rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
+        <span className="bg-brand-bg-5 text-brand rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
           {badge}
         </span>
       </div>
@@ -85,7 +85,7 @@ const Chart: React.FC<ChartProps> = ({
               {/* Percentage label above bar */}
               <span
                 className={`text-[11px] font-semibold ${
-                  point.value > 0 ? 'text-[#374151]' : 'text-[#d1d5db]'
+                  point.value > 0 ? 'text-ink-2' : 'text-hair-4'
                 }`}
               >
                 {point.value > 0 ? `${point.value}%` : '—'}
@@ -105,7 +105,7 @@ const Chart: React.FC<ChartProps> = ({
               {/* Day label below bar */}
               <span
                 className={`text-[11px] font-medium ${
-                  point.isCurrent ? 'text-[#0071e3] font-bold' : 'text-[#374151]'
+                  point.isCurrent ? 'text-brand font-bold' : 'text-ink-2'
                 }`}
               >
                 {point.label}
@@ -116,7 +116,7 @@ const Chart: React.FC<ChartProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#f3f4f6]">
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-panel">
         {[
           { color: '#0071e3', label: 'Hari ini' },
           { color: '#93c5fd', label: 'Selesai' },
@@ -124,7 +124,7 @@ const Chart: React.FC<ChartProps> = ({
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[11px] text-[#6b7280]">{label}</span>
+            <span className="text-[11px] text-ink-muted">{label}</span>
           </div>
         ))}
       </div>

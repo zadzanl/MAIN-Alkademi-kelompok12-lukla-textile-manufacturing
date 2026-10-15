@@ -14,10 +14,10 @@ interface MetricCardProps {
 }
 
 const ACCENT: Record<string, { border: string; valueCls: string }> = {
-  blue:   { border: 'border-t-[3px] border-t-[#0071e3]', valueCls: 'text-[#0071e3]' },
-  green:  { border: 'border-t-[3px] border-t-[#34c759]', valueCls: 'text-[#1a7a34]' },
-  orange: { border: 'border-t-[3px] border-t-[#ff9500]', valueCls: 'text-[#b86800]' },
-  red:    { border: 'border-t-[3px] border-t-[#ff3b30]', valueCls: 'text-[#cc2200]' },
+  blue:   { border: 'border-t-[3px] border-t-brand', valueCls: 'text-brand dark:text-brand-soft' },
+  green:  { border: 'border-t-[3px] border-t-ok', valueCls: 'text-ok-2 dark:text-ok' },
+  orange: { border: 'border-t-[3px] border-t-warn', valueCls: 'text-warn-2 dark:text-warn' },
+  red:    { border: 'border-t-[3px] border-t-bad', valueCls: 'text-bad-4 dark:text-bad' },
 };
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -31,22 +31,22 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <article
-      className={`bg-white border border-[#e6e6e9] rounded-[18px] p-5 sm:p-6 min-h-[140px] flex flex-col justify-between shadow-sm ${ac?.border ?? ''}`}
+      className={`bg-white border border-hair rounded-[18px] p-5 sm:p-6 min-h-[140px] flex flex-col justify-between shadow-sm ${ac?.border ?? ''}`}
     >
       {/* Label — dark, readable */}
-      <p className="text-[13px] font-semibold text-[#374151] mb-3 uppercase tracking-wide leading-tight">
+      <p className="text-[13px] font-semibold text-ink-2 mb-3 uppercase tracking-wide leading-tight">
         {label}
       </p>
 
       {/* Value */}
       {loading ? (
         <div className="animate-pulse">
-          <div className="h-10 bg-[#e5e7eb] rounded-lg w-16 mb-2" />
+          <div className="h-10 bg-panel-2 rounded-lg w-16 mb-2" />
         </div>
       ) : (
         <p
           className={`text-[40px] font-bold tracking-tight leading-none ${
-            ac ? ac.valueCls : 'text-[#111827]'
+            ac ? ac.valueCls : 'text-ink'
           }`}
         >
           {value}
@@ -54,7 +54,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       )}
 
       {/* Note — muted but still legible */}
-      <p className="text-[12px] text-[#6b7280] mt-3 leading-snug">{note}</p>
+      <p className="text-[12px] text-ink-muted mt-3 leading-snug">{note}</p>
     </article>
   );
 };

@@ -107,11 +107,11 @@ const FontSelector: React.FC<FontSelectorProps> = ({ currentFont, onChange }) =>
       <div className="mb-5">
         <h3
           id="font-selector-heading"
-          className="text-[15px] font-semibold text-[#1d1d1f] mb-1"
+          className="text-[15px] font-semibold text-ink mb-1"
         >
           Gaya Font Antarmuka
         </h3>
-        <p className="text-[13px] text-[#6e6e73]">
+        <p className="text-[13px] text-ink-muted">
           Pilih tipografi yang paling nyaman untuk Anda. Perubahan langsung
           diterapkan ke seluruh antarmuka.
         </p>
@@ -138,8 +138,8 @@ const FontSelector: React.FC<FontSelectorProps> = ({ currentFont, onChange }) =>
                 'relative rounded-[14px] p-4 border-2 text-left',
                 'transition-all duration-150',
                 isActive
-                  ? 'border-[#0071e3] bg-[#eff6ff] shadow-[0_0_0_4px_rgba(0,113,227,0.12)]'
-                  : 'border-[#e2e8f0] bg-white hover:border-[#0071e3]/40 hover:bg-[#f8fafc] hover:shadow-sm',
+                  ? 'border-brand bg-brand-bg shadow-[0_0_0_4px_rgba(0,113,227,0.12)]'
+                  : 'border-hair bg-white hover:border-brand/40 hover:bg-panel hover:shadow-sm',
               ].join(' ')}
             >
               {/* Recommended badge */}
@@ -266,10 +266,10 @@ const LivePreview: React.FC<{ fontKey: FontKey }> = ({ fontKey }) => {
 
   return (
     <div
-      className="mt-5 rounded-[14px] border border-[#e2e8f0] bg-white p-5 overflow-hidden"
+      className="mt-5 rounded-[14px] border border-hair bg-white p-5 overflow-hidden"
       aria-label="Pratinjau font aktif"
     >
-      <p className="text-[11px] font-bold uppercase tracking-widest text-[#94a3b8] mb-3">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">
         Pratinjau — {opt.name}
       </p>
       <div style={{ fontFamily: opt.family }}>
