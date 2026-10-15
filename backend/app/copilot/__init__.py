@@ -33,6 +33,7 @@ from .provider import (
     MockLLMClient,
     OllamaLLMProvider,
     OpenAILLMProvider,
+    OpenRouterLLMProvider,
     get_llm_provider,
 )
 
