@@ -21,6 +21,7 @@ This change establishes the formal planning specification suite for the Lukla Op
 - `production-output-tracking`: Dynamic sewer line capacity allocation without rigid machine slots, article piece-rate cards, 30-minute touch-terminal output logging, and assembly QC queue staging (FR-7.1, FR-7.2, FR-7.3, FR-7.4).
 - `quality-control-and-inspection`: Finished garment inspection triage (Pass/Repair/Reject), repair without double piece-rate pay, and 3-way QC bonus pool derivation (FR-8.1, FR-8.2, FR-9.1, FR-9.2).
 - `payroll-and-costing-engine`: Weekly Saturday piece-rate payroll calculation, floating meal allowance (10–15%), 3-way bonus pool distribution, and monthly facility overhead unit allocation (FR-10.1, FR-10.2, FR-10.3, FR-10.4).
+- `messaging-notification-gateway`: (Scaffold) Asynchronous transactional outbox event dispatcher for external Telegram notifications with WhatsApp Cloud API adapter extensibility.
 
 ### Modified Capabilities
 *(None; baseline planning change)*

@@ -55,3 +55,10 @@ Historical Phase 5 checkbox reconciliation remains pending; see task-record revi
 - [x] 6.8 Complete final planning review and report unresolved business/release gates (`artifacts/review/blueprint-phase-c-review.md`; runtime implementation remains out of scope)
 
 Phase C integration is planning-only. It does not authorize application code, dependencies, runtime, cloud, database, or production execution.
+
+## 7. Extension — Messaging & Notification Gateway Scaffolding (Exploratory)
+
+- [x] 7.1 Author initial breadth-first exploration and trade-off scaffold (`20-messaging-bots-scaffold.md`)
+- [x] 7.2 Scaffold OpenSpec capability specification with loose ends (`specs/messaging-notification-gateway/spec.md`)
+- [ ] 7.3 Workstream E: Spike Telegram dispatcher worker against outbox prototype (gated behind Core DB completion)
+- [ ] 7.4 Evaluate Meta WhatsApp Business Cloud API commercial verification and template onboarding (deferred)
