@@ -43,19 +43,19 @@ const WaterfallChart: React.FC<WaterfallChartProps> = ({
   };
 
   return (
-    <section className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 shadow-sm">
+    <section className="bg-white border border-hair rounded-[18px] p-5 shadow-sm">
       <div className="flex justify-between items-start gap-3 mb-6">
         <div>
-          <h2 className="text-[17px] font-semibold text-[#111827] tracking-tight">{title}</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">{subtitle}</p>
+          <h2 className="text-[17px] font-semibold text-ink tracking-tight">{title}</h2>
+          <p className="text-[12px] text-ink-muted mt-0.5">{subtitle}</p>
         </div>
-        <span className="bg-[#dbeafe] text-[#1d4ed8] rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
+        <span className="bg-brand-bg-5 text-brand rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
           {badge}
         </span>
       </div>
 
       {bars.length === 0 || range <= 0 ? (
-        <p className="text-center text-[#6e6e73] py-10 text-[13px]">
+        <p className="text-center text-ink-muted py-10 text-[13px]">
           Belum ada data untuk ditampilkan.
         </p>
       ) : (
@@ -77,7 +77,7 @@ const WaterfallChart: React.FC<WaterfallChartProps> = ({
               return (
                 <div key={`${b.label}-${idx}`} className="relative flex-1 h-full flex justify-center">
                   <span
-                    className="absolute text-[11px] font-semibold text-[#374151] whitespace-nowrap"
+                    className="absolute text-[11px] font-semibold text-ink-2 whitespace-nowrap"
                     style={{ bottom: bottom + height + 4 }}
                   >
                     {label}
@@ -96,7 +96,7 @@ const WaterfallChart: React.FC<WaterfallChartProps> = ({
             {bars.map((b, idx) => (
               <div
                 key={`${b.label}-label-${idx}`}
-                className="flex-1 text-center text-[11px] text-[#374151] truncate"
+                className="flex-1 text-center text-[11px] text-ink-2 truncate"
                 title={b.label}
               >
                 {b.label}
@@ -104,7 +104,7 @@ const WaterfallChart: React.FC<WaterfallChartProps> = ({
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-[#f3f4f6]">
+          <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-panel">
             {[
               { color: '#0071e3', label: 'Penambahan' },
               { color: '#ff3b30', label: 'Pengurangan' },
@@ -112,7 +112,7 @@ const WaterfallChart: React.FC<WaterfallChartProps> = ({
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
-                <span className="text-[11px] text-[#6b7280]">{label}</span>
+                <span className="text-[11px] text-ink-muted">{label}</span>
               </div>
             ))}
           </div>

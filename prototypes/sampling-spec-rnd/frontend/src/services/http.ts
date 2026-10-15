@@ -35,6 +35,10 @@ export interface RequestOptions {
   timeoutMs?: number;
   /** Set on writes so retries of the same logical request are replay-safe. */
   idempotencyKey?: string;
+  /** Override the default base URL (e.g. the portal auth API). */
+  base?: string;
+  /** Bearer token for authenticated calls. */
+  token?: string;
 }
 
 function newIdempotencyKey(): string {
@@ -55,12 +59,13 @@ async function request<T>(
 
   const headers: Record<string, string> = {};
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (options.token) headers['Authorization'] = `Bearer ${options.token}`;
   if (method !== 'GET') {
     headers['Idempotency-Key'] = options.idempotencyKey ?? newIdempotencyKey();
   }
 
   try {
-    const response = await fetch(`${base}${path}${buildQuery(options.params)}`, {
+    const response = await fetch(`${options.base ?? base}${path}${buildQuery(options.params)}`, {
       method,
       headers,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,

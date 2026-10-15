@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SampleVersionView — Version History Tree + Component Spec + Material Estimation
  * PRD: Manajemen Versi Sample (v1 → v2 → converted to Mass Order)
  */
@@ -14,10 +14,10 @@ import { toast } from '../services/toast';
 import { TENANT_ID, actor, APPROVER_ID } from '../services/identity';
 
 const STATUS_STYLE: Record<string, string> = {
-  draft:            'bg-[#e8f2ff] text-[#0066cc]',
-  pending_approval: 'bg-[#fff4e6] text-[#ff9500]',
-  approved:         'bg-[#e8f5e9] text-[#34c759]',
-  converted:        'bg-[#f0f0f2] text-[#626269]',
+  draft:            'bg-brand-bg text-brand',
+  pending_approval: 'bg-warn-bg text-warn',
+  approved:         'bg-ok-bg text-ok',
+  converted:        'bg-panel-2 text-ink-muted',
 };
 const STATUS_LABEL: Record<string, string> = {
   draft:            'Draft',
@@ -27,7 +27,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const Badge: React.FC<{ status: string }> = ({ status }) => (
-  <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[status] ?? 'bg-[#f0f0f2] text-[#626269]'}`}>
+  <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[status] ?? 'bg-panel-2 text-ink-muted'}`}>
     {STATUS_LABEL[status] ?? status}
   </span>
 );
@@ -179,8 +179,8 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
       {/* Header bar */}
       <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Manajemen Versi Sample</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">Rancangan produk → revisi → konversi ke Mass Order</p>
+          <h2 className="text-2xl font-semibold text-ink">Manajemen Versi Sample</h2>
+          <p className="text-ink-muted text-sm mt-1">Rancangan produk → revisi → konversi ke Mass Order</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -215,7 +215,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             key: 'components', label: 'Komponen',
             render: (_v: unknown, row: SampleVersion) => (
               <button onClick={() => openComponents(row)}
-                className="text-[#0066cc] text-xs font-semibold hover:underline">
+                className="text-brand text-xs font-semibold hover:underline">
                 {row.components?.length ?? 0} komponen
               </button>
             ),
@@ -224,7 +224,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             key: 'materials', label: 'Estimasi Bahan',
             render: (_v: unknown, row: SampleVersion) => (
               <button onClick={() => openMaterials(row)}
-                className="text-[#0066cc] text-xs font-semibold hover:underline">
+                className="text-brand text-xs font-semibold hover:underline">
                 Rp {totalCost(row.materials ?? []).toLocaleString('id-ID')}
               </button>
             ),
@@ -297,17 +297,17 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             { id: 'client_id',    label: 'Client ID *',     ph: 'e.g. snohund' },
           ] as { id: keyof typeof form; label: string; ph: string }[]).map(({ id, label, ph }) => (
             <div key={id}>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
+              <label className="block text-sm font-medium text-ink mb-1">{label}</label>
               <input value={form[id]} placeholder={ph} aria-label={label}
                 onChange={e => setForm(f => ({ ...f, [id]: e.target.value }))}
-                className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
           ))}
           <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Catatan</label>
+            <label className="block text-sm font-medium text-ink mb-1">Catatan</label>
             <textarea rows={2} value={form.notes} aria-label="Catatan"
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+              className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
           </div>
         </div>
       </Modal>
@@ -328,11 +328,11 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           </div>
         }>
         <div>
-          <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Catatan Revisi *</label>
+          <label className="block text-sm font-medium text-ink mb-1">Catatan Revisi *</label>
           <textarea rows={3} value={revisionNote} placeholder="Jelaskan perubahan desain, pola, atau bahan..." aria-label="Catatan Revisi"
             onChange={e => setRevisionNote(e.target.value)}
-            className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
-          <p className="text-xs text-[#6e6e73] mt-2">
+            className="w-full border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft" />
+          <p className="text-xs text-ink-muted mt-2">
             Komponen & estimasi bahan akan diwarisi dari {selected?.version_label}. Anda bisa edit setelah versi baru dibuat.
           </p>
         </div>
@@ -345,32 +345,32 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             <div key={hv.version_id} className="flex gap-4 pb-4 relative">
               {/* timeline line */}
               {idx < historyVersions.length - 1 && (
-                <div className="absolute left-[11px] top-7 w-[2px] h-full bg-[#e6e6e9]" />
+                <div className="absolute left-[11px] top-7 w-[2px] h-full bg-hair" />
               )}
               {/* dot */}
               <div className={`w-6 h-6 rounded-full border-2 shrink-0 mt-1 z-10 ${
-                hv.status === 'converted' ? 'bg-[#1d1d1f] border-[#1d1d1f]' :
-                hv.status === 'approved'  ? 'bg-[#34c759] border-[#34c759]' :
-                hv.status === 'pending_approval' ? 'bg-[#ff9500] border-[#ff9500]' :
-                'bg-white border-[#0066cc]'
+                hv.status === 'converted' ? 'bg-ink border-ink' :
+                hv.status === 'approved'  ? 'bg-ok border-ok' :
+                hv.status === 'pending_approval' ? 'bg-warn border-warn' :
+                'bg-white border-brand'
               }`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-sm text-[#1d1d1f]">{hv.version_label}</span>
+                  <span className="font-semibold text-sm text-ink">{hv.version_label}</span>
                   <Badge status={hv.status} />
                   {hv.converted_to_order_id && (
-                    <span className="text-xs text-[#6e6e73]">→ Order: {hv.converted_to_order_id}</span>
+                    <span className="text-xs text-ink-muted">→ Order: {hv.converted_to_order_id}</span>
                   )}
                 </div>
-                <p className="text-xs text-[#6e6e73] mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   {hv.created_by} · {new Date(hv.created_at).toLocaleDateString('id-ID')}
                 </p>
-                <p className="text-xs text-[#1d1d1f] mt-1">{hv.notes}</p>
+                <p className="text-xs text-ink mt-1">{hv.notes}</p>
                 {/* Revision log */}
                 {hv.revision_log?.length > 0 && (
                   <ul className="mt-1 space-y-0.5">
                     {hv.revision_log.map((log, li) => (
-                      <li key={li} className="text-[11px] text-[#6e6e73]">
+                      <li key={li} className="text-[11px] text-ink-muted">
                         {log.action.replace(/_/g, ' ')} — {log.by} · {new Date(log.at).toLocaleTimeString('id-ID')}
                         {log.note ? ` — "${log.note}"` : ''}
                       </li>
@@ -400,7 +400,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
               </button>
               {selected?.status === 'draft' && (
                 <button onClick={handleSaveComponents}
-                  className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2 font-semibold text-[13px] hover:bg-[#0066cc]">
+                  className="bg-brand text-white rounded-[10px] px-4 py-2 font-semibold text-[13px] hover:bg-brand">
                   Simpan
                 </button>
               )}
@@ -410,21 +410,21 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         <div className="overflow-x-auto -mx-1">
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#fafafa]">
+              <tr className="bg-panel">
                 {['Bagian', 'Deskripsi', 'Tipe Bahan', 'Est. (m)', 'Satuan', 'Waktu Std (ms)', 'Rate (IDR)', ''].map(h => (
-                  <th key={h} className="px-2 py-2 text-left font-medium text-[#6e6e73] border-b border-[#f0f0f2] whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-2 py-2 text-left font-medium text-ink-muted border-b border-panel-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {editComponents.map((comp, idx) => (
-                <tr key={comp.component_id} className="border-b border-[#f0f0f2]">
+                <tr key={comp.component_id} className="border-b border-panel-2">
                   {(['part_name','description','material_type'] as const).map(field => (
                     <td key={field} className="px-1 py-1">
                       <input value={comp[field]} aria-label={field}
                         disabled={selected?.status !== 'draft'}
                         onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,[field]:e.target.value} : c))}
-                        className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
+                        className="w-full border border-hair-2 rounded-[8px] px-2 py-1 text-[12px] focus:outline-brand-soft focus:outline-2 disabled:bg-page" />
                     </td>
                   ))}
                   {(['estimated_usage_m','sewing_time_std_ms','rate_card_idr'] as const).map(field => (
@@ -432,20 +432,20 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                       <input type="number" value={comp[field]} aria-label={field}
                         disabled={selected?.status !== 'draft'}
                         onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,[field]:parseFloat(e.target.value)||0} : c))}
-                        className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
+                        className="w-full border border-hair-2 rounded-[8px] px-2 py-1 text-[12px] focus:outline-brand-soft focus:outline-2 disabled:bg-page" />
                     </td>
                   ))}
                   <td className="px-1 py-1">
                     <select value={comp.unit} disabled={selected?.status !== 'draft'} aria-label="Satuan"
                       onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,unit:e.target.value} : c))}
-                      className="border border-[#dedee2] rounded-[8px] px-1 py-1 text-[12px] disabled:bg-[#f5f5f7]">
+                      className="border border-hair-2 rounded-[8px] px-1 py-1 text-[12px] disabled:bg-page">
                       {['m','pcs','yard','kg'].map(u => <option key={u}>{u}</option>)}
                     </select>
                   </td>
                   <td className="px-1 py-1">
                     {selected?.status === 'draft' && (
                       <button onClick={() => setEditComponents(cs => cs.filter((_,i) => i!==idx))} aria-label="Hapus komponen"
-                        className="text-[#ff3b30] hover:text-[#cc2200] font-bold px-1">×</button>
+                        className="text-bad hover:text-bad-4 font-bold px-1">×</button>
                     )}
                   </td>
                 </tr>
@@ -453,7 +453,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             </tbody>
           </table>
           {editComponents.length === 0 && (
-            <p className="text-center text-[#6e6e73] text-sm py-6">Belum ada komponen. Klik "+ Tambah Baris".</p>
+            <p className="text-center text-ink-muted text-sm py-6">Belum ada komponen. Klik "+ Tambah Baris".</p>
           )}
         </div>
       </Modal>
@@ -469,7 +469,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
               + Tambah Baris
             </button>
             <div className="flex gap-2 items-center">
-              <span className="text-[13px] font-semibold text-[#1d1d1f]">
+              <span className="text-[13px] font-semibold text-ink">
                 Total: Rp {editMaterials.reduce((s,m) => s + m.estimated_usage * m.unit_cost, 0).toLocaleString('id-ID')}
               </span>
               <button onClick={() => setShowMatModal(false)}
@@ -478,7 +478,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
               </button>
               {selected?.status === 'draft' && (
                 <button onClick={handleSaveMaterials}
-                  className="bg-[#0071e3] text-white rounded-[10px] px-4 py-2 font-semibold text-[13px] hover:bg-[#0066cc]">
+                  className="bg-brand text-white rounded-[10px] px-4 py-2 font-semibold text-[13px] hover:bg-brand">
                   Simpan
                 </button>
               )}
@@ -488,46 +488,46 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         <div className="overflow-x-auto -mx-1">
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#fafafa]">
+              <tr className="bg-panel">
                 {['Kode','Nama Bahan','Est. Qty','Satuan','Harga/Unit (Rp)','Total (Rp)',''].map(h => (
-                  <th key={h} className="px-2 py-2 text-left font-medium text-[#6e6e73] border-b border-[#f0f0f2] whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-2 py-2 text-left font-medium text-ink-muted border-b border-panel-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {editMaterials.map((mat, idx) => (
-                <tr key={idx} className="border-b border-[#f0f0f2]">
+                <tr key={idx} className="border-b border-panel-2">
                   {(['material_code','material_name'] as const).map(field => (
                     <td key={field} className="px-1 py-1">
                       <input value={mat[field]} disabled={selected?.status !== 'draft'} aria-label={field}
                         onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,[field]:e.target.value} : m))}
-                        className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
+                        className="w-full border border-hair-2 rounded-[8px] px-2 py-1 text-[12px] focus:outline-brand-soft focus:outline-2 disabled:bg-page" />
                     </td>
                   ))}
                   <td className="px-1 py-1 w-20">
                     <input type="number" value={mat.estimated_usage} disabled={selected?.status !== 'draft'} aria-label="Estimasi pemakaian"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,estimated_usage:parseFloat(e.target.value)||0} : m))}
-                      className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] disabled:bg-[#f5f5f7]" />
+                      className="w-full border border-hair-2 rounded-[8px] px-2 py-1 text-[12px] disabled:bg-page" />
                   </td>
                   <td className="px-1 py-1">
                     <select value={mat.unit} disabled={selected?.status !== 'draft'} aria-label="Satuan"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,unit:e.target.value} : m))}
-                      className="border border-[#dedee2] rounded-[8px] px-1 py-1 text-[12px] disabled:bg-[#f5f5f7]">
+                      className="border border-hair-2 rounded-[8px] px-1 py-1 text-[12px] disabled:bg-page">
                       {['m','kg','pcs','yard','roll'].map(u => <option key={u}>{u}</option>)}
                     </select>
                   </td>
                   <td className="px-1 py-1 w-28">
                     <input type="number" value={mat.unit_cost} disabled={selected?.status !== 'draft'} aria-label="Harga per unit"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,unit_cost:parseFloat(e.target.value)||0} : m))}
-                      className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] disabled:bg-[#f5f5f7]" />
+                      className="w-full border border-hair-2 rounded-[8px] px-2 py-1 text-[12px] disabled:bg-page" />
                   </td>
-                  <td className="px-2 py-1 font-semibold text-[#1d1d1f] whitespace-nowrap">
+                  <td className="px-2 py-1 font-semibold text-ink whitespace-nowrap">
                     {(mat.estimated_usage * mat.unit_cost).toLocaleString('id-ID')}
                   </td>
                   <td className="px-1 py-1">
                     {selected?.status === 'draft' && (
                       <button onClick={() => setEditMaterials(ms => ms.filter((_,i) => i!==idx))} aria-label="Hapus material"
-                        className="text-[#ff3b30] font-bold px-1">×</button>
+                        className="text-bad font-bold px-1">×</button>
                     )}
                   </td>
                 </tr>
@@ -535,7 +535,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
             </tbody>
           </table>
           {editMaterials.length === 0 && (
-            <p className="text-center text-[#6e6e73] text-sm py-6">Belum ada bahan. Klik "+ Tambah Baris".</p>
+            <p className="text-center text-ink-muted text-sm py-6">Belum ada bahan. Klik "+ Tambah Baris".</p>
           )}
         </div>
       </Modal>

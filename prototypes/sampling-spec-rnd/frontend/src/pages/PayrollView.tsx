@@ -101,8 +101,8 @@ const PayrollView: React.FC = () => {
     <div className="space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Payroll &amp; Costing</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">
+          <h2 className="text-2xl font-semibold text-ink">Payroll &amp; Costing</h2>
+          <p className="text-ink-muted text-sm mt-1">
             Upah borongan mingguan, meal allowance, bonus pool QC, dan alokasi overhead bulanan
           </p>
         </div>
@@ -117,14 +117,14 @@ const PayrollView: React.FC = () => {
           hint="setelah endpoint tersedia."
         />
       )}
-      {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
-      {flash && <div className="rounded-[14px] border border-[#34c759] bg-[#e8f5e9] px-4 py-3 text-[13px] font-medium text-[#1a7a34]">{flash}</div>}
+      {error && <div className="rounded-[14px] border border-bad-bg-2 bg-bad-bg px-4 py-3 text-[13px] text-bad-4">{error}</div>}
+      {flash && <div className="rounded-[14px] border border-ok bg-ok-bg px-4 py-3 text-[13px] font-medium text-ok-2">{flash}</div>}
 
-      <div className="inline-flex flex-wrap gap-1 rounded-[12px] bg-[#f0f0f2] p-1">
+      <div className="inline-flex flex-wrap gap-1 rounded-[12px] bg-panel-2 p-1">
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`min-h-[40px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${
-              tab === t.id ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#626269]'
+              tab === t.id ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'
             }`}>
             {t.label}
           </button>
@@ -174,11 +174,11 @@ const PeriodsTab: React.FC<{ periods: Period[]; loading: boolean; onCreated: () 
         </button>
       </div>
 
-      <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
+      <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
         {loading ? (
-          <p className="px-5 py-10 text-[13px] text-[#6e6e73] text-center">Memuat…</p>
+          <p className="px-5 py-10 text-[13px] text-ink-muted text-center">Memuat…</p>
         ) : periods.length === 0 ? (
-          <p className="px-5 py-10 text-[13px] text-[#6e6e73] text-center">Belum ada periode payroll.</p>
+          <p className="px-5 py-10 text-[13px] text-ink-muted text-center">Belum ada periode payroll.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
@@ -190,10 +190,10 @@ const PeriodsTab: React.FC<{ periods: Period[]; loading: boolean; onCreated: () 
               <tbody>
                 {periods.map(p => (
                   <tr key={p.id}>
-                    <td className="px-4 py-3"><code className="text-xs text-[#6e6e73]">{p.id.slice(0, 8)}</code></td>
+                    <td className="px-4 py-3"><code className="text-xs text-ink-muted">{p.id.slice(0, 8)}</code></td>
                     <td className="px-4 py-3">{p.startsOn}</td>
                     <td className="px-4 py-3">{p.endsOn}</td>
-                    <td className="px-4 py-3 font-mono text-[#6e6e73]">{p.cutoffLocal}</td>
+                    <td className="px-4 py-3 font-mono text-ink-muted">{p.cutoffLocal}</td>
                     <td className="px-4 py-3">{p.timezone}</td>
                     <td className="px-4 py-3"><code className="text-xs">{p.ruleVersion || '—'}</code></td>
                   </tr>
@@ -212,29 +212,29 @@ const PeriodsTab: React.FC<{ periods: Period[]; loading: boolean; onCreated: () 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="period-start" className="block text-sm font-medium text-[#1d1d1f] mb-1">Mulai</label>
+              <label htmlFor="period-start" className="block text-sm font-medium text-ink mb-1">Mulai</label>
               <input id="period-start" type="date" value={form.startsOn}
                 onChange={e => setForm(f => ({ ...f, startsOn: e.target.value }))} className={inputCls} />
             </div>
             <div>
-              <label htmlFor="period-end" className="block text-sm font-medium text-[#1d1d1f] mb-1">Selesai</label>
+              <label htmlFor="period-end" className="block text-sm font-medium text-ink mb-1">Selesai</label>
               <input id="period-end" type="date" value={form.endsOn}
                 onChange={e => setForm(f => ({ ...f, endsOn: e.target.value }))} className={inputCls} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="period-cutoff" className="block text-sm font-medium text-[#1d1d1f] mb-1">Cutoff (HH:MM:00)</label>
+              <label htmlFor="period-cutoff" className="block text-sm font-medium text-ink mb-1">Cutoff (HH:MM:00)</label>
               <input id="period-cutoff" value={form.cutoffLocal}
                 onChange={e => setForm(f => ({ ...f, cutoffLocal: e.target.value }))} className={inputCls} />
             </div>
             <div>
-              <label htmlFor="period-rule" className="block text-sm font-medium text-[#1d1d1f] mb-1">Versi Aturan</label>
+              <label htmlFor="period-rule" className="block text-sm font-medium text-ink mb-1">Versi Aturan</label>
               <input id="period-rule" value={form.ruleVersion} placeholder="rule-2026-10-01"
                 onChange={e => setForm(f => ({ ...f, ruleVersion: e.target.value }))} className={inputCls} />
             </div>
           </div>
-          {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
+          {err && <p className="text-[13px] text-bad-4">{err}</p>}
         </div>
       </Modal>
     </div>
@@ -308,24 +308,24 @@ const RunTab: React.FC<{
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-4">
+      <div className="bg-white border border-hair rounded-[18px] p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="run-period" className="block text-sm font-medium text-[#1d1d1f] mb-1">Periode</label>
+            <label htmlFor="run-period" className="block text-sm font-medium text-ink mb-1">Periode</label>
             <select id="run-period" value={selectedPeriodId} onChange={e => onSelectPeriod(e.target.value)} className={inputCls}>
               <option value="">— pilih periode —</option>
               {periods.map(p => <option key={p.id} value={p.id}>{p.startsOn} → {p.endsOn}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="run-rule" className="block text-sm font-medium text-[#1d1d1f] mb-1">Versi Aturan</label>
+            <label htmlFor="run-rule" className="block text-sm font-medium text-ink mb-1">Versi Aturan</label>
             <select id="run-rule" value={ruleVersion} onChange={e => setRuleVersion(e.target.value)} className={inputCls}>
               <option value="">— pilih versi —</option>
               {rules.map(r => (
                 <option key={r.id} value={r.id}>{r.id} · {r.status === 'APPROVED' ? 'disetujui' : 'pending'}</option>
               ))}
             </select>
-            <p className="text-[11px] text-[#6e6e73] mt-1">Aturan non-APPROVED akan ditolak dengan <code className="font-mono">FINANCIAL_RULE_PENDING</code>.</p>
+            <p className="text-[11px] text-ink-muted mt-1">Aturan non-APPROVED akan ditolak dengan <code className="font-mono">FINANCIAL_RULE_PENDING</code>.</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -336,23 +336,23 @@ const RunTab: React.FC<{
             <LucideIcon name="file-text" className="w-4 h-4" /> Muat Slip
           </button>
         </div>
-        {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
-        {flash && <p className="text-[13px] text-[#1a7a34]">{flash}</p>}
+        {err && <p className="text-[13px] text-bad-4">{err}</p>}
+        {flash && <p className="text-[13px] text-ok-2">{flash}</p>}
       </div>
 
       {result && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-            <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-1">Status</p>
-            <p className="text-[16px] font-semibold text-[#1d1d1f]">{result.status}</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5 text-center">
+            <p className="text-xs text-ink-muted uppercase tracking-wider mb-1">Status</p>
+            <p className="text-[16px] font-semibold text-ink">{result.status}</p>
           </div>
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-            <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-1">Unit Eligible</p>
-            <p className="text-[26px] font-semibold text-[#0066cc]">{result.eligibleUnits}</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5 text-center">
+            <p className="text-xs text-ink-muted uppercase tracking-wider mb-1">Unit Eligible</p>
+            <p className="text-[26px] font-semibold text-brand">{result.eligibleUnits}</p>
           </div>
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-            <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-1">Total Upah</p>
-            <p className="text-[20px] font-semibold text-[#1d1d1f] font-mono">Rp {fmtMoney(result.totalWages.amountMinor)}</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5 text-center">
+            <p className="text-xs text-ink-muted uppercase tracking-wider mb-1">Total Upah</p>
+            <p className="text-[20px] font-semibold text-ink font-mono">Rp {fmtMoney(result.totalWages.amountMinor)}</p>
           </div>
         </div>
       )}
@@ -365,11 +365,11 @@ const RunTab: React.FC<{
           subtitle="Base + Meal + Bonus → total slip (IDR)"
           formatValue={fmtMoney}
         />
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-          <div className="flex flex-wrap justify-between items-center gap-3 p-5 border-b border-[#f0f0f2]">
+        <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+          <div className="flex flex-wrap justify-between items-center gap-3 p-5 border-b border-panel-2">
             <div>
-              <h3 className="text-[16px] font-bold text-[#0f172a]">Slip Upah (Statement)</h3>
-              <p className="text-[12px] text-[#64748b] mt-0.5">
+              <h3 className="text-[16px] font-bold text-ink">Slip Upah (Statement)</h3>
+              <p className="text-[12px] text-ink-muted mt-0.5">
                 v{statement.version} · inputHash <code className="font-mono">{statement.inputHash}</code> ·
                 reserve <span className="font-mono">Rp {fmtMoney(statement.reserve.amountMinor)}</span>
               </p>
@@ -394,18 +394,18 @@ const RunTab: React.FC<{
               <tbody>
                 {statement.items.map(it => (
                   <tr key={it.recipientId}>
-                    <td className="px-4 py-3"><code className="text-xs text-[#6e6e73]">{it.recipientId.slice(0, 8)}</code></td>
+                    <td className="px-4 py-3"><code className="text-xs text-ink-muted">{it.recipientId.slice(0, 8)}</code></td>
                     <td className="px-4 py-3 font-mono">{fmtMoney(it.base.amountMinor)}</td>
                     <td className="px-4 py-3 font-mono">{fmtMoney(it.meal.amountMinor)}</td>
                     <td className="px-4 py-3 font-mono">{fmtMoney(it.bonus.amountMinor)}</td>
-                    <td className="px-4 py-3 font-mono font-semibold text-[#1d1d1f]">
+                    <td className="px-4 py-3 font-mono font-semibold text-ink">
                       {fmtMoney(it.base.amountMinor + it.meal.amountMinor + it.bonus.amountMinor)}
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td className="px-4 py-3 font-semibold text-[#1d1d1f]" colSpan={4}>Total</td>
-                  <td className="px-4 py-3 font-mono font-semibold text-[#1d1d1f]">{fmtMoney(totalOf(statement))}</td>
+                  <td className="px-4 py-3 font-semibold text-ink" colSpan={4}>Total</td>
+                  <td className="px-4 py-3 font-mono font-semibold text-ink">{fmtMoney(totalOf(statement))}</td>
                 </tr>
               </tbody>
             </table>
@@ -445,18 +445,18 @@ const PaymentModal: React.FC<{ periodId: string; onClose: () => void; onDone: (s
           <button onClick={submit} disabled={busy} className="btn-primary">{busy ? 'Menyimpan…' : 'Simpan'}</button>
         </div>}>
         <div className="space-y-4">
-          <p className="text-[13px] text-[#334155]">Sistem hanya mencatat bukti pembayaran; transfer bank dilakukan di luar aplikasi.</p>
+          <p className="text-[13px] text-ink-2">Sistem hanya mencatat bukti pembayaran; transfer bank dilakukan di luar aplikasi.</p>
           <div>
-            <label htmlFor="pay-ref" className="block text-sm font-medium text-[#1d1d1f] mb-1">Referensi Eksternal</label>
+            <label htmlFor="pay-ref" className="block text-sm font-medium text-ink mb-1">Referensi Eksternal</label>
             <input id="pay-ref" value={externalReference} placeholder="mis. TRF-20261012-001"
               onChange={e => setExternalReference(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label htmlFor="pay-file" className="block text-sm font-medium text-[#1d1d1f] mb-1">Evidence File ID</label>
+            <label htmlFor="pay-file" className="block text-sm font-medium text-ink mb-1">Evidence File ID</label>
             <input id="pay-file" value={evidenceFileId} placeholder="uuid berkas bukti"
               onChange={e => setEvidenceFileId(e.target.value)} className={inputCls} />
           </div>
-          {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
+          {err && <p className="text-[13px] text-bad-4">{err}</p>}
         </div>
       </Modal>
     );
@@ -483,23 +483,23 @@ const BonusTab: React.FC<{ selectedPeriodId: string; onFlash: (s: string | null)
           <LucideIcon name="badge-check" className="w-4 h-4" /> {busy ? 'Memuat…' : 'Muat Bonus Pool'}
         </button>
       </div>
-      {err && <div className="rounded-[14px] border border-[#fde68a] bg-[#fef3c7] px-4 py-3 text-[13px] text-[#b45309]">{err}</div>}
+      {err && <div className="rounded-[14px] border border-warn-bg-2 bg-warn-bg-2 px-4 py-3 text-[13px] text-warn-2">{err}</div>}
       {pool && (
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-4">
+        <div className="bg-white border border-hair rounded-[18px] p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-[16px] font-bold text-[#0f172a]">Three-way Bonus Pool</h3>
+            <h3 className="text-[16px] font-bold text-ink">Three-way Bonus Pool</h3>
             <span className="pill pill-blue">{pool.status}</span>
           </div>
-          <p className="text-[13px] text-[#64748b]">
-            Pool <span className="font-mono font-semibold text-[#1d1d1f]">Rp {fmtMoney(pool.pool.amountMinor)}</span> dibagi
+          <p className="text-[13px] text-ink-muted">
+            Pool <span className="font-mono font-semibold text-ink">Rp {fmtMoney(pool.pool.amountMinor)}</span> dibagi
             tepat ke tiga penerima.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {pool.recipients.map(r => (
-              <div key={r.recipientId} className="rounded-[14px] border border-[#e6e6e9] p-4 text-center">
-                <p className="text-[11px] text-[#6e6e73] uppercase tracking-wider mb-1">Penerima</p>
-                <code className="text-xs text-[#64748b]">{r.recipientId.slice(0, 8)}</code>
-                <p className="text-[18px] font-semibold font-mono text-[#1d1d1f] mt-2">Rp {fmtMoney(r.amount.amountMinor)}</p>
+              <div key={r.recipientId} className="rounded-[14px] border border-hair p-4 text-center">
+                <p className="text-[11px] text-ink-muted uppercase tracking-wider mb-1">Penerima</p>
+                <code className="text-xs text-ink-muted">{r.recipientId.slice(0, 8)}</code>
+                <p className="text-[18px] font-semibold font-mono text-ink mt-2">Rp {fmtMoney(r.amount.amountMinor)}</p>
               </div>
             ))}
           </div>
@@ -542,22 +542,22 @@ const OverheadTab: React.FC<{ periods: Period[]; approvedRules: FinancialRule[];
 
     return (
       <div className="space-y-4">
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-4">
+        <div className="bg-white border border-hair rounded-[18px] p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="oh-period" className="block text-sm font-medium text-[#1d1d1f] mb-1">Periode</label>
+              <label htmlFor="oh-period" className="block text-sm font-medium text-ink mb-1">Periode</label>
               <select id="oh-period" value={periodId} onChange={e => setPeriodId(e.target.value)} className={inputCls}>
                 <option value="">— pilih periode —</option>
                 {periods.map(p => <option key={p.id} value={p.id}>{p.startsOn} → {p.endsOn}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="oh-kind" className="block text-sm font-medium text-[#1d1d1f] mb-1">Jenis</label>
+              <label htmlFor="oh-kind" className="block text-sm font-medium text-ink mb-1">Jenis</label>
               <input id="oh-kind" value={kind} placeholder="mis. LISTRIK"
                 onChange={e => setKind(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label htmlFor="oh-amount" className="block text-sm font-medium text-[#1d1d1f] mb-1">Nominal (Rp)</label>
+              <label htmlFor="oh-amount" className="block text-sm font-medium text-ink mb-1">Nominal (Rp)</label>
               <input id="oh-amount" type="number" min={0} step="0.01" value={amount} placeholder="0.00"
                 onChange={e => setAmount(e.target.value)} className={inputCls} />
             </div>
@@ -570,19 +570,19 @@ const OverheadTab: React.FC<{ periods: Period[]; approvedRules: FinancialRule[];
               <LucideIcon name="bar-chart-3" className="w-4 h-4" /> Hitung Alokasi / Unit
             </button>
           </div>
-          {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
+          {err && <p className="text-[13px] text-bad-4">{err}</p>}
         </div>
 
         {allocation && (
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
+          <div className="bg-white border border-hair rounded-[18px] p-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-[16px] font-bold text-[#0f172a]">Alokasi Overhead</h3>
+              <h3 className="text-[16px] font-bold text-ink">Alokasi Overhead</h3>
               <span className={allocation.status === 'ALLOCATED' ? 'pill pill-green' : 'pill pill-orange'}>{allocation.status}</span>
             </div>
             {allocation.status === 'NO_OUTPUT' ? (
-              <p className="text-[13px] text-[#6e6e73] mt-2">Zero production — tidak ada alokasi per unit (NO_OUTPUT).</p>
+              <p className="text-[13px] text-ink-muted mt-2">Zero production — tidak ada alokasi per unit (NO_OUTPUT).</p>
             ) : (
-              <p className="text-[15px] text-[#1d1d1f] mt-2">
+              <p className="text-[15px] text-ink mt-2">
                 Alokasi per unit:{' '}
                 <span className="font-mono font-semibold">Rp {fmtMoney(allocation.amountPerUnit?.amountMinor ?? 0)}</span>
               </p>
@@ -638,7 +638,7 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
           </button>
         </div>
 
-        <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
+        <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
               <thead>
@@ -653,7 +653,7 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
                     <td className="px-4 py-3">{r.effectiveFrom}</td>
                     <td className="px-4 py-3">{(r.mealBasisPoints / 100).toFixed(1)}%</td>
                     <td className="px-4 py-3 font-mono">Rp {fmtMoney(r.bonusRate.amountMinor)}</td>
-                    <td className="px-4 py-3 text-[12px] text-[#6e6e73]">{r.remainderPolicy}</td>
+                    <td className="px-4 py-3 text-[12px] text-ink-muted">{r.remainderPolicy}</td>
                     <td className="px-4 py-3">
                       <span className={r.status === 'APPROVED' ? 'pill pill-green' : 'pill pill-orange'}>{r.status}</span>
                     </td>
@@ -678,24 +678,24 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="rule-effective" className="block text-sm font-medium text-[#1d1d1f] mb-1">Efektif Dari</label>
+                <label htmlFor="rule-effective" className="block text-sm font-medium text-ink mb-1">Efektif Dari</label>
                 <input id="rule-effective" type="date" value={form.effectiveFrom}
                   onChange={e => setForm(f => ({ ...f, effectiveFrom: e.target.value }))} className={inputCls} />
               </div>
               <div>
-                <label htmlFor="rule-meal" className="block text-sm font-medium text-[#1d1d1f] mb-1">Meal Basis Points</label>
+                <label htmlFor="rule-meal" className="block text-sm font-medium text-ink mb-1">Meal Basis Points</label>
                 <input id="rule-meal" type="number" min={1000} max={1500} value={form.mealBasisPoints}
                   onChange={e => setForm(f => ({ ...f, mealBasisPoints: parseInt(e.target.value) || 1200 }))} className={inputCls} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="rule-bonus" className="block text-sm font-medium text-[#1d1d1f] mb-1">Bonus / Unit (Rp)</label>
+                <label htmlFor="rule-bonus" className="block text-sm font-medium text-ink mb-1">Bonus / Unit (Rp)</label>
                 <input id="rule-bonus" type="number" min={0} value={form.bonusRate.amountMinor / 100}
                   onChange={e => setForm(f => ({ ...f, bonusRate: toMoney(toMinor(e.target.value), CURRENCY) }))} className={inputCls} />
               </div>
               <div>
-                <label htmlFor="rule-remainder" className="block text-sm font-medium text-[#1d1d1f] mb-1">Remainder Policy</label>
+                <label htmlFor="rule-remainder" className="block text-sm font-medium text-ink mb-1">Remainder Policy</label>
                 <select id="rule-remainder" value={form.remainderPolicy}
                   onChange={e => setForm(f => ({ ...f, remainderPolicy: e.target.value as FinancialRuleRequest['remainderPolicy'] }))}
                   className={inputCls}>
@@ -705,7 +705,7 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
               </div>
             </div>
             <div>
-              <label htmlFor="rule-dist" className="block text-sm font-medium text-[#1d1d1f] mb-1">Meal Distribution</label>
+              <label htmlFor="rule-dist" className="block text-sm font-medium text-ink mb-1">Meal Distribution</label>
               <select id="rule-dist" value={form.mealDistribution}
                 onChange={e => setForm(f => ({ ...f, mealDistribution: e.target.value as FinancialRuleRequest['mealDistribution'] }))}
                 className={inputCls}>
@@ -713,8 +713,8 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
                 <option value="EQUAL_ACTIVE_PROPOSED">EQUAL_ACTIVE_PROPOSED</option>
               </select>
             </div>
-            <p className="text-[11px] text-[#6e6e73]">Aturan baru dibuat dengan status <strong>PENDING</strong> dan wajib bukti persetujuan sebelum dipakai.</p>
-            {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
+            <p className="text-[11px] text-ink-muted">Aturan baru dibuat dengan status <strong>PENDING</strong> dan wajib bukti persetujuan sebelum dipakai.</p>
+            {err && <p className="text-[13px] text-bad-4">{err}</p>}
           </div>
         </Modal>
 
@@ -724,15 +724,15 @@ const RulesTab: React.FC<{ rules: FinancialRule[]; onChanged: () => void; onFlas
             <button onClick={approve} disabled={busy || !evidenceFileId.trim()} className="btn-primary">{busy ? 'Menyimpan…' : 'Setujui'}</button>
           </div>}>
           <div className="space-y-4">
-            <p className="text-[13px] text-[#334155]">
+            <p className="text-[13px] text-ink-2">
               Menyetujui <code className="font-mono">{approveTarget?.id}</code>. Approval butuh bukti otorisasi eksternal.
             </p>
             <div>
-              <label htmlFor="rule-evidence" className="block text-sm font-medium text-[#1d1d1f] mb-1">Evidence File ID</label>
+              <label htmlFor="rule-evidence" className="block text-sm font-medium text-ink mb-1">Evidence File ID</label>
               <input id="rule-evidence" value={evidenceFileId} placeholder="uuid berkas bukti"
                 onChange={e => setEvidenceFileId(e.target.value)} className={inputCls} />
             </div>
-            {err && <p className="text-[13px] text-[#dc2626]">{err}</p>}
+            {err && <p className="text-[13px] text-bad-4">{err}</p>}
           </div>
         </Modal>
       </div>

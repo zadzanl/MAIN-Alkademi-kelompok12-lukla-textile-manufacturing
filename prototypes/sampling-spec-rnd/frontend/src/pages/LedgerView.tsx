@@ -138,8 +138,8 @@ const LedgerView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Buku Besar (Ledger)</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">
+          <h2 className="text-2xl font-semibold text-ink">Buku Besar (Ledger)</h2>
+          <p className="text-ink-muted text-sm mt-1">
             Double-entry immutable — setiap transaksi harus balance, koreksi hanya lewat reversal
           </p>
         </div>
@@ -161,24 +161,24 @@ const LedgerView: React.FC = () => {
       )}
 
       {error && (
-        <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">
+        <div className="rounded-[14px] border border-bad-bg-2 bg-bad-bg px-4 py-3 text-[13px] text-bad-4">
           {error}
         </div>
       )}
 
       {/* Transactions */}
-      <section className="bg-white border border-[#e2e8f0] rounded-[18px] overflow-hidden">
-        <div className="p-5 border-b border-[#f1f5f9]">
-          <h3 className="text-[16px] font-bold text-[#0f172a]">Transaksi Terbaru</h3>
-          <p className="text-[12px] font-medium text-[#64748b] mt-0.5">
+      <section className="bg-white border border-hair rounded-[18px] overflow-hidden">
+        <div className="p-5 border-b border-panel-2">
+          <h3 className="text-[16px] font-bold text-ink">Transaksi Terbaru</h3>
+          <p className="text-[12px] font-medium text-ink-muted mt-0.5">
             {items.length} transaksi dimuat
           </p>
         </div>
 
         {loading && items.length === 0 ? (
-          <p className="px-5 py-10 text-[13px] text-[#64748b] text-center">Memuat…</p>
+          <p className="px-5 py-10 text-[13px] text-ink-muted text-center">Memuat…</p>
         ) : items.length === 0 ? (
-          <p className="px-5 py-10 text-[13px] text-[#64748b] text-center">Belum ada transaksi.</p>
+          <p className="px-5 py-10 text-[13px] text-ink-muted text-center">Belum ada transaksi.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
@@ -193,15 +193,15 @@ const LedgerView: React.FC = () => {
                 {items.map(tx => (
                   <tr key={tx.id}>
                     <td className="px-4 py-3 whitespace-nowrap align-top">
-                      <code className="text-xs text-[#64748b]">{tx.id.slice(0, 8)}</code>
+                      <code className="text-xs text-ink-muted">{tx.id.slice(0, 8)}</code>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap align-top">
                       {tx.reversalOf ? (
-                        <span className="pill rounded-full px-2 py-0.5 text-[11px] font-semibold bg-[#fff4e6] text-[#b86800]">
+                        <span className="pill rounded-full px-2 py-0.5 text-[11px] font-semibold bg-warn-bg text-warn-2">
                           Reversal · {tx.reversalOf.slice(0, 8)}
                         </span>
                       ) : (
-                        <span className="pill rounded-full px-2 py-0.5 text-[11px] font-semibold bg-[#e8f2ff] text-[#0066cc]">
+                        <span className="pill rounded-full px-2 py-0.5 text-[11px] font-semibold bg-brand-bg text-brand">
                           Normal
                         </span>
                       )}
@@ -211,10 +211,10 @@ const LedgerView: React.FC = () => {
                         {tx.entries.map((e, i) => (
                           <div key={i} className="flex items-center gap-2 whitespace-nowrap">
                             <span className={`w-[58px] font-semibold text-[11px] ${
-                              e.direction === 'DEBIT' ? 'text-[#0066cc]' : 'text-[#b86800]'
+                              e.direction === 'DEBIT' ? 'text-brand' : 'text-warn-2'
                             }`}>{e.direction}</span>
-                            <span className="text-[#334155]">{accountLabel(e.accountCode)}</span>
-                            <span className="font-mono text-[#1d1d1f]">{fmtMoney(e.amountMinor)}</span>
+                            <span className="text-ink-2">{accountLabel(e.accountCode)}</span>
+                            <span className="font-mono text-ink">{fmtMoney(e.amountMinor)}</span>
                           </div>
                         ))}
                       </div>
@@ -235,7 +235,7 @@ const LedgerView: React.FC = () => {
         )}
 
         {nextCursor && (
-          <div className="p-4 border-t border-[#f1f5f9] text-center">
+          <div className="p-4 border-t border-panel-2 text-center">
             <button onClick={() => load(nextCursor)} disabled={loading} className="btn-secondary">
               {loading ? 'Memuat…' : 'Muat lebih banyak'}
             </button>
@@ -260,11 +260,11 @@ const LedgerView: React.FC = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="ledger-type" className="block text-sm font-medium text-[#1d1d1f] mb-1">Tipe Transaksi</label>
+              <label htmlFor="ledger-type" className="block text-sm font-medium text-ink mb-1">Tipe Transaksi</label>
               <input id="ledger-type" value={txType} onChange={e => setTxType(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label htmlFor="ledger-currency" className="block text-sm font-medium text-[#1d1d1f] mb-1">Mata Uang</label>
+              <label htmlFor="ledger-currency" className="block text-sm font-medium text-ink mb-1">Mata Uang</label>
               <select id="ledger-currency" value={currency} onChange={e => setCurrency(e.target.value)} className={inputCls}>
                 <option value="IDR">IDR</option>
                 <option value="USD">USD</option>
@@ -274,7 +274,7 @@ const LedgerView: React.FC = () => {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-[#1d1d1f]">Baris Jurnal</span>
+              <span className="text-sm font-medium text-ink">Baris Jurnal</span>
               <button
                 onClick={() => setLines(prev => [...prev, emptyLine(prev.length % 2 === 0 ? 'DEBIT' : 'CREDIT')])}
                 className="btn-ghost !py-1 !px-2 !text-xs"
@@ -328,14 +328,14 @@ const LedgerView: React.FC = () => {
 
           {/* Balance summary */}
           <div className={`rounded-[12px] px-4 py-3 text-[13px] flex justify-between ${
-            balanced ? 'bg-[#f0fbf4] text-[#1a7a34]' : 'bg-[#fff4e6] text-[#b86800]'
+            balanced ? 'bg-ok-bg text-ok-2' : 'bg-warn-bg text-warn-2'
           }`}>
             <span>Debit: <strong className="font-mono">{fmtMoney(totalDebit)}</strong></span>
             <span>Kredit: <strong className="font-mono">{fmtMoney(totalCredit)}</strong></span>
             <span className="font-semibold">{balanced ? '✓ Balance' : '⚠ Tidak balance'}</span>
           </div>
 
-          {postError && <p className="text-[13px] text-[#dc2626]">{postError}</p>}
+          {postError && <p className="text-[13px] text-bad-4">{postError}</p>}
         </div>
       </Modal>
 
@@ -354,12 +354,12 @@ const LedgerView: React.FC = () => {
         }
       >
         <div className="space-y-4">
-          <p className="text-[13px] text-[#334155]">
+          <p className="text-[13px] text-ink-2">
             Ledger bersifat immutable. Reversal membuat transaksi kompensasi baru untuk
             membatalkan <code className="font-mono">{reverseTarget?.id.slice(0, 8)}</code>; data asli tidak diubah.
           </p>
           <div>
-            <label htmlFor="ledger-reason" className="block text-sm font-medium text-[#1d1d1f] mb-1">Alasan</label>
+            <label htmlFor="ledger-reason" className="block text-sm font-medium text-ink mb-1">Alasan</label>
             <textarea
               id="ledger-reason"
               rows={3}
@@ -368,7 +368,7 @@ const LedgerView: React.FC = () => {
               className={inputCls}
             />
           </div>
-          {reverseError && <p className="text-[13px] text-[#dc2626]">{reverseError}</p>}
+          {reverseError && <p className="text-[13px] text-bad-4">{reverseError}</p>}
         </div>
       </Modal>
     </div>

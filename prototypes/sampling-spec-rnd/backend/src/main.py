@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.auth_routes import create_auth_router
 from .api.routes import create_api_router
 
 # Load environment variables from .env file
@@ -31,9 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API router
+# Include API routers
 router = create_api_router()
 app.include_router(router)
+
+# Portal authentication router (register/login/change/forgot password)
+app.include_router(create_auth_router())
 
 
 # Health check endpoint (at root level for backward compatibility).

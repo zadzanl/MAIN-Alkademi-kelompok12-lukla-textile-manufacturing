@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DigitalStopwatchView — Digital Stopwatch for Time Study per Component
  * PRD: Stopwatch digital untuk mengukur durasi pengerjaan standar per komponen jahitan.
  * Data time study digunakan sebagai acuan rate card (ongkos jahit/potong).
@@ -181,8 +181,8 @@ const DigitalStopwatchView: React.FC = () => {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-semibold text-[#1d1d1f]">Stopwatch Digital</h2>
-        <p className="text-[#6e6e73] text-sm mt-1">Ukur waktu standar per komponen jahitan → acuan rate card</p>
+        <h2 className="text-2xl font-semibold text-ink">Stopwatch Digital</h2>
+        <p className="text-ink-muted text-sm mt-1">Ukur waktu standar per komponen jahitan → acuan rate card</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -191,66 +191,66 @@ const DigitalStopwatchView: React.FC = () => {
         <div className="xl:col-span-1 space-y-4">
 
           {/* Clock face */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-6 text-center">
-            <p className="text-xs font-semibold text-[#6e6e73] uppercase tracking-wider mb-3">Waktu Berjalan</p>
+          <div className="bg-white border border-hair rounded-[18px] p-6 text-center">
+            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-3">Waktu Berjalan</p>
             <div className={`font-mono text-[52px] font-semibold tracking-tight leading-none mb-1 transition-colors ${
-              running ? 'text-[#0071e3]' : elapsed > 0 ? 'text-[#ff9500]' : 'text-[#1d1d1f]'
+              running ? 'text-brand' : elapsed > 0 ? 'text-warn' : 'text-ink'
             }`}>
               {fmtMs(elapsed)}
             </div>
-            <p className="text-xs text-[#6e6e73]">mm:ss.cs</p>
+            <p className="text-xs text-ink-muted">mm:ss.cs</p>
 
             {/* Buttons */}
             <div className="flex gap-3 justify-center mt-5">
               {!running ? (
                 <button onClick={handleStart}
-                  className="bg-[#34c759] text-white rounded-full w-14 h-14 text-2xl font-bold shadow-md hover:bg-[#2aae4e] transition-colors"
+                  className="bg-ok text-white rounded-full w-14 h-14 text-2xl font-bold shadow-md hover:bg-ok transition-colors"
                   aria-label="Mulai">▶</button>
               ) : (
                 <button onClick={handlePause}
-                  className="bg-[#ff9500] text-white rounded-full w-14 h-14 text-2xl font-bold shadow-md hover:bg-[#e08600] transition-colors"
+                  className="bg-warn text-white rounded-full w-14 h-14 text-2xl font-bold shadow-md hover:bg-warn-2 transition-colors"
                   aria-label="Pause">⏸</button>
               )}
               <button onClick={handleLap} disabled={!running && elapsed === 0}
-                className="bg-[#0071e3] text-white rounded-full w-14 h-14 text-sm font-bold shadow-md hover:bg-[#0066cc] transition-colors disabled:opacity-40"
+                className="bg-brand text-white rounded-full w-14 h-14 text-sm font-bold shadow-md hover:bg-brand transition-colors disabled:opacity-40"
                 aria-label="Lap">LAP</button>
               <button onClick={handleReset}
-                className="bg-[#f5f5f7] border border-[#e6e6e9] text-[#626269] rounded-full w-14 h-14 text-xl font-bold hover:bg-[#e6e6e9] transition-colors"
+                className="bg-page border border-hair text-ink-muted rounded-full w-14 h-14 text-xl font-bold hover:bg-hair transition-colors"
                 aria-label="Reset">↺</button>
             </div>
           </div>
 
           {/* Lap metadata */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-3">
-            <p className="text-sm font-semibold text-[#1d1d1f]">Detail Komponen Saat Ini</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5 space-y-3">
+            <p className="text-sm font-semibold text-ink">Detail Komponen Saat Ini</p>
             <div>
-              <label className="block text-xs text-[#6e6e73] mb-1">Nama Komponen</label>
+              <label className="block text-xs text-ink-muted mb-1">Nama Komponen</label>
               <input value={elementName} onChange={e => setElementName(e.target.value)} aria-label="Nama Komponen"
                 placeholder="e.g. Pasang Kerah, Jahit Lengan Kiri…"
-                className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-full border border-hair-2 rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
             <div>
-              <label className="block text-xs text-[#6e6e73] mb-1">Catatan</label>
+              <label className="block text-xs text-ink-muted mb-1">Catatan</label>
               <input value={lapNote} onChange={e => setLapNote(e.target.value)} aria-label="Catatan"
                 placeholder="Kondisi abnormal, mesin macet, dst."
-                className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-full border border-hair-2 rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" checked={isAbnormal} onChange={e => setIsAbnormal(e.target.checked)}
                 className="w-4 h-4 rounded" />
-              <span className="text-[13px] text-[#ff3b30] font-medium">Tandai sebagai Abnormal</span>
+              <span className="text-[13px] text-bad font-medium">Tandai sebagai Abnormal</span>
             </label>
             <div>
-              <label className="block text-xs text-[#6e6e73] mb-1">Allowance (%)</label>
+              <label className="block text-xs text-ink-muted mb-1">Allowance (%)</label>
               <input type="number" min={0} max={50} value={allowancePct} aria-label="Allowance (%)"
                 onChange={e => setAllowancePct(parseInt(e.target.value)||0)}
-                className="w-24 border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
+                className="w-24 border border-hair-2 rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-brand-soft" />
             </div>
           </div>
 
           {/* Stats summary */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-3">
-            <p className="text-sm font-semibold text-[#1d1d1f]">Statistik Real-time</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5 space-y-3">
+            <p className="text-sm font-semibold text-ink">Statistik Real-time</p>
             {[
               { label: 'Jumlah Lap (Normal)',  value: `${normalLaps.length} / ${laps.length}` },
               { label: 'Rata-rata (ms)',        value: meanMs > 0 ? Math.round(meanMs).toLocaleString('id-ID') : '—' },
@@ -260,8 +260,8 @@ const DigitalStopwatchView: React.FC = () => {
               { label: `Rate Card (IDR) +${allowancePct}%`, value: rateCard > 0 ? `Rp ${rateCard.toLocaleString('id-ID')}/pcs` : '—', highlight: true },
             ].map(({ label, value, highlight }) => (
               <div key={label} className="flex justify-between text-[13px]">
-                <span className="text-[#6e6e73]">{label}</span>
-                <span className={`font-semibold ${highlight ? 'text-[#0071e3]' : 'text-[#1d1d1f]'}`}>{value}</span>
+                <span className="text-ink-muted">{label}</span>
+                <span className={`font-semibold ${highlight ? 'text-brand' : 'text-ink'}`}>{value}</span>
               </div>
             ))}
           </div>
@@ -271,21 +271,21 @@ const DigitalStopwatchView: React.FC = () => {
         <div className="xl:col-span-2 space-y-4">
 
           {/* Lap table */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#f0f0f2] flex justify-between items-center">
+          <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+            <div className="px-5 py-4 border-b border-panel-2 flex justify-between items-center">
               <div>
-                <h3 className="text-[15px] font-semibold text-[#1d1d1f]">Rekaman Lap</h3>
-                <p className="text-xs text-[#6e6e73] mt-0.5">{laps.length} lap dicatat</p>
+                <h3 className="text-[15px] font-semibold text-ink">Rekaman Lap</h3>
+                <p className="text-xs text-ink-muted mt-0.5">{laps.length} lap dicatat</p>
               </div>
               {laps.length > 0 && (
                 <button onClick={() => { setLaps([]); setLapCounter(1); }}
-                  className="text-xs text-[#ff3b30] font-semibold hover:underline">
+                  className="text-xs text-bad font-semibold hover:underline">
                   Hapus Semua
                 </button>
               )}
             </div>
             {laps.length === 0 ? (
-              <div className="px-5 py-10 text-center text-[#6e6e73] text-sm">
+              <div className="px-5 py-10 text-center text-ink-muted text-sm">
                 Tekan <strong>LAP</strong> setelah stopwatch berjalan untuk merekam siklus.
               </div>
             ) : (
@@ -294,7 +294,7 @@ const DigitalStopwatchView: React.FC = () => {
                   <thead>
                     <tr>
                       {['#','Komponen','Waktu (ms)','Waktu','Status','Catatan',''].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2] whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -302,24 +302,24 @@ const DigitalStopwatchView: React.FC = () => {
                     {laps.map((lap, idx) => {
                       const isAbove = meanMs > 0 && lap.cycle_time_ms > meanMs * 1.3;
                       return (
-                        <tr key={lap.id} className="border-b border-[#f0f0f2] last:border-0">
-                          <td className="px-4 py-3 text-[#6e6e73]">{idx + 1}</td>
-                          <td className="px-4 py-3 font-medium text-[#1d1d1f]">{lap.element_name}</td>
-                          <td className={`px-4 py-3 font-mono font-semibold ${lap.is_abnormal ? 'text-[#ff3b30]' : isAbove ? 'text-[#ff9500]' : 'text-[#34c759]'}`}>
+                        <tr key={lap.id} className="border-b border-panel-2 last:border-0">
+                          <td className="px-4 py-3 text-ink-muted">{idx + 1}</td>
+                          <td className="px-4 py-3 font-medium text-ink">{lap.element_name}</td>
+                          <td className={`px-4 py-3 font-mono font-semibold ${lap.is_abnormal ? 'text-bad' : isAbove ? 'text-warn' : 'text-ok'}`}>
                             {Math.round(lap.cycle_time_ms).toLocaleString('id-ID')}
                           </td>
-                          <td className="px-4 py-3 font-mono text-[#6e6e73]">{fmtMs(lap.cycle_time_ms)}</td>
+                          <td className="px-4 py-3 font-mono text-ink-muted">{fmtMs(lap.cycle_time_ms)}</td>
                           <td className="px-4 py-3">
                             {lap.is_abnormal ? (
-                              <span className="pill bg-[#ffebee] text-[#ff3b30] rounded-full px-2 py-1 text-[11px] font-semibold">Abnormal</span>
+                              <span className="pill bg-bad-bg text-bad rounded-full px-2 py-1 text-[11px] font-semibold">Abnormal</span>
                             ) : (
-                              <span className="pill bg-[#e8f5e9] text-[#34c759] rounded-full px-2 py-1 text-[11px] font-semibold">Normal</span>
+                              <span className="pill bg-ok-bg text-ok rounded-full px-2 py-1 text-[11px] font-semibold">Normal</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-[#6e6e73] max-w-[120px] truncate">{lap.notes || '—'}</td>
+                          <td className="px-4 py-3 text-ink-muted max-w-[120px] truncate">{lap.notes || '—'}</td>
                           <td className="px-4 py-3">
                             <button onClick={() => removeLap(lap.id)} aria-label="Hapus lap"
-                              className="text-[#ff3b30] hover:text-[#cc2200] font-bold">×</button>
+                              className="text-bad hover:text-bad-4 font-bold">×</button>
                           </td>
                         </tr>
                       );
@@ -331,11 +331,11 @@ const DigitalStopwatchView: React.FC = () => {
           </div>
 
           {/* Save to backend */}
-          <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
-            <p className="text-[15px] font-semibold text-[#1d1d1f] mb-4">Simpan ke Studi Waktu</p>
+          <div className="bg-white border border-hair rounded-[18px] p-5">
+            <p className="text-[15px] font-semibold text-ink mb-4">Simpan ke Studi Waktu</p>
             <div className="flex flex-col sm:flex-row gap-3">
               <select value={selectedStudyId} onChange={e => setSelectedStudyId(e.target.value)} aria-label="Pilih Studi Waktu"
-                className="flex-1 border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
+                className="flex-1 border border-hair-2 rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-brand-soft">
                 <option value="">— Pilih Studi Waktu —</option>
                 {studies.filter(s => s.status !== 'completed' && s.status !== 'archived').map(s => (
                   <option key={s.study_id} value={s.study_id}>
@@ -350,8 +350,8 @@ const DigitalStopwatchView: React.FC = () => {
             </div>
 
             {showNewStudy && (
-              <div className="mt-4 p-4 bg-[#f5f5f7] rounded-[12px] space-y-3">
-                <p className="text-xs font-semibold text-[#6e6e73] uppercase tracking-wider">Buat Studi Baru</p>
+              <div className="mt-4 p-4 bg-page rounded-[12px] space-y-3">
+                <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Buat Studi Baru</p>
                 <div className="grid grid-cols-2 gap-3">
                   {([
                     { id: 'process_id',   label: 'ID Proses', ph: 'PROC-001' },
@@ -359,17 +359,17 @@ const DigitalStopwatchView: React.FC = () => {
                     { id: 'operator_id',  label: 'ID Operator', ph: 'OPR-001' },
                   ] as { id: 'process_id' | 'process_name' | 'operator_id'; label: string; ph: string }[]).map(({ id, label, ph }) => (
                     <div key={id} className={id === 'process_name' ? 'col-span-2' : ''}>
-                      <label className="block text-xs text-[#6e6e73] mb-1">{label}</label>
+                      <label className="block text-xs text-ink-muted mb-1">{label}</label>
                       <input value={newStudyForm[id]} placeholder={ph} aria-label={label}
                         onChange={e => setNewStudyForm(f => ({ ...f, [id]: e.target.value }))}
-                        className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-[#80baff]" />
+                        className="w-full border border-hair-2 rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-brand-soft" />
                     </div>
                   ))}
                   <div>
-                    <label className="block text-xs text-[#6e6e73] mb-1">Target Sampel</label>
+                    <label className="block text-xs text-ink-muted mb-1">Target Sampel</label>
                     <input type="number" value={newStudyForm.target_sample_size} aria-label="Target Sampel"
                       onChange={e => setNewStudyForm(f => ({ ...f, target_sample_size: parseInt(e.target.value)||30 }))}
-                      className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-[#80baff]" />
+                      className="w-full border border-hair-2 rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-brand-soft" />
                   </div>
                 </div>
                 <button onClick={handleCreateStudy}
@@ -380,7 +380,7 @@ const DigitalStopwatchView: React.FC = () => {
             )}
 
             {saveMsg && (
-              <div className="mt-3 bg-[#e8f5e9] border border-[#34c759] rounded-[10px] px-4 py-2.5 text-[13px] text-[#1a7a34] font-medium">
+              <div className="mt-3 bg-ok-bg border border-ok rounded-[10px] px-4 py-2.5 text-[13px] text-ok-2 font-medium">
                 ✓ {saveMsg}
               </div>
             )}

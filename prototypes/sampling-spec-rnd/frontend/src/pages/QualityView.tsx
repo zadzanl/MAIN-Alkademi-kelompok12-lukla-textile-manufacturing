@@ -23,10 +23,10 @@ import QcTerminalView from './QcTerminalView';
 const inputCls = 'w-full rounded-[10px] px-3 py-2.5 text-[13px]';
 
 const STATUS_STYLE: Record<AssemblyStatus, string> = {
-  MENUNGGU_QC: 'bg-[#fff4e6] text-[#b86800]',
-  QC_PASS: 'bg-[#e8f5e9] text-[#1a7a34]',
-  REWORK: 'bg-[#e8f2ff] text-[#0066cc]',
-  REJECT_SCRAP: 'bg-[#ffebee] text-[#dc2626]',
+  MENUNGGU_QC: 'bg-warn-bg text-warn-2',
+  QC_PASS: 'bg-ok-bg text-ok-2',
+  REWORK: 'bg-brand-bg text-brand',
+  REJECT_SCRAP: 'bg-bad-bg text-bad-4',
 };
 
 const DISPOSITIONS: { value: QcDisposition; label: string; route: string }[] = [
@@ -117,10 +117,10 @@ const QualityView: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div className="inline-flex gap-1 rounded-[12px] bg-[#f0f0f2] p-1">
+      <div className="inline-flex gap-1 rounded-[12px] bg-panel-2 p-1">
         {([['terminal', 'Terminal QC'], ['queue', 'Antrian & Riwayat']] as const).map(([id, label]) => (
           <button key={id} onClick={() => setMode(id)}
-            className={`min-h-[40px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#626269]'}`}>
+            className={`min-h-[40px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'}`}>
             {label}
           </button>
         ))}
@@ -130,24 +130,24 @@ const QualityView: React.FC = () => {
       <>
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Quality Control &amp; Routing</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">Inspeksi assembly: Pass / Repair / Reject — status menentukan rute tindakan berikutnya</p>
+          <h2 className="text-2xl font-semibold text-ink">Quality Control &amp; Routing</h2>
+          <p className="text-ink-muted text-sm mt-1">Inspeksi assembly: Pass / Repair / Reject — status menentukan rute tindakan berikutnya</p>
         </div>
         <button onClick={load} className="btn-secondary"><LucideIcon name="activity" className="w-4 h-4" /> Refresh</button>
       </div>
 
       {isMockOps && <MockModeBanner detail="data inspeksi disimpan di memori." />}
-      {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
+      {error && <div className="rounded-[14px] border border-bad-bg-2 bg-bad-bg px-4 py-3 text-[13px] text-bad-4">{error}</div>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Menunggu QC', value: count('MENUNGGU_QC'), cls: 'text-[#b86800]' },
-          { label: 'Pass', value: count('QC_PASS'), cls: 'text-[#1a7a34]' },
-          { label: 'Repair', value: count('REWORK'), cls: 'text-[#0066cc]' },
-          { label: 'Reject', value: count('REJECT_SCRAP'), cls: 'text-[#dc2626]' },
+          { label: 'Menunggu QC', value: count('MENUNGGU_QC'), cls: 'text-warn-2' },
+          { label: 'Pass', value: count('QC_PASS'), cls: 'text-ok-2' },
+          { label: 'Repair', value: count('REWORK'), cls: 'text-brand' },
+          { label: 'Reject', value: count('REJECT_SCRAP'), cls: 'text-bad-4' },
         ].map(({ label, value, cls }) => (
-          <div key={label} className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-            <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-1">{label}</p>
+          <div key={label} className="bg-white border border-hair rounded-[18px] p-5 text-center">
+            <p className="text-xs text-ink-muted uppercase tracking-wider mb-1">{label}</p>
             <p className={`text-[30px] font-semibold ${cls}`}>{value}</p>
           </div>
         ))}
@@ -160,33 +160,33 @@ const QualityView: React.FC = () => {
         unit="cacat"
       />
 
-      <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-        <div className="flex gap-1 p-3 border-b border-[#f0f0f2] overflow-x-auto">
+      <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+        <div className="flex gap-1 p-3 border-b border-panel-2 overflow-x-auto">
           {FILTERS.map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
               className={`tab rounded-[9px] px-4 py-2 text-[13px] whitespace-nowrap transition-all ${
-                filter === f.id ? 'bg-[#eaf3fe] text-[#0066cc] font-semibold' : 'text-[#626269] hover:bg-[#f5f5f7]'
+                filter === f.id ? 'bg-brand-bg text-brand font-semibold' : 'text-ink-muted hover:bg-page'
               }`}>{f.label}</button>
           ))}
         </div>
 
         <div className="p-5">
           {loading ? (
-            <p className="text-center text-[#6e6e73] py-6 text-[13px]">Memuat…</p>
+            <p className="text-center text-ink-muted py-6 text-[13px]">Memuat…</p>
           ) : visible.length === 0 ? (
-            <p className="text-center text-[#6e6e73] py-6 text-[13px]">Tidak ada assembly pada filter ini.</p>
+            <p className="text-center text-ink-muted py-6 text-[13px]">Tidak ada assembly pada filter ini.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead><tr>{['Serial', 'Order', 'Komponen', 'Status', 'Aksi'].map(h => (
-                  <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2] whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2 whitespace-nowrap">{h}</th>
                 ))}</tr></thead>
                 <tbody>
                   {visible.map(a => (
-                    <tr key={a.id} className="border-b border-[#f0f0f2] last:border-0">
-                      <td className="px-3 py-2.5 font-medium text-[#1d1d1f]">{a.serialCode}</td>
-                      <td className="px-3 py-2.5"><code className="text-xs text-[#64748b]">{a.orderId.slice(0, 8)}</code></td>
-                      <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{a.componentUnitIds.length}</td>
+                    <tr key={a.id} className="border-b border-panel-2 last:border-0">
+                      <td className="px-3 py-2.5 font-medium text-ink">{a.serialCode}</td>
+                      <td className="px-3 py-2.5"><code className="text-xs text-ink-muted">{a.orderId.slice(0, 8)}</code></td>
+                      <td className="px-3 py-2.5 font-mono text-ink-muted">{a.componentUnitIds.length}</td>
                       <td className="px-3 py-2.5">
                         <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[a.status]}`}>{a.status}</span>
                       </td>
@@ -209,21 +209,21 @@ const QualityView: React.FC = () => {
           <button onClick={submit} disabled={busy} className="btn-primary">{busy ? 'Menyimpan…' : 'Simpan'}</button>
         </div>}>
         <div className="space-y-4">
-          <p className="text-[13px] text-[#334155]">
+          <p className="text-[13px] text-ink-2">
             Assembly <code className="font-mono">{target?.serialCode}</code> · {target?.componentUnitIds.length} unit komponen
           </p>
 
           <div>
-            <span className="block text-sm font-medium text-[#1d1d1f] mb-2">Disposisi</span>
+            <span className="block text-sm font-medium text-ink mb-2">Disposisi</span>
             <div className="space-y-2">
               {DISPOSITIONS.map(d => (
                 <label key={d.value} className={`flex items-center gap-3 rounded-[10px] border px-3 py-2.5 cursor-pointer text-[13px] ${
-                  disposition === d.value ? 'border-[#0071e3] bg-[#eaf3fe]' : 'border-[#e6e6e9]'
+                  disposition === d.value ? 'border-brand bg-brand-bg' : 'border-hair'
                 }`}>
                   <input type="radio" name="disposition" value={d.value} checked={disposition === d.value}
                     onChange={() => setDisposition(d.value)} />
-                  <span className="font-semibold text-[#1d1d1f]">{d.label}</span>
-                  <span className="text-[#6e6e73]">{d.route}</span>
+                  <span className="font-semibold text-ink">{d.label}</span>
+                  <span className="text-ink-muted">{d.route}</span>
                 </label>
               ))}
             </div>
@@ -232,7 +232,7 @@ const QualityView: React.FC = () => {
           {disposition !== 'PASS' && (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-[#1d1d1f]">Defect</span>
+                <span className="text-sm font-medium text-ink">Defect</span>
                 <button onClick={() => setDefects(prev => [...prev, emptyDefect(target?.componentUnitIds[0] ?? '')])}
                   className="btn-ghost !py-1 !px-2 !text-xs">+ Tambah</button>
               </div>
@@ -256,11 +256,11 @@ const QualityView: React.FC = () => {
                   {target.componentUnitIds.map(u => <option key={u} value={u} />)}
                 </datalist>
               )}
-              <p className="text-[11px] text-[#6e6e73] mt-1">Unit ID mengacu ke komponen assembly; pilih dari daftar atau isi manual.</p>
+              <p className="text-[11px] text-ink-muted mt-1">Unit ID mengacu ke komponen assembly; pilih dari daftar atau isi manual.</p>
             </div>
           )}
 
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
       </>

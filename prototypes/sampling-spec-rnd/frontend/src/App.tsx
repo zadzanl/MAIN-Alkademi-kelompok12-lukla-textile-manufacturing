@@ -15,20 +15,19 @@
  *   settings          — Placeholder
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import Sidebar, { NavChapter, LucideIcon } from './components/Sidebar';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import Sidebar, { NavChapter } from './components/Sidebar';
 import Header from './components/Header';
 import MetricCard from './components/MetricCard';
 import Chart from './components/Chart';
 import StatusPanel from './components/StatusPanel';
 import DataTable from './components/DataTable';
+import StatusBadge from './components/StatusBadge';
 import ActivityLog, { Activity } from './components/ActivityLog';
 import Modal from './components/Modal';
-import FontSelector, { FontKey } from './components/FontSelector';
+import { FontKey } from './components/FontSelector';
 import Toaster from './components/Toaster';
 import ErrorBoundary from './components/ErrorBoundary';
-
-// Page views
 import SampleVersionView   from './pages/SampleVersionView';
 import DigitalStopwatchView from './pages/DigitalStopwatchView';
 import ActiveStudiesView   from './pages/ActiveStudiesView';
@@ -40,10 +39,15 @@ import ReportsView         from './pages/ReportsView';
 import LedgerView          from './pages/LedgerView';
 import QualityView         from './pages/QualityView';
 import PayrollView         from './pages/PayrollView';
-
+import TimeStudiesView     from './pages/TimeStudiesView';
+import SpecVersionsView    from './pages/SpecVersionsView';
+import SettingsView        from './pages/SettingsView';
+import PortalAuthView      from './pages/PortalAuthView';
+import PortalAdminView     from './pages/PortalAdminView';
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
-import { SAMPLING_BASE, DATA_MODE } from './services/config';
 import * as api from './services/api';
+import { logout as authLogout } from './services/authApi';
+import { clearSession, getSession, subscribe as subscribeAuth, type AuthSession } from './services/authSession';
 import { toast } from './services/toast';
 import { TENANT_ID, actor } from './services/identity';
 import { matchesQuery } from './utils/filter';
@@ -53,7 +57,7 @@ import { matchesQuery } from './utils/filter';
 interface FormFieldProps { id: string; label: string; children: React.ReactNode }
 const FormField: React.FC<FormFieldProps> = ({ id, label, children }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
+    <label htmlFor={id} className="block text-sm font-medium text-ink mb-1">{label}</label>
     {children}
   </div>
 );
@@ -109,6 +113,31 @@ function App() {
   // ── view state ──────────────────────────────────────────────────────────────
   const [currentView, setCurrentView] = useState('overview');
   const [globalSearch, setGlobalSearch] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // ── portal session (auth gate) ───────────────────────────────────────────────
+  const [session, setSession] = useState<AuthSession | null>(() => getSession());
+  useEffect(() => subscribeAuth(setSession), []);
+
+  const handleLogout = useCallback(async () => {
+    const token = getSession()?.token;
+    if (token) await authLogout(token);
+    clearSession();
+  }, []);
+
+  // Admin IT sees an extra "Administrasi" chapter for access approvals.
+  const navChapters = useMemo<NavChapter[]>(() => {
+    if (session?.actor.role !== 'admin') return chapters;
+    return [
+      ...chapters,
+      {
+        id: 'administrasi', label: 'Administrasi', icon: 'badge-check',
+        items: [
+          { id: 'access-approvals', label: 'Persetujuan Akses', icon: 'check-circle', view: 'access-approvals' },
+        ],
+      },
+    ];
+  }, [session]);
 
   // ── dark mode ────────────────────────────────────────────────────────────────
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -302,30 +331,6 @@ function App() {
     return new Date(iso).toLocaleDateString('id-ID');
   };
 
-  const badge = (status: string) => {
-    const cls: Record<string, string> = {
-      draft:      'pill pill-blue',
-      in_progress:'pill pill-orange',
-      paused:     'pill pill-gray',
-      completed:  'pill pill-green',
-      review:     'pill pill-orange',
-      approved:   'pill pill-green',
-      active:     'pill pill-green',
-      superseded: 'pill pill-gray',
-      converted:  'pill pill-gray',
-    };
-    const LABEL: Record<string, string> = {
-      draft:'Draft', in_progress:'Berjalan', paused:'Pause',
-      completed:'Selesai', review:'Review', approved:'Disetujui',
-      active:'Aktif', superseded:'Digantikan', converted:'Dikonversi',
-    };
-    return (
-      <span className={cls[status] ?? 'pill pill-gray'}>
-        {LABEL[status] ?? status}
-      </span>
-    );
-  };
-
   // ── computed ──────────────────────────────────────────────────────────────────
 
   // Global header search ("Cari studi atau spec...") narrows both tables.
@@ -380,7 +385,7 @@ function App() {
     { label:'Completed',   count: timeStudies.filter(s=>s.status==='completed').length },
   ];
 
-  const currentLabel = chapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview';
+  const currentLabel = navChapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview';
 
   // ── shared style constants ────────────────────────────────────────────────────
   const inputCls  = "w-full rounded-[10px] px-3 py-2.5 text-[13px]";
@@ -389,18 +394,45 @@ function App() {
 
   // ── render ────────────────────────────────────────────────────────────────────
 
+  // Auth gate: unauthenticated users see the portal entry page only.
+  if (!session) {
+    return <PortalAuthView onAuthenticated={setSession} />;
+  }
+
+  const profileName = session.actor.displayName;
+  const profileInitials = profileName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
   return (
     <div
       className="flex h-screen overflow-hidden font-sf-pro"
-      style={{ background: isDark ? '#000000' : '#f5f5f7' }}
+      style={{ background: 'var(--bg-page)' }}
     >
-      <Sidebar
-        currentView={currentView}
-        chapters={chapters}
-        onNavigate={setCurrentView}
-        isDark={isDark}
-        onToggleDark={toggleDark}
-      />
+      {/* Mobile nav backdrop */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <div
+        className={`${mobileNavOpen ? 'fixed inset-y-0 left-0 z-50 flex' : 'hidden'} lg:flex lg:flex-none lg:static lg:z-auto`}
+      >
+        <Sidebar
+          currentView={currentView}
+          chapters={navChapters}
+          onNavigate={(view) => { setCurrentView(view); setMobileNavOpen(false); }}
+          isDark={isDark}
+          onToggleDark={toggleDark}
+        />
+      </div>
 
       <main className="flex-1 overflow-y-auto page-stage">
         <div className="max-w-[1440px] mx-auto p-6 lg:p-8">
@@ -413,7 +445,10 @@ function App() {
               : 'Backend tidak terhubung — pastikan server berjalan di port 8009'}
             globalSearch={globalSearch}
             onGlobalSearchChange={setGlobalSearch}
-            isDark={isDark}
+            onMenuClick={() => setMobileNavOpen(true)}
+            profileName={profileName}
+            profileInitials={profileInitials}
+            onLogout={handleLogout}
           />
 
           {/* key={currentView} remounts this wrapper on navigation so the
@@ -449,7 +484,7 @@ function App() {
                   searchValue={studySearch} onSearchChange={setStudySearch}
                   columns={[
                     { key:'process_name', label:'Proses' },
-                    { key:'status',       label:'Status', render: v => badge(String(v)) },
+                    { key:'status',       label:'Status', render: v => <StatusBadge status={String(v)} /> },
                     { key:'total_cycles', label:'Siklus',  render: (v, row: TimeStudy) => `${Number(v??0)}/${row.target_sample_size}` },
                   ]}
                   data={filteredStudies.slice(0,5)}
@@ -462,7 +497,7 @@ function App() {
                   columns={[
                     { key:'spec_name',      label:'Nama Spec' },
                     { key:'version_number', label:'Versi' },
-                    { key:'status',         label:'Status', render: v => badge(String(v)) },
+                    { key:'status',         label:'Status', render: v => <StatusBadge status={String(v)} /> },
                   ]}
                   data={filteredSpecs.slice(0,5)}
                 />
@@ -488,37 +523,13 @@ function App() {
 
           {/* ── TIME STUDIES (create + manage) ────────────────────────────────── */}
           {currentView === 'time-studies' && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-[#1d1d1f]">Manajemen Studi Waktu</h2>
-                  <p className="text-[#6e6e73] text-sm mt-1">Buat dan kelola studi waktu per proses produksi</p>
-                </div>
-                <button onClick={() => setShowCreateStudyModal(true)} className={btnPrimary + ' inline-flex items-center gap-2'}>
-                  <LucideIcon name="plus" className="w-4 h-4" /> Buat Studi Baru
-                </button>
-              </div>
-              <DataTable
-                title="Semua Studi Waktu" subtitle={`${filteredStudies.length} studi`}
-                tabs={[{id:'all',label:'Semua'},{id:'draft',label:'Draft'},{id:'in_progress',label:'Berjalan'},{id:'paused',label:'Pause'},{id:'completed',label:'Selesai'}]}
-                activeTab={studyTab} onTabChange={setStudyTab}
-                searchValue={studySearch} onSearchChange={setStudySearch}
-                columns={[
-                  { key:'study_id',    label:'ID',        render: v => <code className="text-xs text-[#6e6e73]">{String(v).substring(0,8)}</code> },
-                  { key:'process_name', label:'Proses' },
-                  { key:'status',       label:'Status',   render: v => badge(String(v)) },
-                  { key:'total_cycles', label:'Siklus',   render: (v, row:TimeStudy) => `${Number(v??0)}/${row.target_sample_size}` },
-                  { key:'mean_cycle_time', label:'Rata-rata (ms)', render: v => Number(v) ? Math.round(Number(v)).toLocaleString('id-ID') : '—' },
-                  { key:'created_at',   label:'Dibuat',   render: v => new Date(String(v)).toLocaleDateString('id-ID') },
-                ]}
-                data={filteredStudies}
-              />
-              <div className="mt-4 flex gap-3">
-                <button onClick={() => exportToCSV(filteredStudies,'time_studies')} className={btnSecondary + ' inline-flex items-center gap-2'}>
-                  <LucideIcon name="download" className="w-4 h-4" /> Ekspor CSV
-                </button>
-              </div>
-            </div>
+            <TimeStudiesView
+              studies={filteredStudies}
+              tab={studyTab} onTabChange={setStudyTab}
+              search={studySearch} onSearchChange={setStudySearch}
+              onCreate={() => setShowCreateStudyModal(true)}
+              onExportCSV={exportToCSV}
+            />
           )}
 
           {/* ── STUDY LIST ────────────────────────────────────────────────────── */}
@@ -526,39 +537,13 @@ function App() {
 
           {/* ── SPEC VERSIONS (create + manage) ───────────────────────────────── */}
           {currentView === 'spec-versions' && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-[#1d1d1f]">Manajemen Versi Spec</h2>
-                  <p className="text-[#6e6e73] text-sm mt-1">Buat dan kelola spesifikasi teknis produk</p>
-                </div>
-                <button onClick={() => setShowCreateSpecModal(true)} className={btnPrimary + ' inline-flex items-center gap-2'}>
-                  <LucideIcon name="plus" className="w-4 h-4" /> Buat Spec Baru
-                </button>
-              </div>
-              <DataTable
-                title="Semua Versi Spec" subtitle={`${filteredSpecs.length} spec version`}
-                tabs={[{id:'all',label:'Semua'},{id:'draft',label:'Draft'},{id:'review',label:'Review'},{id:'approved',label:'Disetujui'},{id:'active',label:'Aktif'}]}
-                activeTab={specTab} onTabChange={setSpecTab}
-                searchValue={specSearch} onSearchChange={setSpecSearch}
-                columns={[
-                  { key:'version_id',    label:'ID',           render: v => <code className="text-xs text-[#6e6e73]">{String(v).substring(0,8)}</code> },
-                  { key:'spec_name',     label:'Nama Spec' },
-                  { key:'version_number',label:'Versi' },
-                  { key:'status',        label:'Status',       render: v => badge(String(v)) },
-                  { key:'total_drifts',  label:'Drifts',       render: v => Number(v ?? 0) },
-                  { key:'critical_drifts',label:'Kritis',
-                    render: v => { const n = Number(v); return <span className={n>0?'text-[#ff3b30] font-semibold':''}>{n}</span>; } },
-                  { key:'created_at',    label:'Dibuat',       render: v => new Date(String(v)).toLocaleDateString('id-ID') },
-                ]}
-                data={filteredSpecs}
-              />
-              <div className="mt-4">
-                <button onClick={() => exportToCSV(filteredSpecs,'spec_versions')} className={btnSecondary + ' inline-flex items-center gap-2'}>
-                  <LucideIcon name="download" className="w-4 h-4" /> Ekspor CSV
-                </button>
-              </div>
-            </div>
+            <SpecVersionsView
+              specs={filteredSpecs}
+              tab={specTab} onTabChange={setSpecTab}
+              search={specSearch} onSearchChange={setSpecSearch}
+              onCreate={() => setShowCreateSpecModal(true)}
+              onExportCSV={exportToCSV}
+            />
           )}
 
           {/* ── SPEC LIST ─────────────────────────────────────────────────────── */}
@@ -581,98 +566,19 @@ function App() {
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (
-            <div className="space-y-6 max-w-3xl">
+            <SettingsView
+              isDark={isDark}
+              onToggleDark={toggleDark}
+              font={uiFont}
+              onFontChange={setUiFont}
+              onCheckHealth={checkHealth}
+              onLoggedOut={handleLogout}
+            />
+          )}
 
-              {/* ── Dark mode toggle ───────────────────────────────────────── */}
-              <div
-                className="border rounded-[18px] p-6"
-                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3
-                      className="text-[15px] font-semibold mb-1"
-                      style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}
-                    >
-                      Tampilan
-                    </h3>
-                    <p className="text-[13px]" style={{ color: isDark ? '#94a3b8' : '#6e6e73' }}>
-                      {isDark ? 'Mode Gelap aktif — klik untuk beralih ke Mode Terang' : 'Mode Terang aktif — klik untuk beralih ke Mode Gelap'}
-                    </p>
-                  </div>
-                  {/* Toggle switch */}
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isDark}
-                    aria-label="Toggle dark mode"
-                    onClick={toggleDark}
-                    className="relative inline-flex items-center rounded-full transition-colors focus-visible:outline-none shrink-0"
-                    style={{ width: 52, height: 30, background: isDark ? '#3b9eff' : '#cbd5e1' }}
-                  >
-                    <span
-                      className="inline-block rounded-full bg-white shadow-sm"
-                      style={{
-                        width: 22, height: 22,
-                        transform: isDark ? 'translateX(26px)' : 'translateX(4px)',
-                        transition: 'transform 200ms cubic-bezier(.34,1.56,.64,1)',
-                      }}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Font selector ─────────────────────────────────────────── */}
-              <div
-                className="border rounded-[18px] p-6"
-                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
-              >
-                <FontSelector currentFont={uiFont} onChange={setUiFont} />
-              </div>
-
-              {/* ── System info ───────────────────────────────────────────── */}
-              <div
-                className="border rounded-[18px] p-6"
-                style={{ background: isDark ? '#0a0a0a' : '#ffffff', borderColor: isDark ? '#262626' : '#e6e6e9' }}
-              >
-                <h3
-                  className="text-[15px] font-semibold mb-4"
-                  style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}
-                >
-                  Informasi Sistem
-                </h3>
-                <div className="space-y-0">
-                  {[
-                    { label:'Tenant ID',   value: TENANT_ID },
-                    { label:'Backend URL', value: SAMPLING_BASE },
-                    { label:'Mode Data',   value: DATA_MODE === 'mock' ? 'Mock (in-memory)' : 'Live' },
-                    { label:'Frontend',    value:'http://localhost:3009' },
-                    { label:'Versi Modul', value:'Sprint 1 · v1.0.0' },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="flex justify-between py-3 border-b last:border-0"
-                      style={{ borderColor: isDark ? '#262626' : '#f0f0f2' }}
-                    >
-                      <span className="text-sm" style={{ color: isDark ? '#94a3b8' : '#6e6e73' }}>{label}</span>
-                      <code className="text-sm font-medium" style={{ color: isDark ? '#f1f5f9' : '#1d1d1f' }}>{value}</code>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5">
-                  <button
-                    onClick={async () => {
-                      const ok = await checkHealth();
-                      if (ok) toast.success('Backend terhubung dan sehat.');
-                      else toast.error('Backend tidak dapat dijangkau. Periksa port 8009.');
-                    }}
-                    className={btnSecondary + ' inline-flex items-center gap-2'}>
-                    <LucideIcon name="activity" className="w-4 h-4" /> Test Koneksi Backend
-                  </button>
-                </div>
-              </div>
-
-            </div>
+          {/* ── ADMIN: ACCESS APPROVALS (admin role only) ─────────────────────── */}
+          {currentView === 'access-approvals' && session.actor.role === 'admin' && (
+            <PortalAdminView />
           )}
 
             </ErrorBoundary>
