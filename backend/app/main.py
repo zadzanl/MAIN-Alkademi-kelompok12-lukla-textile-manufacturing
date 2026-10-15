@@ -2,13 +2,15 @@ import logging
 import uuid
 from typing import List
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from .api.v1 import api_router
 from .schemas.problem import Problem, Violation, ProblemException, ProblemCode
+from .copilot.html import get_copilot_html
 
 logger = logging.getLogger("lukla.security.audit")
 logging.basicConfig(level=logging.INFO)
@@ -18,6 +20,15 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     openapi_url="/openapi.json"
+)
+
+# Enable CORS for local development & cross-origin mock UI testing
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.middleware("http")
@@ -235,3 +246,34 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 app.include_router(api_router)
+
+@app.get(
+    "/copilot",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+@app.get(
+    "/copilot/",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+async def get_copilot_page():
+    return HTMLResponse(content=get_copilot_html(), status_code=status.HTTP_200_OK)
+
+@app.get(
+    "/ui",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+async def get_dashboard_ui():
+    import os
+    mock_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "prototypes", "design-mocks", "lukla-ui-mock.html"
+    )
+    if os.path.exists(mock_path):
+        with open(mock_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content, status_code=status.HTTP_200_OK)
+    return HTMLResponse(content="Dashboard mock not found", status_code=status.HTTP_404_NOT_FOUND)
+
+

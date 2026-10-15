@@ -19,9 +19,11 @@ def result_payload() -> dict[str, Any]:
 
 
 def test_rule_request_round_trips() -> None:
-    request = RuleRequest.model_validate({"ruleVersion": "v1"})
+    request = RuleRequest.model_validate({"ruleVersion": "44444444-4444-4444-8444-444444444444"})
 
-    assert request.model_dump(mode="json", by_alias=True) == {"ruleVersion": "v1"}
+    assert request.model_dump(mode="json", by_alias=True) == {
+        "ruleVersion": "44444444-4444-4444-8444-444444444444"
+    }
 
 
 def test_payroll_result_round_trips() -> None:
