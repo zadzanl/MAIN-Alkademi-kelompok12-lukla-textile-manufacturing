@@ -95,12 +95,16 @@ def test_row_mapping_is_contract_shaped_and_rejects_invalid_data() -> None:
 def test_create_uses_caller_session_and_reads_its_insert(
     period_request: PeriodRequest, rule_payload: dict[str, object]
 ) -> None:
-    db, calls = _session([[_rule_row({**rule_payload, "effectiveFrom": "2026-10-11"})], [_row(PERIOD)]])
+    rule_row = _rule_row({**rule_payload, "effectiveFrom": "2026-10-11"})
+    db, calls = _session([[rule_row], [_row(PERIOD)]])
     period = create_payroll_period(db, TENANT, period_request)
     assert period.id == PERIOD
     assert "payroll_context_tenant" in calls[0][0]
     assert any("payroll_read_rows" in c[0] and c[1].get("rule_id") == RULE for c in calls)
-    assert any("INSERT INTO payroll_periods" in c[0] and c[1].get("tenant_id") == TENANT for c in calls)
+    assert any(
+        "INSERT INTO payroll_periods" in c[0] and c[1].get("tenant_id") == TENANT
+        for c in calls
+    )
     assert any("payroll_read_rows" in c[0] and c[1].get("period_id") is not None for c in calls)
     db.commit.assert_not_called()
     db.rollback.assert_not_called()
