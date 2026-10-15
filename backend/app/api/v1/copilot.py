@@ -1,6 +1,7 @@
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Request, status
+from fastapi.responses import HTMLResponse
 import jwt
 
 from ...core.config import settings
@@ -11,8 +12,22 @@ from ...copilot.shortcuts import match_action_shortcut
 from ...copilot.registry import READ_TOOL_CATALOG, filter_tools_for_roles
 from ...copilot.executor import ReadOnlyToolExecutor
 from ...copilot.provider import get_llm_provider
+from ...copilot.html import get_copilot_html
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
+
+@router.get(
+    "",
+    response_class=HTMLResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Interactive Copilot Web UI",
+    include_in_schema=False
+)
+async def copilot_ui_v1():
+    """
+    Renders the zero-build interactive web UI for Lukla Operations Copilot.
+    """
+    return HTMLResponse(content=get_copilot_html(), status_code=status.HTTP_200_OK)
 
 @router.post(
     "/chat",
