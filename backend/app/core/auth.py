@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Callable
 from dataclasses import dataclass
 import jwt
 from fastapi import Request, Header, Depends
@@ -187,7 +187,7 @@ def get_current_auth_context(
     enforce_roles(context, request, LEDGER_ROLES, "ledger operations")
     return context
 
-def require_roles(*allowed: str, capability: str):
+def require_roles(*allowed: str, capability: str) -> Callable[..., AuthContext]:
     """
     Build a dependency that authenticates the bearer token and requires one of `allowed`.
 
