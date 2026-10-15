@@ -20,7 +20,8 @@ class BaseLLMProvider(ABC):
         message: str,
         history: Optional[List[ChatMessage]] = None,
         tools: Optional[List[dict]] = None,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        tool_results: Optional[List[Dict[str, Any]]] = None
     ) -> LLMResponse:
         """Execute a conversational turn and return candidate reply, tool invocations, and token usage."""
         pass
@@ -43,11 +44,32 @@ class MockLLMProvider(BaseLLMProvider):
         message: str,
         history: Optional[List[ChatMessage]] = None,
         tools: Optional[List[dict]] = None,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        tool_results: Optional[List[Dict[str, Any]]] = None
     ) -> LLMResponse:
         lower = message.lower()
         tools = tools or []
         tool_names = {t["name"] for t in tools}
+
+        # If tool results are provided (2nd pass of tool-call loop)
+        if tool_results:
+            summary = []
+            for tr in tool_results:
+                t_name = tr.get("tool_name", "tool")
+                data = tr.get("data", {})
+                summary.append(f"{t_name}: {json.dumps(data) if isinstance(data, (dict, list)) else str(data)}")
+            # Maintain backward compatibility for offline mock tests expecting specific phrases
+            if "stok" in lower or "kain" in lower or "fleece" in lower:
+                return LLMResponse(
+                    reply=f"Stok kain fleece saat ini terverifikasi melalui data sistem ({'; '.join(summary)}). Persediaan mencukupi.",
+                    tool_calls=[],
+                    usage=TokenUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
+                )
+            return LLMResponse(
+                reply=f"Berdasarkan data sistem terkini: {'; '.join(summary)}",
+                tool_calls=[],
+                usage=TokenUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
+            )
 
         # Test trigger for testing non-GET rejection
         if "force_non_get_mutation" in lower or "test_mutation" in lower:
@@ -138,16 +160,46 @@ class OpenAILLMProvider(BaseLLMProvider):
         message: str,
         history: Optional[List[ChatMessage]] = None,
         tools: Optional[List[dict]] = None,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        tool_results: Optional[List[Dict[str, Any]]] = None
     ) -> LLMResponse:
-        sys_prompt = system_prompt or "You are Lukla Operational AI Copilot. Always be concise, helpful, and never attempt unauthorized writes."
-        messages = [{"role": "system", "content": sys_prompt}]
+        sys_prompt = system_prompt or (
+            "You are Lukla Operational AI Copilot for apparel manufacturing operations.\n"
+            "Your role is to assist operators, supervisors, and owners by providing verified, real-time factory data.\n\n"
+            "=== READ-ONLY ACCESS & TOOL USAGE GUIDELINES ===\n"
+            "1. You have strictly read-only access to factory data. You can never mutate, insert, or delete state.\n"
+            "2. Whenever a user inquires about factory metrics, inventory, orders, or progress, always invoke the appropriate read tool first rather than guessing or fabricating numbers.\n"
+            "3. If a tool returns data, answer directly and concisely referencing the verified live numbers.\n\n"
+            "=== AVAILABLE READ TOOLS & EXAMPLES ===\n"
+            "Here are examples of read tools you can call when available in your catalog:\n"
+            "- `get_stock_balances(status='AVAILABLE', legalOwnerId=...)`: Query warehouse inventory for raw fabrics (fleece, rib, cotton), WIP rolls, or finished goods. Example inquiry: 'Berapa stok kain fleece?' or 'Check inventory balance'.\n"
+            "- `get_order_status(status=..., clientId=...)`: Check production orders, delivery commitments, and fulfillment milestones. Example inquiry: 'Bagaimana status pesanan ORD-104?' or 'Show active orders'.\n"
+            "- `get_production_progress(lineId=..., orderId=...)`: Check line output rates, sewing throughput, and 30-minute interval pacing. Example inquiry: 'Cek progres jalur jahit Line 2' or 'Sewing output throughput'.\n"
+            "- `get_qc_bonus_pool_status(periodId=...)`: Inspect weekly quality bonus pool accumulation and defect tolerances. Example inquiry: 'Berapa akumulasi bonus pool QC minggu ini?'.\n"
+            "- `get_ledger_entries(accountCode=..., limit=...)`: Inspect double-entry journal logs, debit/credit balances, and financial trail. Example inquiry: 'Lihat mutasi jurnal akun kas'.\n"
+            "- `search_operational_documents(q=...)`: Search technical tech packs, factory SOPs, and sewing specifications. Example inquiry: 'Cari SOP standar toleransi jahitan kerah'.\n"
+            "- `get_sample_specs(sampleId=...)`: Query prototype sample grading, tech pack specs, and revision histories.\n\n"
+            "=== MUTATION INTENTS ===\n"
+            "If the user asks to modify data (such as cutting fabric, logging tallies, or posting journal entries), politely inform them that you are read-only and direct them to the appropriate action screen or form."
+        )
+        messages: List[Dict[str, Any]] = [{"role": "system", "content": sys_prompt}]
 
         if history:
             for h in history:
                 messages.append({"role": h.sender, "content": h.text})
 
         messages.append({"role": "user", "content": message})
+
+        if tool_results:
+            # Append tool results into context so model can produce grounded answer
+            results_str = "\n".join([
+                f"- Tool '{tr.get('tool_name')}': {json.dumps(tr.get('data')) if isinstance(tr.get('data'), (dict, list)) else tr.get('data')}"
+                for tr in tool_results
+            ])
+            messages.append({
+                "role": "system",
+                "content": f"The read-only factory tools returned the following live operational data:\n{results_str}\nPlease provide a concise answer directly addressing the user inquiry using this verified live data."
+            })
 
         payload: Dict[str, Any] = {
             "model": self.model_name,
@@ -156,22 +208,51 @@ class OpenAILLMProvider(BaseLLMProvider):
             "max_tokens": self.settings.max_tokens
         }
 
-        if tools:
+        # If tool results already returned, do not require tool choice again to avoid loops
+        if tools and not tool_results:
             payload["tools"] = export_tools_to_openai_schema(tools)
             payload["tool_choice"] = "auto"
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://lukla.app",
+            "X-Title": "Lukla Operations Engine Copilot"
+        }
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
         async with httpx.AsyncClient(timeout=self.settings.COPILOT_TIMEOUT_SECONDS) as client:
-            response = await client.post(
-                f"{self.base_url}/chat/completions",
-                json=payload,
-                headers=headers
-            )
-            response.raise_for_status()
-            data = response.json()
+            try:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    json=payload,
+                    headers=headers
+                )
+                response.raise_for_status()
+                data = response.json()
+            except httpx.HTTPStatusError as exc:
+                from ..schemas.problem import ProblemException
+                detail_msg = f"LLM provider error ({exc.response.status_code})"
+                try:
+                    err_json = exc.response.json()
+                    if "error" in err_json:
+                        err_detail = err_json["error"].get("message") or str(err_json["error"])
+                        detail_msg = f"LLM Provider: {err_detail}"
+                except Exception:
+                    detail_msg = f"LLM provider error: {exc.response.text[:200]}"
+
+                raise ProblemException(
+                    status=502 if exc.response.status_code >= 500 else 400,
+                    code="SERVICE_SCOPE_REQUIRED" if exc.response.status_code == 401 else "BAD_GATEWAY",
+                    detail=detail_msg
+                )
+            except httpx.RequestError as exc:
+                from ..schemas.problem import ProblemException
+                raise ProblemException(
+                    status=504,
+                    code="GATEWAY_TIMEOUT",
+                    detail=f"Connection timeout reaching LLM provider: {str(exc)}"
+                )
 
             choice = data["choices"][0]["message"]
             raw_usage = data.get("usage", {})
@@ -208,14 +289,46 @@ class OllamaLLMProvider(OpenAILLMProvider):
     """Production provider tailored for local Ollama deployments."""
     def __init__(self, settings: Optional[CopilotSettings] = None):
         super().__init__(settings)
-        if not self.base_url or "openai" in self.base_url:
+        if not self.base_url or "openai" in self.base_url or "openrouter" in self.base_url:
             self.base_url = "http://localhost:11434/v1"
+
+class OpenRouterLLMProvider(OpenAILLMProvider):
+    """Production provider connecting to OpenRouter inference gateway."""
+    def __init__(self, settings: Optional[CopilotSettings] = None):
+        super().__init__(settings)
+        if not self.base_url or "localhost" in self.base_url:
+            self.base_url = "https://openrouter.ai/api/v1"
+
+    async def chat_turn(
+        self,
+        message: str,
+        history: Optional[List[ChatMessage]] = None,
+        tools: Optional[List[dict]] = None,
+        system_prompt: Optional[str] = None,
+        tool_results: Optional[List[Dict[str, Any]]] = None
+    ) -> LLMResponse:
+        if not self.api_key:
+            from ..schemas.problem import ProblemException
+            raise ProblemException(
+                status=500,
+                code="SERVICE_SCOPE_REQUIRED",
+                detail="OpenRouter API key is missing. Please set COPILOT_API_KEY or OPENROUTER_API_KEY environment variable."
+            )
+        return await super().chat_turn(
+            message=message,
+            history=history,
+            tools=tools,
+            system_prompt=system_prompt,
+            tool_results=tool_results
+        )
 
 def get_llm_provider(provider_type: Optional[str] = None) -> BaseLLMProvider:
     """Factory creating LLM provider based on configuration."""
     ptype = (provider_type or copilot_settings.COPILOT_DEFAULT_PROVIDER).lower()
     if ptype == "ollama":
         return OllamaLLMProvider()
+    if ptype == "openrouter":
+        return OpenRouterLLMProvider()
     if ptype in ("openai", "anthropic"):
         return OpenAILLMProvider()
     return MockLLMProvider()

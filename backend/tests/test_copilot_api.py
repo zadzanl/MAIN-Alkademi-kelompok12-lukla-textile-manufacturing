@@ -178,3 +178,75 @@ def test_copilot_web_ui_returns_200_html(client):
     assert resp_api.status_code == 200
     assert "text/html" in resp_api.headers.get("content-type", "")
 
+def test_openrouter_provider_requires_api_key(client, monkeypatch):
+    """
+    Test 9: Verifies that configuring OpenRouter without an API key produces
+    a clean HTTP 500 RFC 7807 problem with clear remediation message.
+    """
+    monkeypatch.setattr(copilot_settings, "COPILOT_DEFAULT_PROVIDER", "openrouter")
+    monkeypatch.setattr(copilot_settings, "COPILOT_API_KEY", "")
+
+    response = client.post(
+        "/api/v1/copilot/chat",
+        json={"message": "Berapa stok kain fleece?"}
+    )
+    assert response.status_code == 500
+    assert response.headers["content-type"] == "application/problem+json"
+    data = response.json()
+    assert "OpenRouter API key is missing" in data["detail"]
+
+def test_openrouter_provider_mocked_turn(monkeypatch):
+    """
+    Test 10: Unit verification of OpenRouter provider chat_turn with httpx AsyncClient mocked.
+    """
+    import asyncio
+    from unittest.mock import AsyncMock, MagicMock
+    import httpx
+    from backend.app.copilot.provider import OpenRouterLLMProvider
+    from backend.app.copilot.config import CopilotSettings
+
+    settings = CopilotSettings(
+        COPILOT_DEFAULT_PROVIDER="openrouter",
+        COPILOT_API_KEY="sk-or-v1-testkey12345",
+        COPILOT_MODEL_NAME="meta-llama/llama-3.3-70b-instruct:free",
+        COPILOT_BASE_URL="https://openrouter.ai/api/v1"
+    )
+    provider = OpenRouterLLMProvider(settings=settings)
+
+    mock_resp_json = {
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": "Stok kain fleece saat ini 850 roll di warehouse A."
+                }
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 15,
+            "completion_tokens": 12,
+            "total_tokens": 27
+        }
+    }
+
+    mock_http_response = MagicMock(spec=httpx.Response)
+    mock_http_response.status_code = 200
+    mock_http_response.json.return_value = mock_resp_json
+    mock_http_response.raise_for_status = MagicMock()
+
+    mock_client = AsyncMock(spec=httpx.AsyncClient)
+    mock_client.post.return_value = mock_http_response
+    mock_client.__aenter__.return_value = mock_client
+    mock_client.__aexit__.return_value = None
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda *args, **kwargs: mock_client)
+
+    result = asyncio.run(provider.chat_turn(message="Cek stok kain fleece"))
+    assert result.reply == "Stok kain fleece saat ini 850 roll di warehouse A."
+    assert result.usage.total_tokens == 27
+    assert mock_client.post.called
+    call_args = mock_client.post.call_args
+    assert "https://openrouter.ai/api/v1/chat/completions" in call_args[0][0]
+    assert call_args[1]["headers"]["Authorization"] == "Bearer sk-or-v1-testkey12345"
+
+

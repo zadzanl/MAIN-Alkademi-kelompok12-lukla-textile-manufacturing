@@ -715,27 +715,43 @@
         if (chatInput) chatInput.value = '';
 
         const selectedRole = roleSelect ? roleSelect.value : 'Owner';
+        const endpoints = [
+          '/api/v1/copilot/chat',
+          'http://127.0.0.1:8000/api/v1/copilot/chat',
+          'http://localhost:8000/api/v1/copilot/chat'
+        ];
 
-        // Try live API if reachable
-        try {
-          const resp = await fetch('/api/v1/copilot/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Roles': selectedRole
-            },
-            body: JSON.stringify({ message: text, roles: [selectedRole] })
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            appendMessage('assistant', data.reply, data.shortcuts, data.tools_used);
-            return;
+        let liveConnected = false;
+        for (const ep of endpoints) {
+          try {
+            const resp = await fetch(ep, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Roles': selectedRole
+              },
+              body: JSON.stringify({ message: text, roles: [selectedRole] })
+            });
+            if (resp.ok) {
+              const data = await resp.json();
+              appendMessage('assistant', data.reply, data.shortcuts, data.tools_used);
+              liveConnected = true;
+              break;
+            } else {
+              const errData = await resp.json().catch(() => ({}));
+              const detail = errData.detail || `Server returned error status ${resp.status}`;
+              appendMessage('assistant', `⚠️ ${detail}`);
+              liveConnected = true;
+              break;
+            }
+          } catch (_) {
+            // Try next candidate endpoint
           }
-        } catch (_) {
-          // Fall through to standalone mock response
         }
 
-        // Offline / standalone mock logic for testing
+        if (liveConnected) return;
+
+        // Offline / standalone fallback logic
         const lower = text.toLowerCase();
         if (lower.includes('potong') || lower.includes('ord-104') || lower.includes('cutting')) {
           appendMessage(

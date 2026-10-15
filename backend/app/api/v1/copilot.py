@@ -7,7 +7,7 @@ import jwt
 from ...core.config import settings
 from ...schemas.problem import ProblemException
 from ...copilot.config import copilot_settings
-from ...copilot.schemas import ChatTurnRequest, ChatTurnResponse, ToolDefinition
+from ...copilot.schemas import ChatTurnRequest, ChatTurnResponse, ToolDefinition, TokenUsage
 from ...copilot.shortcuts import match_action_shortcut
 from ...copilot.registry import READ_TOOL_CATALOG, filter_tools_for_roles
 from ...copilot.executor import ReadOnlyToolExecutor
@@ -97,6 +97,7 @@ async def chat_turn(
     tools_used: List[str] = []
 
     # 7. Execute authorized read tools via ReadOnlyToolExecutor (physical method == GET barrier)
+    tool_results: List[dict] = []
     if llm_resp.tool_calls:
         executor = ReadOnlyToolExecutor(base_url=copilot_settings.INTERNAL_API_BASE_URL)
         for tc in llm_resp.tool_calls:
@@ -113,7 +114,7 @@ async def chat_turn(
                     )
 
             # This will raise ProblemException(403, "FORBIDDEN") if method != "GET"
-            await executor.execute_tool(
+            res = await executor.execute_tool(
                 tool_name=tc.tool_name,
                 arguments=tc.arguments,
                 authorization_header=authorization_header,
@@ -121,6 +122,32 @@ async def chat_turn(
                 tool_def=tool_def
             )
             tools_used.append(tc.tool_name)
+            tool_results.append({
+                "tool_name": tc.tool_name,
+                "status_code": res.status_code,
+                "data": res.data
+            })
+
+        # Phase 2: Feed back tool execution results to LLM for final grounded synthesis
+        if tool_results:
+            second_turn_resp = await provider.chat_turn(
+                message=body.message,
+                history=body.history,
+                tools=None,
+                tool_results=tool_results
+            )
+            final_reply = second_turn_resp.reply or llm_resp.reply
+            accumulated_usage = TokenUsage(
+                prompt_tokens=llm_resp.usage.prompt_tokens + second_turn_resp.usage.prompt_tokens,
+                completion_tokens=llm_resp.usage.completion_tokens + second_turn_resp.usage.completion_tokens,
+                total_tokens=llm_resp.usage.total_tokens + second_turn_resp.usage.total_tokens
+            )
+            return ChatTurnResponse(
+                reply=final_reply,
+                shortcuts=shortcuts,
+                tools_used=tools_used,
+                usage=accumulated_usage
+            )
 
     return ChatTurnResponse(
         reply=llm_resp.reply,
