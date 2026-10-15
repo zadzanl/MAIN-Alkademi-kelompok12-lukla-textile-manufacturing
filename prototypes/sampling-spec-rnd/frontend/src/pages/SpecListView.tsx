@@ -19,9 +19,12 @@ const STATUS_STYLE: Record<string, string> = {
   archived:   'bg-[#f0f0f2] text-[#626269]',
 };
 
-interface Props { onExportCSV: (data: any[], filename: string) => void; }
+interface Props {
+  onExportCSV: (data: unknown[], filename: string) => void;
+  onDataChanged?: () => void;
+}
 
-const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
+const SpecListView: React.FC<Props> = ({ onExportCSV, onDataChanged }) => {
   const [specs, setSpecs]       = useState<SpecVersion[]>([]);
   const [tab, setTab]           = useState('all');
   const [search, setSearch]     = useState('');
@@ -48,6 +51,7 @@ const SpecListView: React.FC<Props> = ({ onExportCSV }) => {
     const j = await r.json();
     setActionMsg(j.message ?? j.detail ?? '');
     fetchAll();
+    onDataChanged?.();
     setTimeout(() => setActionMsg(''), 3000);
   };
 

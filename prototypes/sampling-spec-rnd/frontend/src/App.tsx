@@ -191,6 +191,12 @@ function App() {
     } catch { setSpecVersions([]); }
   }, []);
 
+  // Child views own their own lists; the header and Overview metrics are App state,
+  // so a mutation inside a view must refresh these aggregates or they go stale.
+  const refreshAll = useCallback(() => {
+    fetchWorkflowSummary(); fetchTimeStudies(); fetchSpecVersions();
+  }, [fetchWorkflowSummary, fetchTimeStudies, fetchSpecVersions]);
+
   const createTimeStudy = async () => {
     if (!newStudy.process_id || !newStudy.process_name) {
       alert('ID Proses dan Nama Proses wajib diisi.'); return;
@@ -449,14 +455,14 @@ function App() {
 
           {/* ── SAMPLE VERSIONS ───────────────────────────────────────────────── */}
           {currentView === 'sample-versions' && (
-            <SampleVersionView onExportCSV={exportToCSV} />
+            <SampleVersionView onExportCSV={exportToCSV} onDataChanged={refreshAll} />
           )}
 
           {/* ── STOPWATCH ─────────────────────────────────────────────────────── */}
-          {currentView === 'stopwatch' && <DigitalStopwatchView />}
+          {currentView === 'stopwatch' && <DigitalStopwatchView onDataChanged={refreshAll} />}
 
           {/* ── ACTIVE STUDIES ────────────────────────────────────────────────── */}
-          {currentView === 'active-studies' && <ActiveStudiesView />}
+          {currentView === 'active-studies' && <ActiveStudiesView onDataChanged={refreshAll} />}
 
           {/* ── TIME STUDIES (create + manage) ────────────────────────────────── */}
           {currentView === 'time-studies' && (
@@ -534,10 +540,10 @@ function App() {
           )}
 
           {/* ── SPEC LIST ─────────────────────────────────────────────────────── */}
-          {currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} />}
+          {currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} onDataChanged={refreshAll} />}
 
           {/* ── DRIFT ANALYSIS ────────────────────────────────────────────────── */}
-          {currentView === 'drift-analysis' && <DriftAnalysisView />}
+          {currentView === 'drift-analysis' && <DriftAnalysisView onDataChanged={refreshAll} />}
 
           {/* ── REPORTS ───────────────────────────────────────────────────────── */}
           {currentView === 'reports' && <ReportsView onExportCSV={exportToCSV} />}

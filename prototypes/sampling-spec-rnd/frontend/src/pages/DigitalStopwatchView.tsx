@@ -40,7 +40,11 @@ interface LapRecord {
 
 // ─── component ────────────────────────────────────────────────────────────────
 
-const DigitalStopwatchView: React.FC = () => {
+interface Props {
+  onDataChanged?: () => void;
+}
+
+const DigitalStopwatchView: React.FC<Props> = ({ onDataChanged }) => {
   // Stopwatch state
   const [running, setRunning]           = useState(false);
   const [elapsed, setElapsed]           = useState(0);         // ms
@@ -162,6 +166,7 @@ const DigitalStopwatchView: React.FC = () => {
     setSaveMsg(`${successCount}/${laps.length} sampel tersimpan ke studi.`);
     setSaving(false);
     fetchStudies();
+    onDataChanged?.();
   };
 
   const handleCreateStudy = async () => {
@@ -177,6 +182,7 @@ const DigitalStopwatchView: React.FC = () => {
       setSelectedStudyId(j.study_id);
       setShowNewStudy(false);
       fetchStudies();
+      onDataChanged?.();
     } else { const e = await r.json(); alert(e.detail); }
   };
 

@@ -15,7 +15,11 @@ const fmtMs = (ms: number) => {
   return `${(ms / 1000).toFixed(2)} s`;
 };
 
-const ActiveStudiesView: React.FC = () => {
+interface Props {
+  onDataChanged?: () => void;
+}
+
+const ActiveStudiesView: React.FC<Props> = ({ onDataChanged }) => {
   const [studies, setStudies] = useState<TimeStudy[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
@@ -43,6 +47,7 @@ const ActiveStudiesView: React.FC = () => {
     const j = await r.json();
     setActionMsg(j.message ?? j.detail ?? '');
     fetchStudies();
+    onDataChanged?.();
     setTimeout(() => setActionMsg(''), 3000);
   };
 

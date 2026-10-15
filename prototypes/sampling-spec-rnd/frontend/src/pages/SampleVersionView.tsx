@@ -32,7 +32,8 @@ const Badge: React.FC<{ status: string }> = ({ status }) => (
 );
 
 interface Props {
-  onExportCSV: (data: any[], filename: string) => void;
+  onExportCSV: (data: unknown[], filename: string) => void;
+  onDataChanged?: () => void;
 }
 
 const EMPTY_COMPONENT: Omit<GarmentComponent, 'component_id'> = {
@@ -45,7 +46,7 @@ const EMPTY_MATERIAL: MaterialEstimation = {
   unit: 'm', unit_cost: 0, total_cost: 0, supplier_id: '', notes: '',
 };
 
-const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
+const SampleVersionView: React.FC<Props> = ({ onExportCSV, onDataChanged }) => {
   const [versions, setVersions]           = useState<SampleVersion[]>([]);
   const [selected, setSelected]           = useState<SampleVersion | null>(null);
   const [loading, setLoading]             = useState(false);
@@ -111,6 +112,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
       setShowCreate(false);
       setForm({ article_id: '', article_name: '', client_id: '', notes: '' });
       fetchAll();
+      onDataChanged?.();
     } else {
       const e = await r.json(); alert(e.detail);
     }
@@ -121,20 +123,20 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
     const q = new URLSearchParams({ revised_by: 'admin', revision_note: revisionNote });
     const r = await fetch(`${API}/sample-versions/${selected.version_id}/new-revision?${q}`, { method: 'POST' });
     if (r.ok) {
-      setShowRevise(false); setRevisionNote(''); fetchAll();
+      setShowRevise(false); setRevisionNote(''); fetchAll(); onDataChanged?.();
     } else { const e = await r.json(); alert(e.detail); }
   };
 
   const handleSubmitApproval = async (sv: SampleVersion) => {
     const r = await fetch(`${API}/sample-versions/${sv.version_id}/submit-approval?submitted_by=admin`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    if (r.ok) { fetchAll(); onDataChanged?.(); } else { const e = await r.json(); alert(e.detail); }
   };
 
   const handleApprove = async (sv: SampleVersion) => {
     const note = prompt('Catatan persetujuan (opsional):') ?? '';
     const q = new URLSearchParams({ approved_by: 'manager', approval_note: note });
     const r = await fetch(`${API}/sample-versions/${sv.version_id}/approve?${q}`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    if (r.ok) { fetchAll(); onDataChanged?.(); } else { const e = await r.json(); alert(e.detail); }
   };
 
   const handleConvert = async (sv: SampleVersion) => {
@@ -142,7 +144,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
     if (!orderId) return;
     const q = new URLSearchParams({ order_id: orderId, converted_by: 'admin' });
     const r = await fetch(`${API}/sample-versions/${sv.version_id}/convert-to-order?${q}`, { method: 'POST' });
-    if (r.ok) { fetchAll(); } else { const e = await r.json(); alert(e.detail); }
+    if (r.ok) { fetchAll(); onDataChanged?.(); } else { const e = await r.json(); alert(e.detail); }
   };
 
   const handleSaveComponents = async () => {

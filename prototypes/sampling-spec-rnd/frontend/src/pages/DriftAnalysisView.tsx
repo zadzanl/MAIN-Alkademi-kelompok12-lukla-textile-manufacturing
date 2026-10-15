@@ -16,7 +16,11 @@ const SEV_COLOR: Record<string, { bg: string; text: string; bar: string }> = {
   critical: { bg: 'bg-[#ff3b30]', text: 'text-white',     bar: '#cc0000' },
 };
 
-const DriftAnalysisView: React.FC = () => {
+interface Props {
+  onDataChanged?: () => void;
+}
+
+const DriftAnalysisView: React.FC<Props> = ({ onDataChanged }) => {
   const [specs, setSpecs]             = useState<SpecVersion[]>([]);
   const [selectedId, setSelectedId]   = useState('');
   const [analysis, setAnalysis]       = useState<any>(null);
@@ -78,6 +82,7 @@ const DriftAnalysisView: React.FC = () => {
       setMsg(`✓ ${j.message}`); setShowRecord(false);
       setDriftForm({ parameter_name:'', specification_limit:'', measured_value:'', severity:'low', corrective_action:'' });
       loadAnalysis(selectedId);
+      onDataChanged?.();
     } else { alert(j.detail); }
     setTimeout(() => setMsg(''), 4000);
   };
@@ -90,6 +95,7 @@ const DriftAnalysisView: React.FC = () => {
     if (r.ok) {
       setMsg(`✓ ${j.message}`); setShowResolve(false); setResolveAction('');
       loadAnalysis(selectedId);
+      onDataChanged?.();
     } else { alert(j.detail); }
     setTimeout(() => setMsg(''), 4000);
   };
