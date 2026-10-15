@@ -2,7 +2,7 @@ import uuid
 import json
 import base64
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Literal, cast
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, text
 from ..models.ledger import LedgerAccount, LedgerTransaction, LedgerEntry
@@ -346,7 +346,9 @@ def reverse_transaction(
     entries_json: List[Dict[str, Any]] = []
 
     for entry, account in orig_entries:
-        inverted_dir = "CREDIT" if entry.direction == "DEBIT" else "DEBIT"
+        inverted_dir: Literal["DEBIT", "CREDIT"] = (
+            "CREDIT" if entry.direction == "DEBIT" else "DEBIT"
+        )
         reversal_entries_schema.append(
             LedgerEntrySchema(
                 accountCode=account.code,
@@ -512,7 +514,7 @@ def get_ledger_entries(
             entries_map[entry.transaction_id].append(
                 LedgerEntrySchema(
                     accountCode=account.code,
-                    direction=entry.direction,
+                    direction=cast(Literal["DEBIT", "CREDIT"], entry.direction),
                     amountMinor=entry.amount_minor
                 )
             )
