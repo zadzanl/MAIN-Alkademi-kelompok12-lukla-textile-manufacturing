@@ -1,5 +1,5 @@
 """
-Lukla Operational AI Copilot Package.
+Lukla Intelligence Package.
 Provides conversational operational assistance with strictly read-only execution,
 per-turn role-based tool filtering, and mutation intent routing via Action Shortcuts.
 """

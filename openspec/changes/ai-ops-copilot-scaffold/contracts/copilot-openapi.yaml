@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Lukla Operational AI Copilot API
+  title: Lukla Intelligence API
   version: 1.0.0-contract
   description: Delta OpenAPI 3.1 specification for the in-app conversational operational copilot gateway.
 servers:

@@ -53,18 +53,57 @@ class MockLLMProvider(BaseLLMProvider):
 
         # If tool results are provided (2nd pass of tool-call loop)
         if tool_results:
+            # Check for error status in tool results
+            has_error = any(
+                tr.get("status_code", 200) >= 400
+                or (isinstance(tr.get("data"), dict) and tr.get("data", {}).get("status", 200) in (404, 500, 502, 503))
+                for tr in tool_results
+            )
+            if has_error:
+                return LLMResponse(
+                    reply="Maaf, data inventaris kain saat ini tidak dapat diambil dari sistem operasional (layanan gudang mengembalikan galat atau data belum tercatat).",
+                    tool_calls=[],
+                    usage=TokenUsage(prompt_tokens=50, completion_tokens=25, total_tokens=75)
+                )
+
+            # Success path: synthesize from verified tool data
+            if "stok" in lower or "kain" in lower or "fleece" in lower:
+                fleece_qty = 1250
+                lot_tag = "LOT-2026-105"
+                for tr in tool_results:
+                    data = tr.get("data", {})
+                    items = data.get("items", []) if isinstance(data, dict) else []
+                    for it in items:
+                        if isinstance(it, dict) and "fleece" in it.get("sku", "").lower():
+                            fleece_qty = it.get("quantity", fleece_qty)
+                            lot_tag = it.get("lotTag", lot_tag)
+
+                return LLMResponse(
+                    reply=f"Stok kain fleece saat ini terverifikasi melalui data sistem: tersedia {fleece_qty:,.0f} meter di Gudang Bahan (Lot: {lot_tag}). Persediaan mencukupi.",
+                    tool_calls=[],
+                    usage=TokenUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
+                )
+
+            if "production" in {tr.get("tool_name") for tr in tool_results} or "get_production_progress" in {tr.get("tool_name") for tr in tool_results}:
+                progress = next((tr.get("data", {}) for tr in tool_results if tr.get("tool_name") == "get_production_progress"), {})
+                item = (progress.get("items") or [{}])[0]
+                return LLMResponse(
+                    reply=(
+                        f"Tally Sewing Line {item.get('lineId', '2')} saat ini: "
+                        f"{item.get('piecesCompleted', 0):,} pcs selesai dari target "
+                        f"{item.get('targetPieces', 0):,} pcs "
+                        f"({item.get('efficiencyPercent', 0)}% efisiensi). "
+                        f"Status line: {item.get('status', 'UNKNOWN')}."
+                    ),
+                    tool_calls=[],
+                    usage=TokenUsage(prompt_tokens=50, completion_tokens=35, total_tokens=85)
+                )
+
             summary = []
             for tr in tool_results:
                 t_name = tr.get("tool_name", "tool")
                 data = tr.get("data", {})
                 summary.append(f"{t_name}: {json.dumps(data) if isinstance(data, (dict, list)) else str(data)}")
-            # Maintain backward compatibility for offline mock tests expecting specific phrases
-            if "stok" in lower or "kain" in lower or "fleece" in lower:
-                return LLMResponse(
-                    reply=f"Stok kain fleece saat ini terverifikasi melalui data sistem ({'; '.join(summary)}). Persediaan mencukupi.",
-                    tool_calls=[],
-                    usage=TokenUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
-                )
             return LLMResponse(
                 reply=f"Berdasarkan data sistem terkini: {'; '.join(summary)}",
                 tool_calls=[],
@@ -98,6 +137,19 @@ class MockLLMProvider(BaseLLMProvider):
                         )
                     ],
                     usage=TokenUsage(prompt_tokens=45, completion_tokens=35, total_tokens=80)
+                )
+
+        # Read-only production tally inquiry. Recording a tally remains an action shortcut.
+        if any(kw in lower for kw in ["tally", "throughput", "output jahit", "produksi line", "line 2"]):
+            if "get_production_progress" in tool_names:
+                return LLMResponse(
+                    reply="Saya akan memeriksa progress produksi Sewing Line 2.",
+                    tool_calls=[ToolCallRequest(
+                        id="call_mock_production_01",
+                        tool_name="get_production_progress",
+                        arguments={"lineId": "LINE-02"}
+                    )],
+                    usage=TokenUsage(prompt_tokens=40, completion_tokens=20, total_tokens=60)
                 )
 
         # Inquiries regarding orders
@@ -164,12 +216,13 @@ class OpenAILLMProvider(BaseLLMProvider):
         tool_results: Optional[List[Dict[str, Any]]] = None
     ) -> LLMResponse:
         sys_prompt = system_prompt or (
-            "You are Lukla Operational AI Copilot for apparel manufacturing operations.\n"
+            "You are Lukla Intelligence for apparel manufacturing operations.\n"
             "Your role is to assist operators, supervisors, and owners by providing verified, real-time factory data.\n\n"
             "=== READ-ONLY ACCESS & TOOL USAGE GUIDELINES ===\n"
             "1. You have strictly read-only access to factory data. You can never mutate, insert, or delete state.\n"
             "2. Whenever a user inquires about factory metrics, inventory, orders, or progress, always invoke the appropriate read tool first rather than guessing or fabricating numbers.\n"
-            "3. If a tool returns data, answer directly and concisely referencing the verified live numbers.\n\n"
+            "3. If a tool returns data, answer directly and concisely referencing the verified live numbers.\n"
+            "4. If a tool fails or returns an error (such as 404, 500, or problem payload), DO NOT invent figures or state that items are verified or sufficient. Honestly notify the user that live operational data is currently unavailable.\n\n"
             "=== AVAILABLE READ TOOLS & EXAMPLES ===\n"
             "Here are examples of read tools you can call when available in your catalog:\n"
             "- `get_stock_balances(status='AVAILABLE', legalOwnerId=...)`: Query warehouse inventory for raw fabrics (fleece, rib, cotton), WIP rolls, or finished goods. Example inquiry: 'Berapa stok kain fleece?' or 'Check inventory balance'.\n"
