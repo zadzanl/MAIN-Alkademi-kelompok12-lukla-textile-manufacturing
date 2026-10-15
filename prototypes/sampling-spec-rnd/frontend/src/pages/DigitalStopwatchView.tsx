@@ -8,6 +8,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import type { TimeStudy } from '../types';
 import * as api from '../services/api';
+import { toast } from '../services/toast';
 import { TENANT_ID } from '../services/identity';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -136,8 +137,8 @@ const DigitalStopwatchView: React.FC = () => {
   // ── save to backend ──────────────────────────────────────────────────────────
 
   const handleSaveToStudy = async () => {
-    if (!selectedStudyId) { alert('Pilih studi waktu terlebih dahulu.'); return; }
-    if (laps.length === 0) { alert('Belum ada lap yang direkam.'); return; }
+    if (!selectedStudyId) { toast.error('Pilih studi waktu terlebih dahulu.'); return; }
+    if (laps.length === 0) { toast.error('Belum ada lap yang direkam.'); return; }
     setSaving(true); setSaveMsg('');
     let successCount = 0;
     // 1. start the study if still draft
@@ -163,7 +164,7 @@ const DigitalStopwatchView: React.FC = () => {
 
   const handleCreateStudy = async () => {
     const { process_id, process_name, operator_id, target_sample_size } = newStudyForm;
-    if (!process_id || !process_name) { alert('Process ID dan Nama Proses wajib diisi.'); return; }
+    if (!process_id || !process_name) { toast.error('Process ID dan Nama Proses wajib diisi.'); return; }
     const res = await api.createStudy({
       tenant_id: TENANT_ID, process_id, process_name, operator_id, target_sample_size,
     });
@@ -171,7 +172,7 @@ const DigitalStopwatchView: React.FC = () => {
       setSelectedStudyId(res.data.study_id);
       setShowNewStudy(false);
       fetchStudies();
-    } else { alert(res.error); }
+    } else { toast.error(res.error ?? 'Gagal membuat studi.'); }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -224,13 +225,13 @@ const DigitalStopwatchView: React.FC = () => {
             <p className="text-sm font-semibold text-[#1d1d1f]">Detail Komponen Saat Ini</p>
             <div>
               <label className="block text-xs text-[#6e6e73] mb-1">Nama Komponen</label>
-              <input value={elementName} onChange={e => setElementName(e.target.value)}
+              <input value={elementName} onChange={e => setElementName(e.target.value)} aria-label="Nama Komponen"
                 placeholder="e.g. Pasang Kerah, Jahit Lengan Kiri…"
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
             <div>
               <label className="block text-xs text-[#6e6e73] mb-1">Catatan</label>
-              <input value={lapNote} onChange={e => setLapNote(e.target.value)}
+              <input value={lapNote} onChange={e => setLapNote(e.target.value)} aria-label="Catatan"
                 placeholder="Kondisi abnormal, mesin macet, dst."
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
@@ -241,7 +242,7 @@ const DigitalStopwatchView: React.FC = () => {
             </label>
             <div>
               <label className="block text-xs text-[#6e6e73] mb-1">Allowance (%)</label>
-              <input type="number" min={0} max={50} value={allowancePct}
+              <input type="number" min={0} max={50} value={allowancePct} aria-label="Allowance (%)"
                 onChange={e => setAllowancePct(parseInt(e.target.value)||0)}
                 className="w-24 border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
@@ -317,7 +318,7 @@ const DigitalStopwatchView: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 text-[#6e6e73] max-w-[120px] truncate">{lap.notes || '—'}</td>
                           <td className="px-4 py-3">
-                            <button onClick={() => removeLap(lap.id)}
+                            <button onClick={() => removeLap(lap.id)} aria-label="Hapus lap"
                               className="text-[#ff3b30] hover:text-[#cc2200] font-bold">×</button>
                           </td>
                         </tr>
@@ -333,7 +334,7 @@ const DigitalStopwatchView: React.FC = () => {
           <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
             <p className="text-[15px] font-semibold text-[#1d1d1f] mb-4">Simpan ke Studi Waktu</p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <select value={selectedStudyId} onChange={e => setSelectedStudyId(e.target.value)}
+              <select value={selectedStudyId} onChange={e => setSelectedStudyId(e.target.value)} aria-label="Pilih Studi Waktu"
                 className="flex-1 border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
                 <option value="">— Pilih Studi Waktu —</option>
                 {studies.filter(s => s.status !== 'completed' && s.status !== 'archived').map(s => (
@@ -359,14 +360,14 @@ const DigitalStopwatchView: React.FC = () => {
                   ] as { id: 'process_id' | 'process_name' | 'operator_id'; label: string; ph: string }[]).map(({ id, label, ph }) => (
                     <div key={id} className={id === 'process_name' ? 'col-span-2' : ''}>
                       <label className="block text-xs text-[#6e6e73] mb-1">{label}</label>
-                      <input value={newStudyForm[id]} placeholder={ph}
+                      <input value={newStudyForm[id]} placeholder={ph} aria-label={label}
                         onChange={e => setNewStudyForm(f => ({ ...f, [id]: e.target.value }))}
                         className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-[#80baff]" />
                     </div>
                   ))}
                   <div>
                     <label className="block text-xs text-[#6e6e73] mb-1">Target Sampel</label>
-                    <input type="number" value={newStudyForm.target_sample_size}
+                    <input type="number" value={newStudyForm.target_sample_size} aria-label="Target Sampel"
                       onChange={e => setNewStudyForm(f => ({ ...f, target_sample_size: parseInt(e.target.value)||30 }))}
                       className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2 text-[13px] bg-white focus:outline-2 focus:outline-[#80baff]" />
                   </div>

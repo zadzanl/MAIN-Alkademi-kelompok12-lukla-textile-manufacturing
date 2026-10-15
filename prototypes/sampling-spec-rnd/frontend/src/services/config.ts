@@ -8,14 +8,21 @@
  * (in-memory) until VITE_LEDGER_MODE=live is set. The sampling endpoints
  * (studies/specs/sample-versions) always talk to the live backend.
  */
+/**
+ * Vite injects `import.meta.env` in the browser. Under Node (unit tests run via
+ * `node --test`) `import.meta.env` is undefined, so read it through this guard to
+ * keep the service modules importable outside Vite.
+ */
+const env: Partial<ImportMetaEnv> = (import.meta as { env?: ImportMetaEnv }).env ?? {};
+
 export const SAMPLING_BASE =
-  import.meta.env.VITE_API_URL || 'http://localhost:8009/api/sampling-spec-rnd';
+  env.VITE_API_URL || 'http://localhost:8009/api/sampling-spec-rnd';
 
-export const LEDGER_BASE = import.meta.env.VITE_LEDGER_API_URL || '/api/v1';
+export const LEDGER_BASE = env.VITE_LEDGER_API_URL || '/api/v1';
 
-export const LEDGER_TOKEN = import.meta.env.VITE_LEDGER_TOKEN || '';
+export const LEDGER_TOKEN = env.VITE_LEDGER_TOKEN || '';
 
 export const DATA_MODE: 'mock' | 'live' =
-  import.meta.env.VITE_LEDGER_MODE === 'live' ? 'live' : 'mock';
+  env.VITE_LEDGER_MODE === 'live' ? 'live' : 'mock';
 
 export const isMockData = DATA_MODE === 'mock';

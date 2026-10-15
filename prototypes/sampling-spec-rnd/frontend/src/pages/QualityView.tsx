@@ -11,10 +11,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
+import MockModeBanner from '../components/MockModeBanner';
 import {
-  listAssemblies, inspectUnit, isMockOps,
-  type Assembly, type AssemblyStatus, type QcDisposition, type Defect,
+  listAssemblies, inspectUnit, isMockOps, listMockInspections,
+  type Assembly, type AssemblyStatus, type QcDisposition, type Defect, type QcInspection,
 } from '../services/opsApi';
+import { buildPareto } from '../utils/chartData';
+import ParetoChart from '../components/ParetoChart';
 import QcTerminalView from './QcTerminalView';
 
 const inputCls = 'w-full rounded-[10px] px-3 py-2.5 text-[13px]';
@@ -46,6 +49,7 @@ const emptyDefect = (unitId = ''): DefectRow => ({ componentUnitId: unitId, code
 const QualityView: React.FC = () => {
   const [mode, setMode] = useState<'terminal' | 'queue'>('terminal');
   const [assemblies, setAssemblies] = useState<Assembly[]>([]);
+  const [inspections, setInspections] = useState<QcInspection[]>([]);
   const [filter, setFilter] = useState<'ALL' | AssemblyStatus>('MENUNGGU_QC');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,12 +66,28 @@ const QualityView: React.FC = () => {
     const res = await listAssemblies();
     if (res.ok && res.data) setAssemblies(res.data.items);
     else setError(res.error ?? 'Gagal memuat daftar assembly.');
+    setInspections(listMockInspections());
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const visible = filter === 'ALL' ? assemblies : assemblies.filter(a => a.status === filter);
+
+  // Pareto of defect codes across recorded inspections. Source is mock-only
+  // (listMockInspections) — in live mode it is empty until a GET list endpoint
+  // exists, so the chart degrades to its empty state rather than erroring.
+  const defectCounts = new Map<string, number>();
+  for (const insp of inspections) {
+    for (const d of insp.defects ?? []) {
+      const code = (d.code ?? '').trim();
+      if (!code) continue;
+      defectCounts.set(code, (defectCounts.get(code) ?? 0) + 1);
+    }
+  }
+  const paretoData = buildPareto(
+    [...defectCounts.entries()].map(([label, value]) => ({ label, value })),
+  );
 
   const openInspect = (a: Assembly) => {
     setTarget(a);
@@ -116,11 +136,7 @@ const QualityView: React.FC = () => {
         <button onClick={load} className="btn-secondary"><LucideIcon name="activity" className="w-4 h-4" /> Refresh</button>
       </div>
 
-      {isMockOps && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — data inspeksi disimpan di memori. Set <code className="font-mono">VITE_LEDGER_MODE=live</code> untuk service asli.
-        </div>
-      )}
+      {isMockOps && <MockModeBanner detail="data inspeksi disimpan di memori." />}
       {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -136,6 +152,13 @@ const QualityView: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <ParetoChart
+        data={paretoData}
+        title="Pareto Defect QC"
+        subtitle="Kode defect paling sering — 20% penyebab mayoritas temuan"
+        unit="cacat"
+      />
 
       <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
         <div className="flex gap-1 p-3 border-b border-[#f0f0f2] overflow-x-auto">
@@ -217,9 +240,9 @@ const QualityView: React.FC = () => {
                 {defects.map((d, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <input value={d.componentUnitId} onChange={e => updateDefect(idx, { componentUnitId: e.target.value })}
-                      list="unit-ids" placeholder="Component Unit ID" className={inputCls + ' flex-1'} />
+                      list="unit-ids" placeholder="Component Unit ID" aria-label="Component Unit ID" className={inputCls + ' flex-1'} />
                     <input value={d.code} onChange={e => updateDefect(idx, { code: e.target.value })}
-                      placeholder="Kode defect" className={inputCls + ' w-[130px]'} />
+                      placeholder="Kode defect" aria-label="Kode defect" className={inputCls + ' w-[130px]'} />
                     <button onClick={() => setDefects(prev => prev.filter((_, i) => i !== idx))}
                       disabled={defects.length <= 1} aria-label="Hapus defect"
                       className="btn-ghost !p-2 disabled:opacity-30">

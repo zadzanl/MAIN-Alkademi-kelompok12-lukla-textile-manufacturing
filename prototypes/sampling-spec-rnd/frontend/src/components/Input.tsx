@@ -3,7 +3,7 @@
  * Apple Design System with clear contrast and tablet-friendly touch targets
  */
 
-import React, { memo, forwardRef } from 'react';
+import React, { memo, forwardRef, useId } from 'react';
 import { InputProps } from '@/types';
 
 export const Input = memo(
@@ -19,6 +19,8 @@ export const Input = memo(
       },
       ref
     ) => {
+      const inputId = useId();
+
       const baseClasses =
         'w-full px-4 py-3 rounded-lg font-base text-base ' +
         'transition-all duration-200 focus-visible:outline-2 ' +
@@ -41,12 +43,14 @@ export const Input = memo(
       return (
         <div className="w-full">
           {label && (
-            <label className="block text-sm font-medium text-gray-900 mb-2">
+            <label htmlFor={inputId} className="block text-sm font-medium text-gray-900 mb-2">
               {label}
             </label>
           )}
           <input
             ref={ref}
+            id={inputId}
+            aria-invalid={error ? true : undefined}
             className={`${baseClasses} ${variantClasses[variant]} ${className}`}
             {...props}
           />

@@ -160,6 +160,33 @@ if (res.success && res.data) {
 
 **Error Handling:** Semua network errors di-catch, backend errors di-forward dalam `res.error`.
 
+### Mock vs Live (ops / ledger / payroll)
+
+Endpoint sampling (studies/specs/sample-versions) **selalu** memakai backend live.
+Tiga modul lain berjalan dalam **mode mock (in-memory)** selama service HTTP-nya
+belum di-wire oleh tim backend:
+
+| Modul | Client | Flag |
+| :--- | :--- | :--- |
+| Sewing floor & QC | `src/services/opsApi.ts` | `VITE_LEDGER_MODE` |
+| Buku besar (double-entry) | `src/services/ledgerApi.ts` | `VITE_LEDGER_MODE` |
+| Payroll & costing | `src/services/payrollApi.ts` | `VITE_LEDGER_MODE` |
+
+Saat backend siap, cukup ubah `.env` (tanpa perubahan UI — bentuk request/response
+sudah identik dengan kontrak `openspec/.../contracts/openapi.yaml`):
+
+```env
+VITE_LEDGER_MODE=live
+VITE_LEDGER_API_URL=http://localhost:8000/api/v1
+VITE_LEDGER_TOKEN=<signed JWT>
+```
+
+**Verifikasi "berhasil atau tidak":**
+1. `npm test` → test `contract.test.ts` memastikan mock tetap sesuai kontrak.
+2. Jalankan app; banner kuning **"Mode mock aktif"** (`components/MockModeBanner.tsx`)
+   harus **hilang** di halaman Produksi/QC/Ledger/Payroll ketika mode `live`.
+3. Buka DevTools → Network: request harus menuju `VITE_LEDGER_API_URL`, bukan mock.
+
 ---
 
 ## 🚀 Development Workflow
@@ -187,6 +214,8 @@ npm run dev         # Start dev server (port 3009)
 npm run build       # Production build
 npm run preview     # Preview production build
 npm run type-check  # TypeScript validation
+npm run lint        # ESLint (0 warnings allowed)
+npm test            # Unit + contract tests (node --test)
 ```
 
 ### Testing Backend Connection

@@ -13,6 +13,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
+import MockModeBanner from '../components/MockModeBanner';
 import {
   listPayrollPeriods,
   createPayrollPeriod,
@@ -40,6 +41,8 @@ import {
   type FinancialRuleRequest,
   type Currency,
 } from '../services/payrollApi';
+import { buildWaterfall } from '../utils/chartData';
+import WaterfallChart from '../components/WaterfallChart';
 
 const inputCls = 'w-full rounded-[10px] px-3 py-2.5 text-[13px]';
 const CURRENCY: Currency = 'IDR';
@@ -109,10 +112,10 @@ const PayrollView: React.FC = () => {
       </div>
 
       {isMockPayroll && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — endpoint HTTP payroll belum ada di backend, data di memori.
-          Set <code className="font-mono">VITE_LEDGER_MODE=live</code> setelah endpoint tersedia.
-        </div>
+        <MockModeBanner
+          detail="endpoint HTTP payroll belum ada di backend, data di memori."
+          hint="setelah endpoint tersedia."
+        />
       )}
       {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
       {flash && <div className="rounded-[14px] border border-[#34c759] bg-[#e8f5e9] px-4 py-3 text-[13px] font-medium text-[#1a7a34]">{flash}</div>}
@@ -289,6 +292,20 @@ const RunTab: React.FC<{
   const totalOf = (s: PayrollStatement) =>
     s.items.reduce((sum, it) => sum + it.base.amountMinor + it.meal.amountMinor + it.bonus.amountMinor, 0);
 
+  // Cost accumulation waterfall: base wages → +meal → +bonus → grand total.
+  const waterfall = (() => {
+    if (!statement) return [];
+    const base = statement.items.reduce((s, it) => s + it.base.amountMinor, 0);
+    const meal = statement.items.reduce((s, it) => s + it.meal.amountMinor, 0);
+    const bonus = statement.items.reduce((s, it) => s + it.bonus.amountMinor, 0);
+    return buildWaterfall([
+      { label: 'Base', delta: base },
+      { label: 'Meal', delta: meal },
+      { label: 'Bonus', delta: bonus },
+      { label: 'Total', delta: base + meal + bonus, kind: 'total' },
+    ]);
+  })();
+
   return (
     <div className="space-y-4">
       <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 space-y-4">
@@ -341,6 +358,13 @@ const RunTab: React.FC<{
       )}
 
       {statement && (
+        <>
+        <WaterfallChart
+          data={waterfall}
+          title="Akumulasi Upah Mingguan"
+          subtitle="Base + Meal + Bonus → total slip (IDR)"
+          formatValue={fmtMoney}
+        />
         <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
           <div className="flex flex-wrap justify-between items-center gap-3 p-5 border-b border-[#f0f0f2]">
             <div>
@@ -387,6 +411,7 @@ const RunTab: React.FC<{
             </table>
           </div>
         </div>
+        </>
       )}
 
       {showPayment && statement && (

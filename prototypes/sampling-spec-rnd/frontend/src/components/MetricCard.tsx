@@ -14,10 +14,10 @@ interface MetricCardProps {
 }
 
 const ACCENT: Record<string, { border: string; valueCls: string }> = {
-  blue:   { border: 'border-t-[3px] border-t-[#0071e3]', valueCls: 'text-[#0071e3]' },
-  green:  { border: 'border-t-[3px] border-t-[#34c759]', valueCls: 'text-[#1a7a34]' },
-  orange: { border: 'border-t-[3px] border-t-[#ff9500]', valueCls: 'text-[#b86800]' },
-  red:    { border: 'border-t-[3px] border-t-[#ff3b30]', valueCls: 'text-[#cc2200]' },
+  blue:   { border: 'border-t-[3px] border-t-[#0071e3]', valueCls: 'text-[#0071e3] dark:text-[#3b9eff]' },
+  green:  { border: 'border-t-[3px] border-t-[#34c759]', valueCls: 'text-[#1a7a34] dark:text-[#34c759]' },
+  orange: { border: 'border-t-[3px] border-t-[#ff9500]', valueCls: 'text-[#b86800] dark:text-[#ff9500]' },
+  red:    { border: 'border-t-[3px] border-t-[#ff3b30]', valueCls: 'text-[#cc2200] dark:text-[#ff453a]' },
 };
 
 const MetricCard: React.FC<MetricCardProps> = ({

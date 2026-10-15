@@ -13,6 +13,7 @@
  */
 import { SAMPLING_BASE } from './config';
 import { buildQuery } from './query';
+import { extractDetail } from './problem';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -67,14 +68,21 @@ async function request<T>(
     });
 
     const text = await response.text();
-    const raw: unknown = text ? JSON.parse(text) : null;
+    let raw: unknown = null;
+    if (text) {
+      try {
+        raw = JSON.parse(text);
+      } catch {
+        raw = text;
+      }
+    }
 
     if (!response.ok) {
-      const problem = (raw ?? {}) as { detail?: unknown; code?: unknown; title?: unknown };
-      const rawDetail = problem.detail ?? problem.title ?? `HTTP ${response.status}`;
-      const detail = typeof rawDetail === 'string' ? rawDetail : JSON.stringify(rawDetail);
-      const code = typeof problem.code === 'string' ? problem.code : undefined;
-      throw new ApiError(response.status, detail, code);
+      const code =
+        raw && typeof raw === 'object' && typeof (raw as { code?: unknown }).code === 'string'
+          ? (raw as { code: string }).code
+          : undefined;
+      throw new ApiError(response.status, extractDetail(raw, response.status), code);
     }
 
     return raw as T;

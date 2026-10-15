@@ -163,6 +163,7 @@ button:not(:disabled):active,
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 48px; /* touch target ≥48px (design_guideline.md §2.3) */
   background: var(--blue);
   color: #fff;
   border-radius: var(--radius-md);
@@ -209,6 +210,7 @@ button:not(:disabled):active,
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 48px; /* touch target ≥48px (design_guideline.md §2.3) */
   background: #fff;
   color: var(--blue);
   border: 1.5px solid var(--border-strong);
@@ -235,6 +237,7 @@ button:not(:disabled):active,
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 48px; /* touch target ≥48px (design_guideline.md §2.3) */
   background: var(--danger);
   color: #fff;
   border-radius: var(--radius-md);
@@ -256,6 +259,7 @@ button:not(:disabled):active,
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 48px; /* touch target ≥48px (design_guideline.md §2.3) */
   background: var(--success);
   color: #fff;
   border-radius: var(--radius-md);
@@ -856,7 +860,7 @@ article.surface:hover {
    We override the most common ones here so pages look correct in dark mode.  */
 
 /* Card/surface backgrounds */
-.dark .bg-\[\#f5f5f7\]  { background: #000000 !important; }
+.dark .bg-\[\#f5f5f7\]  { background: #161616 !important; }
 .dark .bg-\[\#fafafa\]  { background: #161616 !important; }
 .dark .bg-\[\#f0f0f2\]  { background: #262626 !important; }
 .dark .bg-\[\#f1f5f9\]  { background: #161616 !important; }
@@ -879,9 +883,6 @@ article.surface:hover {
 .dark .text-\[\#64748b\]  { color: #94a3b8 !important; }
 .dark .text-\[\#334155\]  { color: #cbd5e1 !important; }
 .dark .text-\[\#475569\]  { color: #94a3b8 !important; }
-
-/* Input/surface fills */
-.dark .bg-\[\#f5f5f7\]   { background: #161616 !important; }
 
 /* Stopwatch clock face background in dark */
 .dark .bg-\[\#1d1d1f\]   { background: #f1f5f9 !important; }

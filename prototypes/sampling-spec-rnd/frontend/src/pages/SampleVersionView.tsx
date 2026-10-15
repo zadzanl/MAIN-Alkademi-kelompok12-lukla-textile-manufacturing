@@ -10,6 +10,7 @@ import { LucideIcon } from '../components/Sidebar';
 import { generateId } from '../lib/uuid';
 import type { SampleVersion, GarmentComponent, MaterialEstimation, ExportCSV } from '../types';
 import * as api from '../services/api';
+import { toast } from '../services/toast';
 import { TENANT_ID, actor, APPROVER_ID } from '../services/identity';
 
 const STATUS_STYLE: Record<string, string> = {
@@ -92,7 +93,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
 
   const handleCreate = async () => {
     if (!form.article_id || !form.article_name || !form.client_id) {
-      alert('Article ID, Nama Artikel, dan Client ID wajib diisi.'); return;
+      toast.error('Article ID, Nama Artikel, dan Client ID wajib diisi.'); return;
     }
     const res = await api.createSampleVersion({ tenant_id: TENANT_ID, ...form, created_by: actor() });
     if (res.success) {
@@ -100,40 +101,40 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
       setForm({ article_id: '', article_name: '', client_id: '', notes: '' });
       fetchAll();
     } else {
-      alert(res.error);
+      toast.error(res.error ?? 'Gagal membuat versi sample.');
     }
   };
 
   const handleRevise = async () => {
-    if (!selected || !revisionNote) { alert('Catatan revisi wajib diisi.'); return; }
+    if (!selected || !revisionNote) { toast.error('Catatan revisi wajib diisi.'); return; }
     const res = await api.createSampleVersionRevision(selected.version_id, actor(), revisionNote);
     if (res.success) {
       setShowRevise(false); setRevisionNote(''); fetchAll();
-    } else { alert(res.error); }
+    } else { toast.error(res.error ?? 'Gagal membuat revisi.'); }
   };
 
   const handleSubmitApproval = async (sv: SampleVersion) => {
     const res = await api.submitSampleVersionApproval(sv.version_id, actor());
-    if (res.success) { fetchAll(); } else { alert(res.error); }
+    if (res.success) { fetchAll(); } else { toast.error(res.error ?? 'Gagal submit approval.'); }
   };
 
   const handleApprove = async (sv: SampleVersion) => {
     const note = prompt('Catatan persetujuan (opsional):') ?? '';
     const res = await api.approveSampleVersion(sv.version_id, APPROVER_ID, note);
-    if (res.success) { fetchAll(); } else { alert(res.error); }
+    if (res.success) { fetchAll(); } else { toast.error(res.error ?? 'Gagal approve.'); }
   };
 
   const handleConvert = async (sv: SampleVersion) => {
     const orderId = prompt('Masukkan ID Order untuk konversi:');
     if (!orderId) return;
     const res = await api.convertSampleVersionToOrder(sv.version_id, orderId, actor());
-    if (res.success) { fetchAll(); } else { alert(res.error); }
+    if (res.success) { fetchAll(); } else { toast.error(res.error ?? 'Gagal konversi ke order.'); }
   };
 
   const handleSaveComponents = async () => {
     if (!selected) return;
     const res = await api.updateSampleVersionComponents(selected.version_id, actor(), editComponents);
-    if (res.success) { setShowCompModal(false); fetchAll(); } else { alert(res.error); }
+    if (res.success) { setShowCompModal(false); fetchAll(); } else { toast.error(res.error ?? 'Gagal menyimpan komponen.'); }
   };
 
   const handleSaveMaterials = async () => {
@@ -141,7 +142,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
     // auto-calc total_cost
     const mats = editMaterials.map(m => ({ ...m, total_cost: m.estimated_usage * m.unit_cost }));
     const res = await api.updateSampleVersionMaterials(selected.version_id, actor(), mats);
-    if (res.success) { setShowMatModal(false); fetchAll(); } else { alert(res.error); }
+    if (res.success) { setShowMatModal(false); fetchAll(); } else { toast.error(res.error ?? 'Gagal menyimpan material.'); }
   };
 
   const openHistory = async (sv: SampleVersion) => {
@@ -297,14 +298,14 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
           ] as { id: keyof typeof form; label: string; ph: string }[]).map(({ id, label, ph }) => (
             <div key={id}>
               <label className="block text-sm font-medium text-[#1d1d1f] mb-1">{label}</label>
-              <input value={form[id]} placeholder={ph}
+              <input value={form[id]} placeholder={ph} aria-label={label}
                 onChange={e => setForm(f => ({ ...f, [id]: e.target.value }))}
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
           ))}
           <div>
             <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Catatan</label>
-            <textarea rows={2} value={form.notes}
+            <textarea rows={2} value={form.notes} aria-label="Catatan"
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
           </div>
@@ -328,7 +329,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
         }>
         <div>
           <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Catatan Revisi *</label>
-          <textarea rows={3} value={revisionNote} placeholder="Jelaskan perubahan desain, pola, atau bahan..."
+          <textarea rows={3} value={revisionNote} placeholder="Jelaskan perubahan desain, pola, atau bahan..." aria-label="Catatan Revisi"
             onChange={e => setRevisionNote(e.target.value)}
             className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
           <p className="text-xs text-[#6e6e73] mt-2">
@@ -420,7 +421,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                 <tr key={comp.component_id} className="border-b border-[#f0f0f2]">
                   {(['part_name','description','material_type'] as const).map(field => (
                     <td key={field} className="px-1 py-1">
-                      <input value={comp[field]}
+                      <input value={comp[field]} aria-label={field}
                         disabled={selected?.status !== 'draft'}
                         onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,[field]:e.target.value} : c))}
                         className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
@@ -428,14 +429,14 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                   ))}
                   {(['estimated_usage_m','sewing_time_std_ms','rate_card_idr'] as const).map(field => (
                     <td key={field} className="px-1 py-1 w-20">
-                      <input type="number" value={comp[field]}
+                      <input type="number" value={comp[field]} aria-label={field}
                         disabled={selected?.status !== 'draft'}
                         onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,[field]:parseFloat(e.target.value)||0} : c))}
                         className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
                     </td>
                   ))}
                   <td className="px-1 py-1">
-                    <select value={comp.unit} disabled={selected?.status !== 'draft'}
+                    <select value={comp.unit} disabled={selected?.status !== 'draft'} aria-label="Satuan"
                       onChange={e => setEditComponents(cs => cs.map((c,i) => i===idx ? {...c,unit:e.target.value} : c))}
                       className="border border-[#dedee2] rounded-[8px] px-1 py-1 text-[12px] disabled:bg-[#f5f5f7]">
                       {['m','pcs','yard','kg'].map(u => <option key={u}>{u}</option>)}
@@ -443,7 +444,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                   </td>
                   <td className="px-1 py-1">
                     {selected?.status === 'draft' && (
-                      <button onClick={() => setEditComponents(cs => cs.filter((_,i) => i!==idx))}
+                      <button onClick={() => setEditComponents(cs => cs.filter((_,i) => i!==idx))} aria-label="Hapus komponen"
                         className="text-[#ff3b30] hover:text-[#cc2200] font-bold px-1">×</button>
                     )}
                   </td>
@@ -498,25 +499,25 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                 <tr key={idx} className="border-b border-[#f0f0f2]">
                   {(['material_code','material_name'] as const).map(field => (
                     <td key={field} className="px-1 py-1">
-                      <input value={mat[field]} disabled={selected?.status !== 'draft'}
+                      <input value={mat[field]} disabled={selected?.status !== 'draft'} aria-label={field}
                         onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,[field]:e.target.value} : m))}
                         className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] focus:outline-[#80baff] focus:outline-2 disabled:bg-[#f5f5f7]" />
                     </td>
                   ))}
                   <td className="px-1 py-1 w-20">
-                    <input type="number" value={mat.estimated_usage} disabled={selected?.status !== 'draft'}
+                    <input type="number" value={mat.estimated_usage} disabled={selected?.status !== 'draft'} aria-label="Estimasi pemakaian"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,estimated_usage:parseFloat(e.target.value)||0} : m))}
                       className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] disabled:bg-[#f5f5f7]" />
                   </td>
                   <td className="px-1 py-1">
-                    <select value={mat.unit} disabled={selected?.status !== 'draft'}
+                    <select value={mat.unit} disabled={selected?.status !== 'draft'} aria-label="Satuan"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,unit:e.target.value} : m))}
                       className="border border-[#dedee2] rounded-[8px] px-1 py-1 text-[12px] disabled:bg-[#f5f5f7]">
                       {['m','kg','pcs','yard','roll'].map(u => <option key={u}>{u}</option>)}
                     </select>
                   </td>
                   <td className="px-1 py-1 w-28">
-                    <input type="number" value={mat.unit_cost} disabled={selected?.status !== 'draft'}
+                    <input type="number" value={mat.unit_cost} disabled={selected?.status !== 'draft'} aria-label="Harga per unit"
                       onChange={e => setEditMaterials(ms => ms.map((m,i) => i===idx ? {...m,unit_cost:parseFloat(e.target.value)||0} : m))}
                       className="w-full border border-[#dedee2] rounded-[8px] px-2 py-1 text-[12px] disabled:bg-[#f5f5f7]" />
                   </td>
@@ -525,7 +526,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
                   </td>
                   <td className="px-1 py-1">
                     {selected?.status === 'draft' && (
-                      <button onClick={() => setEditMaterials(ms => ms.filter((_,i) => i!==idx))}
+                      <button onClick={() => setEditMaterials(ms => ms.filter((_,i) => i!==idx))} aria-label="Hapus material"
                         className="text-[#ff3b30] font-bold px-1">×</button>
                     )}
                   </td>

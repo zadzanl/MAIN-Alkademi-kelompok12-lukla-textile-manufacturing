@@ -7,6 +7,7 @@ import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
 import type { SpecVersion, DriftAnalysis, SpecDrift } from '../types';
 import * as api from '../services/api';
+import { toast } from '../services/toast';
 import { TENANT_ID } from '../services/identity';
 
 const SEV_COLOR: Record<string, { bg: string; text: string; bar: string }> = {
@@ -67,7 +68,7 @@ const DriftAnalysisView: React.FC = () => {
   const handleRecordDrift = async () => {
     const { parameter_name, specification_limit, measured_value, severity, corrective_action } = driftForm;
     if (!parameter_name || !specification_limit || !measured_value) {
-      alert('Parameter, Limit Spec, dan Nilai Terukur wajib diisi.'); return;
+      toast.error('Parameter, Limit Spec, dan Nilai Terukur wajib diisi.'); return;
     }
     const res = await api.recordDrift({
       version_id: selectedId,
@@ -81,17 +82,17 @@ const DriftAnalysisView: React.FC = () => {
       setMsg(`✓ ${res.message ?? ''}`); setShowRecord(false);
       setDriftForm({ parameter_name:'', specification_limit:'', measured_value:'', severity:'low', corrective_action:'' });
       loadAnalysis(selectedId);
-    } else { alert(res.error); }
+    } else { toast.error(res.error ?? 'Gagal mencatat drift.'); }
     setTimeout(() => setMsg(''), 4000);
   };
 
   const handleResolveDrift = async () => {
-    if (!resolveAction) { alert('Tindakan korektif wajib diisi.'); return; }
+    if (!resolveAction) { toast.error('Tindakan korektif wajib diisi.'); return; }
     const res = await api.resolveDrift(selectedId, resolveDriftId, resolveAction);
     if (res.success) {
       setMsg(`✓ ${res.message ?? ''}`); setShowResolve(false); setResolveAction('');
       loadAnalysis(selectedId);
-    } else { alert(res.error); }
+    } else { toast.error(res.error ?? 'Gagal menyelesaikan drift.'); }
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -128,7 +129,7 @@ const DriftAnalysisView: React.FC = () => {
       {/* Spec selector */}
       <div className="bg-white border border-[#e6e6e9] rounded-[18px] p-5">
         <label className="block text-sm font-medium text-[#1d1d1f] mb-2">Pilih Spec Version</label>
-        <select value={selectedId} onChange={e => handleSelectSpec(e.target.value)}
+        <select value={selectedId} onChange={e => handleSelectSpec(e.target.value)} aria-label="Pilih Spec Version"
           className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
           <option value="">— Pilih spec version —</option>
           {specs.map(s => (
@@ -296,34 +297,34 @@ const DriftAnalysisView: React.FC = () => {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Nama Parameter *</label>
-            <input value={driftForm.parameter_name} placeholder="e.g. ketebalan_kain, lebar_jahitan"
+            <input value={driftForm.parameter_name} placeholder="e.g. ketebalan_kain, lebar_jahitan" aria-label="Nama Parameter"
               onChange={e => setDriftForm(f => ({ ...f, parameter_name: e.target.value }))}
               className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Limit Spesifikasi *</label>
-              <input type="number" value={driftForm.specification_limit}
+              <input type="number" value={driftForm.specification_limit} aria-label="Limit Spesifikasi"
                 onChange={e => setDriftForm(f => ({ ...f, specification_limit: e.target.value }))}
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Nilai Terukur *</label>
-              <input type="number" value={driftForm.measured_value}
+              <input type="number" value={driftForm.measured_value} aria-label="Nilai Terukur"
                 onChange={e => setDriftForm(f => ({ ...f, measured_value: e.target.value }))}
                 className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Severity</label>
-            <select value={driftForm.severity} onChange={e => setDriftForm(f => ({ ...f, severity: e.target.value }))}
+            <select value={driftForm.severity} onChange={e => setDriftForm(f => ({ ...f, severity: e.target.value }))} aria-label="Severity"
               className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]">
               {['low','medium','high','critical'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Tindakan Korektif</label>
-            <textarea rows={2} value={driftForm.corrective_action}
+            <textarea rows={2} value={driftForm.corrective_action} aria-label="Tindakan Korektif"
               onChange={e => setDriftForm(f => ({ ...f, corrective_action: e.target.value }))}
               className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]"
               placeholder="Opsional — bisa diisi nanti saat resolve" />
@@ -343,7 +344,7 @@ const DriftAnalysisView: React.FC = () => {
         }>
         <div>
           <label className="block text-sm font-medium text-[#1d1d1f] mb-1">Tindakan Korektif yang Diambil *</label>
-          <textarea rows={3} value={resolveAction}
+          <textarea rows={3} value={resolveAction} aria-label="Tindakan Korektif yang Diambil"
             onChange={e => setResolveAction(e.target.value)}
             className="w-full border border-[#dedee2] rounded-[10px] px-3 py-2.5 text-[13px] focus:outline-2 focus:outline-[#80baff]"
             placeholder="Jelaskan tindakan yang sudah diambil untuk mengatasi drift ini…" />

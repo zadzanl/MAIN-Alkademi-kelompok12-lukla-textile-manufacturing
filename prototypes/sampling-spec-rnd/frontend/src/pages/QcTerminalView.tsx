@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
+import MockModeBanner from '../components/MockModeBanner';
 import {
   listAssemblies, inspectUnit, isMockOps,
   type Assembly, type AssemblyStatus, type QcDisposition, type Defect,
@@ -73,11 +74,7 @@ const QcTerminalView: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      {isMockOps && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — data inspeksi disimpan di memori. Set <code className="font-mono">VITE_LEDGER_MODE=live</code> untuk service asli.
-        </div>
-      )}
+      {isMockOps && <MockModeBanner detail="data inspeksi disimpan di memori." />}
       {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
       {flash && <div className="rounded-[14px] border border-[#34c759] bg-[#e8f5e9] px-4 py-3 text-[13px] font-medium text-[#1a7a34]">{flash}</div>}
 
