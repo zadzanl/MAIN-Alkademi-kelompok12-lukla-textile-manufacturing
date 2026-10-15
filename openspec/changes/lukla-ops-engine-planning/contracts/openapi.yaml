@@ -657,6 +657,309 @@ paths:
       responses:
         <<: *writeResponses
         '200': {description: Order snapshot, content: {application/json: {schema: {$ref: '#/components/schemas/Order'}}}}
+  # ─── GAP-FIX 1: BOM per Sample Revision ──────────────────────────────────
+  /samples/{sampleId}/revisions/{revisionId}/bom:
+    get:
+      tags: [samples-rates]
+      operationId: listBomItems
+      summary: List all BOM items for a sample revision
+      x-source-ids: [FR-4.1]
+      x-roles: [Owner, SampleTeam, ProductionHead, MaklonClient]
+      x-view: [VIEW-02]
+      x-invariant: Returns items sorted by sort_order; inaccessible revisions return 404.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+      responses:
+        '200': {description: BOM item list, content: {application/json: {schema: {$ref: '#/components/schemas/BomItemPage'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [samples-rates]
+      operationId: addBomItem
+      summary: Add a material line to revision BOM
+      x-source-ids: [FR-4.1]
+      x-roles: [SampleTeam]
+      x-view: [VIEW-02]
+      x-invariant: Locked revision rejects new items. SKU must be unique per revision.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BomItemRequest'}}}}
+      responses:
+        '201': {description: Created BOM item, content: {application/json: {schema: {$ref: '#/components/schemas/BomItem'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /samples/{sampleId}/revisions/{revisionId}/bom/{itemId}:
+    put:
+      tags: [samples-rates]
+      operationId: updateBomItem
+      summary: Update a single BOM item (quantity, unit, description, supplier ref)
+      x-source-ids: [FR-4.1]
+      x-roles: [SampleTeam]
+      x-view: [VIEW-02]
+      x-invariant: Locked revision rejects updates. Audit event written on every mutation.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: itemId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BomItemRequest'}}}}
+      responses:
+        '200': {description: Updated BOM item, content: {application/json: {schema: {$ref: '#/components/schemas/BomItem'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    delete:
+      tags: [samples-rates]
+      operationId: removeBomItem
+      summary: Remove a BOM item from an unlocked revision
+      x-source-ids: [FR-4.1]
+      x-roles: [SampleTeam]
+      x-view: [VIEW-02]
+      x-invariant: Hard delete allowed only on DRAFT/SUBMITTED revision; locked revisions return 409 INVALID_STATE.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: itemId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+      responses:
+        '204': {description: Deleted}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+  /samples/{sampleId}/revisions/{revisionId}/smv-summary:
+    get:
+      tags: [samples-rates]
+      operationId: getSmvSummary
+      summary: Get SMV breakdown and total for a finalized revision
+      x-source-ids: [FR-4.1, FR-4.2]
+      x-roles: [Owner, SampleTeam, ProductionHead, FinancePayroll]
+      x-view: [VIEW-02, VIEW-06]
+      x-invariant: Only returns data when all components have at least one FINALIZED time-study session or a direct-entry time_study record. Partial data returns 200 with a completionStatus flag.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+      responses:
+        '200': {description: SMV summary per component and total, content: {application/json: {schema: {$ref: '#/components/schemas/SmvSummary'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  # ─── GAP-FIX 2: Stopwatch Time Study Sessions ─────────────────────────────
+  /time-study-sessions:
+    post:
+      tags: [samples-rates]
+      operationId: createTimeStudySession
+      summary: Open a stopwatch session for one component
+      x-source-ids: [FR-4.2]
+      x-roles: [SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Only one OPEN session allowed per (revision, component) at a time. Starting a new session while one is open returns 409 INVALID_STATE.
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TimeStudySessionRequest'}}}}
+      responses:
+        '201': {description: Opened session, content: {application/json: {schema: {$ref: '#/components/schemas/TimeStudySession'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /time-study-sessions/{sessionId}/observations:
+    post:
+      tags: [samples-rates]
+      operationId: addTimeStudyObservation
+      summary: Record one stopwatch lap (tap stop)
+      x-source-ids: [FR-4.2]
+      x-roles: [SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Session must be OPEN. observedDurationMs > 0. ratingFactor defaults to 100 (normal pace). Append-only.
+      parameters:
+        - {name: sessionId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ObservationRequest'}, example: {observedDurationMs: 47300, ratingFactor: 100, excludeFlag: false}}}}
+      responses:
+        '201': {description: Recorded observation, content: {application/json: {schema: {$ref: '#/components/schemas/Observation'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+  /time-study-sessions/{sessionId}/observations/{observationId}/exclude:
+    post:
+      tags: [samples-rates]
+      operationId: excludeObservation
+      summary: Mark an outlier observation as excluded from SMV calculation
+      x-source-ids: [FR-4.2]
+      x-roles: [SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Session must be OPEN. Does not delete — sets exclude_flag=true with mandatory reason. Excluded observations remain in audit history.
+      parameters:
+        - {name: sessionId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {name: observationId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ExcludeObservationRequest'}}}}
+      responses:
+        '200': {description: Updated observation, content: {application/json: {schema: {$ref: '#/components/schemas/Observation'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+  /time-study-sessions/{sessionId}/finalize:
+    post:
+      tags: [samples-rates]
+      operationId: finalizeTimeStudySession
+      summary: Calculate SMV from observations and close the session
+      x-source-ids: [FR-4.2]
+      x-roles: [SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Requires at least 3 non-excluded observations. Calculates SMV = (mean of non-excluded basic times × ratingFactor/100) × (1 + allowanceFraction). Creates a time_studies record linked to this session. Session transitions to FINALIZED and becomes immutable.
+      parameters:
+        - {name: sessionId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/FinalizeSessionRequest'}, example: {method: MEAN_RATING_FACTOR, allowanceFraction: '0.15'}}}}
+      responses:
+        '200': {description: Finalized session with calculated SMV, content: {application/json: {schema: {$ref: '#/components/schemas/TimeStudySession'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /time-study-sessions/{sessionId}/abandon:
+    post:
+      tags: [samples-rates]
+      operationId: abandonTimeStudySession
+      summary: Discard an OPEN session without creating a time study record
+      x-source-ids: [FR-4.2]
+      x-roles: [SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Session transitions to ABANDONED. Observations are retained in audit history but excluded from SMV. A new OPEN session for the same component may then be started.
+      parameters:
+        - {name: sessionId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/AbandonRequest'}}}}
+      responses:
+        '200': {description: Abandoned session, content: {application/json: {schema: {$ref: '#/components/schemas/TimeStudySession'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
+  /samples/{sampleId}/revisions/{revisionId}/time-study-sessions:
+    get:
+      tags: [samples-rates]
+      operationId: listTimeStudySessions
+      summary: List all time study sessions for a revision (all statuses)
+      x-source-ids: [FR-4.2]
+      x-roles: [Owner, SampleTeam, ProductionHead]
+      x-view: [VIEW-02]
+      x-invariant: Returns sessions in created_at descending order. OPEN, FINALIZED, and ABANDONED sessions all visible to authorized roles.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: status, in: query, required: false, schema: {type: string, enum: [OPEN, FINALIZED, ABANDONED]}}
+      responses:
+        '200': {description: Sessions list, content: {application/json: {schema: {$ref: '#/components/schemas/TimeStudySessionPage'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  # ─── GAP-FIX 3: Fitting Notes & Tech Pack Attachments ─────────────────────
+  /samples/{sampleId}/revisions/{revisionId}/notes:
+    get:
+      tags: [samples-rates]
+      operationId: listRevisionNotes
+      summary: List all notes for a sample revision
+      x-source-ids: [FR-4.1]
+      x-roles: [Owner, SampleTeam, ProductionHead, MaklonClient]
+      x-view: [VIEW-02]
+      x-invariant: MaklonClient sees only CLIENT_FEEDBACK and FITTING_NOTE types. Append-only — no delete.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: noteType, in: query, required: false, schema: {type: string, enum: [FITTING_NOTE, CHANGE_REASON, CLIENT_FEEDBACK, INTERNAL_MEMO]}}
+      responses:
+        '200': {description: Notes list, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionNotePage'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [samples-rates]
+      operationId: addRevisionNote
+      summary: Append a fitting note, change reason, or client feedback to a revision
+      x-source-ids: [FR-4.1]
+      x-roles: [Owner, SampleTeam, MaklonClient]
+      x-view: [VIEW-02]
+      x-invariant: MaklonClient may only post CLIENT_FEEDBACK. Append-only — posted notes cannot be edited or deleted. Locked revision still accepts notes (post-approval corrections are valid business events).
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionNoteRequest'}, example: {noteType: FITTING_NOTE, body: 'Kerah kurang lebar 1.5cm, tambah kelonggaran pada pola kerah depan. Disetujui manekin fit-01.'}}}}
+      responses:
+        '201': {description: Created note, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionNote'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /samples/{sampleId}/revisions/{revisionId}/attachments:
+    get:
+      tags: [samples-rates]
+      operationId: listRevisionAttachments
+      summary: List Tech Pack and other files attached to a revision
+      x-source-ids: [FR-4.1]
+      x-roles: [Owner, SampleTeam, ProductionHead, MaklonClient]
+      x-view: [VIEW-02]
+      x-invariant: Only verified file_objects are listed. MaklonClient scope applies.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: attachmentType, in: query, required: false, schema: {type: string, enum: [TECH_PACK, SKETCH, PHOTO, MEASUREMENT_SHEET, OTHER]}}
+      responses:
+        '200': {description: Attachments list, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionAttachmentPage'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      tags: [samples-rates]
+      operationId: attachFileToRevision
+      summary: Link an already-uploaded verified file to a revision as Tech Pack or sketch
+      x-source-ids: [FR-4.1]
+      x-roles: [SampleTeam, Owner]
+      x-view: [VIEW-02]
+      x-invariant: file_object_id must reference a VERIFIED file_object within the same tenant. One file cannot be linked twice to the same revision (unique constraint). Locked revisions still accept new attachments.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionAttachmentRequest'}, example: {fileObjectId: '77777777-7777-4777-8777-777777777777', attachmentType: TECH_PACK, label: 'Tech Pack v2 — Kemeja Polo Snohund'}}}}
+      responses:
+        '201': {description: Linked attachment, content: {application/json: {schema: {$ref: '#/components/schemas/RevisionAttachment'}}}}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /samples/{sampleId}/revisions/{revisionId}/attachments/{attachmentId}:
+    delete:
+      tags: [samples-rates]
+      operationId: detachFileFromRevision
+      summary: Unlink an attachment from an unlocked revision
+      x-source-ids: [FR-4.1]
+      x-roles: [SampleTeam, Owner]
+      x-view: [VIEW-02]
+      x-invariant: Unlinks the attachment record only; the underlying file_object is NOT deleted. Locked revisions return 409 INVALID_STATE.
+      parameters:
+        - {$ref: '#/components/parameters/SampleId'}
+        - {$ref: '#/components/parameters/RevisionId'}
+        - {name: attachmentId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
+      responses:
+        '204': {description: Unlinked}
+        '401': {$ref: '#/components/responses/AuthRequired'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/InvalidState'}
   /rate-card-catalog:
     get:
       <<: *read
@@ -814,6 +1117,7 @@ components:
     bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
     serviceAuth: {type: http, scheme: bearer, bearerFormat: service-token}
   parameters:
+    RevisionId: {name: revisionId, in: path, required: true, schema: {$ref: '#/components/schemas/Uuid'}}
     IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 16, maxLength: 200}}
     Cursor: {name: cursor, in: query, required: false, schema: {type: string}}
     PageSize: {name: pageSize, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}
@@ -858,7 +1162,7 @@ components:
     AuditEvent: {type: object, required: [id, action, entityType, occurredAt], properties: {id: {$ref: '#/components/schemas/Uuid'}, action: {type: string}, entityType: {type: string}, occurredAt: {$ref: '#/components/schemas/Timestamp'}}}
     SampleRequest: {type: object, required: [articleCode], properties: {articleCode: {type: string}, orderId: {$ref: '#/components/schemas/Uuid'}}}
     Sample: {allOf: [{$ref: '#/components/schemas/SampleRequest'}, {type: object, required: [id, status], properties: {id: {$ref: '#/components/schemas/Uuid'}, status: {type: string}, approvedRevisionId: {$ref: '#/components/schemas/Uuid'}}}]}
-    RevisionRequest: {type: object, required: [spec], properties: {spec: {$ref: '#/components/schemas/SampleSpec'}}}
+    RevisionRequest: {type: object, required: [spec], properties: {spec: {$ref: '#/components/schemas/SampleSpec'}, changeReason: {type: string, maxLength: 1000, description: 'Alasan perubahan dari revisi sebelumnya (wajib diisi jika bukan revisi pertama). Contoh: Kerah diperlebar 1.5cm berdasarkan feedback fitting 2026-10-14.'}}}
     SampleSpec: {type: object, required: [fabricCode, components], properties: {fabricCode: {type: string}, stitchNotes: {type: string}, components: {type: array, minItems: 1, items: {$ref: '#/components/schemas/SampleComponent'}}}}
     SampleComponent: {type: object, required: [componentCode, seamType], properties: {componentCode: {type: string}, seamType: {type: string}, notes: {type: string}}}
     Revision: {allOf: [{$ref: '#/components/schemas/RevisionRequest'}, {type: object, required: [id, sampleId, revisionNo], properties: {id: {$ref: '#/components/schemas/Uuid'}, sampleId: {$ref: '#/components/schemas/Uuid'}, revisionNo: {type: integer}}}]}
@@ -945,3 +1249,138 @@ components:
     PeriodPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/Period'}}}}
     FinancialRulePage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/FinancialRule'}}}}
     ClientInvoicePage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/ClientInvoice'}}}}
+    # ─── GAP-FIX 1 Schemas: BOM per Revision ────────────────────────────────
+    BomItemRequest:
+      type: object
+      required: [sku, materialDescription, quantity, unit, category]
+      properties:
+        sku: {type: string, minLength: 1, maxLength: 100, description: Kode material, unik per revisi}
+        materialDescription: {type: string, minLength: 1, maxLength: 300, description: 'Nama/deskripsi material. Contoh: Kain TC 65/35 220gsm warna navy'}
+        quantity: {$ref: '#/components/schemas/Quantity'}
+        unit: {type: string, enum: [METER, PIECE, KILOGRAM, ROLL]}
+        category: {type: string, enum: [MAIN_FABRIC, LINING, INTERLINING, TRIM, ACCESSORY, THREAD, OTHER]}
+        supplierRef: {type: string, maxLength: 200, nullable: true, description: Referensi supplier opsional}
+        sortOrder: {type: integer, minimum: 0, default: 0}
+    BomItem:
+      allOf:
+        - {$ref: '#/components/schemas/BomItemRequest'}
+        - type: object
+          required: [id, sampleRevisionId]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            sampleRevisionId: {$ref: '#/components/schemas/Uuid'}
+    BomItemPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/BomItem'}}, nextCursor: {type: string, nullable: true}}}
+    SmvComponentEntry:
+      type: object
+      required: [componentCode, smvMs, observationCount, method, completionStatus]
+      properties:
+        componentCode: {type: string}
+        smvMs: {type: integer, minimum: 0, description: Standard Minute Value dalam milidetik}
+        smvFormatted: {type: string, description: 'SMV dalam format MM:SS.mmm untuk display. Contoh: 00:47.3'}
+        observationCount: {type: integer, minimum: 0}
+        method: {type: string, enum: [MEAN_RATING_FACTOR, MEDIAN, DIRECT_ENTRY]}
+        completionStatus: {type: string, enum: [COMPLETE, MISSING, PARTIAL], description: 'COMPLETE = ada finalized session atau direct entry. MISSING = belum ada data sama sekali. PARTIAL = ada OPEN session tapi belum finalized.'}
+    SmvSummary:
+      type: object
+      required: [sampleRevisionId, components, totalSmvMs, overallCompletionStatus]
+      properties:
+        sampleRevisionId: {$ref: '#/components/schemas/Uuid'}
+        components: {type: array, items: {$ref: '#/components/schemas/SmvComponentEntry'}}
+        totalSmvMs: {type: integer, minimum: 0, description: Total SMV semua komponen dalam milidetik}
+        totalSmvFormatted: {type: string, description: 'Total SMV format MM:SS. Contoh: 08:23.7'}
+        overallCompletionStatus: {type: string, enum: [COMPLETE, PARTIAL, MISSING]}
+    # ─── GAP-FIX 2 Schemas: Stopwatch Sessions ───────────────────────────────
+    TimeStudySessionRequest:
+      type: object
+      required: [sampleRevisionId, componentCode, method]
+      properties:
+        sampleRevisionId: {$ref: '#/components/schemas/Uuid'}
+        componentCode: {type: string, minLength: 1, maxLength: 100}
+        operatorRef: {type: string, maxLength: 200, nullable: true, description: Nama atau kode penjahit yang diukur (opsional, untuk konteks)}
+        method: {type: string, enum: [MEAN_RATING_FACTOR, MEDIAN], description: 'Metode kalkulasi SMV yang akan digunakan saat finalisasi'}
+    TimeStudySession:
+      allOf:
+        - {$ref: '#/components/schemas/TimeStudySessionRequest'}
+        - type: object
+          required: [id, status, observationCount]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            status: {type: string, enum: [OPEN, FINALIZED, ABANDONED]}
+            observationCount: {type: integer, minimum: 0}
+            finalizedSmvMs: {type: integer, nullable: true, description: Diisi setelah FINALIZED}
+            finalizedSmvFormatted: {type: string, nullable: true, description: 'Format MM:SS.mmm, diisi setelah FINALIZED'}
+            createdAt: {$ref: '#/components/schemas/Timestamp'}
+            finalizedAt: {$ref: '#/components/schemas/Timestamp', nullable: true}
+    TimeStudySessionPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/TimeStudySession'}}, nextCursor: {type: string, nullable: true}}}
+    ObservationRequest:
+      type: object
+      required: [observedDurationMs]
+      properties:
+        observedDurationMs: {type: integer, minimum: 1, description: Durasi observasi dalam milidetik (hasil tekan tombol STOP)}
+        ratingFactor: {type: integer, minimum: 50, maximum: 150, default: 100, description: 'Faktor kecepatan operator: 100 = normal, 120 = lebih cepat dari standar, 80 = lebih lambat'}
+        excludeFlag: {type: boolean, default: false}
+        excludeReason: {type: string, maxLength: 500, nullable: true}
+    Observation:
+      allOf:
+        - {$ref: '#/components/schemas/ObservationRequest'}
+        - type: object
+          required: [id, sessionId, sequenceNo, capturedAt]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            sessionId: {$ref: '#/components/schemas/Uuid'}
+            sequenceNo: {type: integer, minimum: 1}
+            basicTimeMs: {type: integer, description: 'observedDurationMs × (ratingFactor/100). Dihitung server-side.'}
+            capturedAt: {$ref: '#/components/schemas/Timestamp'}
+    ExcludeObservationRequest:
+      type: object
+      required: [excludeReason]
+      properties:
+        excludeReason: {type: string, minLength: 5, maxLength: 500, description: Wajib diisi saat menandai outlier}
+    FinalizeSessionRequest:
+      type: object
+      required: [method]
+      properties:
+        method: {type: string, enum: [MEAN_RATING_FACTOR, MEDIAN]}
+        allowanceFraction: {type: string, pattern: '^0(\.[0-9]{1,4})?$', default: '0.15', description: 'Persentase allowance (istirahat, personal, fatigue) dalam bentuk desimal. Default 0.15 = 15%.'}
+    AbandonRequest:
+      type: object
+      properties:
+        reason: {type: string, maxLength: 500}
+    # ─── GAP-FIX 3 Schemas: Fitting Notes & Tech Pack Attachments ────────────
+    RevisionNoteRequest:
+      type: object
+      required: [noteType, body]
+      properties:
+        noteType: {type: string, enum: [FITTING_NOTE, CHANGE_REASON, CLIENT_FEEDBACK, INTERNAL_MEMO]}
+        body: {type: string, minLength: 5, maxLength: 5000, description: 'Isi catatan. Contoh untuk FITTING_NOTE: Kerah kurang lebar 1.5cm berdasarkan feedback fitting tanggal 2026-10-14 menggunakan manekin fit-01.'}
+    RevisionNote:
+      allOf:
+        - {$ref: '#/components/schemas/RevisionNoteRequest'}
+        - type: object
+          required: [id, sampleRevisionId, createdBy, createdAt]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            sampleRevisionId: {$ref: '#/components/schemas/Uuid'}
+            createdBy: {$ref: '#/components/schemas/Uuid'}
+            createdAt: {$ref: '#/components/schemas/Timestamp'}
+    RevisionNotePage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/RevisionNote'}}, nextCursor: {type: string, nullable: true}}}
+    RevisionAttachmentRequest:
+      type: object
+      required: [fileObjectId, attachmentType]
+      properties:
+        fileObjectId: {$ref: '#/components/schemas/Uuid'}
+        attachmentType: {type: string, enum: [TECH_PACK, SKETCH, PHOTO, MEASUREMENT_SHEET, OTHER]}
+        label: {type: string, maxLength: 200, nullable: true, description: 'Label deskriptif opsional. Contoh: Tech Pack v2 — Kemeja Polo Snohund'}
+    RevisionAttachment:
+      allOf:
+        - {$ref: '#/components/schemas/RevisionAttachmentRequest'}
+        - type: object
+          required: [id, sampleRevisionId, createdAt]
+          properties:
+            id: {$ref: '#/components/schemas/Uuid'}
+            sampleRevisionId: {$ref: '#/components/schemas/Uuid'}
+            fileName: {type: string}
+            contentType: {type: string}
+            sizeBytes: {type: integer}
+            createdAt: {$ref: '#/components/schemas/Timestamp'}
+    RevisionAttachmentPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/RevisionAttachment'}}, nextCursor: {type: string, nullable: true}}}
