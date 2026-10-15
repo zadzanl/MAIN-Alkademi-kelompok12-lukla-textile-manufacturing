@@ -1,5 +1,5 @@
 """
-Lukla Operations Copilot — Zero-Build Interactive Web Interface.
+Lukla Intelligence — Zero-Build Interactive Web Interface.
 Provides React 18 + Tailwind CSS (via CDN) web UI for direct browser testing and Playwright E2E verification.
 """
 
@@ -8,7 +8,7 @@ COPILOT_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lukla Operations Copilot</title>
+  <title>Lukla Intelligence</title>
   <!-- Tailwind CSS & React 18 via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -37,8 +37,8 @@ COPILOT_HTML = """<!DOCTYPE html>
     <div data-testid="copilot-chat" class="flex flex-col h-[680px] w-full rounded-2xl border border-neutral-200 bg-white shadow-xl overflow-hidden">
       <div class="bg-neutral-900 text-white p-4 flex items-center justify-between">
         <div>
-          <h1 class="font-semibold text-sm">Lukla Operations Copilot</h1>
-          <p class="text-xs text-neutral-400">Online / Mock LLM</p>
+          <h1 class="font-semibold text-sm">Lukla Intelligence</h1>
+          <p class="text-xs text-neutral-400">%%SUBTITLE%%</p>
         </div>
         <select data-testid="copilot-role-select" class="bg-neutral-800 text-white text-xs px-2 py-1 rounded border border-neutral-700">
           <option value="Owner">Owner</option>
@@ -110,7 +110,7 @@ COPILOT_HTML = """<!DOCTYPE html>
         setLoading(true);
 
         try {
-          const response = await fetch("/api/v1/copilot/chat", {
+          const response = await fetch("%%ENDPOINT_URL%%", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -163,10 +163,10 @@ COPILOT_HTML = """<!DOCTYPE html>
                 ✨
               </div>
               <div>
-                <h1 className="font-semibold text-sm leading-tight">Lukla Operations Copilot</h1>
+                <h1 className="font-semibold text-sm leading-tight">Lukla Intelligence</h1>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="text-[11px] text-neutral-300">Online / Mock LLM</span>
+                  <span className="text-[11px] text-neutral-300">%%SUBTITLE%%</span>
                 </div>
               </div>
             </div>
@@ -336,6 +336,13 @@ COPILOT_HTML = """<!DOCTYPE html>
 </html>
 """
 
-def get_copilot_html() -> str:
-    """Returns the zero-build React 18 CDN HTML application string."""
-    return COPILOT_HTML
+def get_copilot_html(
+    endpoint_url: str = "/api/v1/copilot/chat",
+    subtitle: str = "Online / Live & Mock LLM"
+) -> str:
+    """Returns the zero-build React 18 CDN HTML application string configured for the target endpoint."""
+    return (
+        COPILOT_HTML
+        .replace("%%ENDPOINT_URL%%", endpoint_url)
+        .replace("%%SUBTITLE%%", subtitle)
+    )

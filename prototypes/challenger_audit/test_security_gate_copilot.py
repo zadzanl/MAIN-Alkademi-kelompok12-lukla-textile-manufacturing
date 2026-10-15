@@ -751,7 +751,7 @@ def test_copilot_openapi_blueprint_validation():
 
 def main():
     print("=" * 70)
-    print("LUKLA OPERATIONAL AI COPILOT: EMPIRICAL SECURITY GATE AUDIT")
+    print("LUKLA INTELLIGENCE: EMPIRICAL SECURITY GATE AUDIT")
     print("Adversarial Security Challenger: challenger_gate_1")
     print("=" * 70)
 

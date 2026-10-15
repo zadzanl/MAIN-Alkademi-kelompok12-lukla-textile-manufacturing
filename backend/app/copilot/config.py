@@ -1,8 +1,15 @@
 import os
+from pathlib import Path
 from typing import Literal
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
+
 class CopilotSettings(BaseModel):
+    COPILOT_DEMO_MODE: bool = Field(
+        default_factory=lambda: os.getenv("COPILOT_DEMO_MODE", "false").lower() in ("true", "1", "yes")
+    )
     AI_COPILOT_ENABLED: bool = Field(
         default_factory=lambda: os.getenv("AI_COPILOT_ENABLED", "true").lower() in ("true", "1", "yes")
     )
@@ -13,10 +20,13 @@ class CopilotSettings(BaseModel):
         default_factory=lambda: float(os.getenv("COPILOT_TIMEOUT_SECONDS", "30.0"))
     )
     COPILOT_MODEL_NAME: str = Field(
-        default_factory=lambda: os.getenv("COPILOT_MODEL_NAME", "meta-llama/llama-3.3-70b-instruct:free")
+        default_factory=lambda: os.getenv(
+            "COPILOT_MODEL_NAME",
+            os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"),
+        )
     )
     COPILOT_API_KEY: str = Field(
-        default_factory=lambda: os.getenv("COPILOT_API_KEY", os.getenv("OPENROUTER_API_KEY", ""))
+        default_factory=lambda: os.getenv("COPILOT_API_KEY", os.getenv("OPENROUTER_API_KEY", "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"))
     )
     COPILOT_BASE_URL: str = Field(
         default_factory=lambda: os.getenv("COPILOT_BASE_URL", "https://openrouter.ai/api/v1")

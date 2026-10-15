@@ -1,4 +1,4 @@
-# AI Operations Copilot — Master Architectural Plan & Planning Stub
+# Lukla Intelligence — Master Architectural Plan & Planning Stub
 
 > [!IMPORTANT]
 > **REFINEMENT, SHARPENING, AND HARDENING MANDATE FOR DOWNSTREAM AGENTS:**

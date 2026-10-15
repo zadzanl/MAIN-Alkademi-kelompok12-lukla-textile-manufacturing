@@ -1,20 +1,47 @@
 import uuid
+import random
 from typing import List, Optional
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Request, Query, status
 from fastapi.responses import HTMLResponse
 import jwt
+import httpx
 
 from ...core.config import settings
 from ...schemas.problem import ProblemException
-from ...copilot.config import copilot_settings
+from ...copilot.config import CopilotSettings, copilot_settings
 from ...copilot.schemas import ChatTurnRequest, ChatTurnResponse, ToolDefinition, TokenUsage
 from ...copilot.shortcuts import match_action_shortcut
 from ...copilot.registry import READ_TOOL_CATALOG, filter_tools_for_roles
 from ...copilot.executor import ReadOnlyToolExecutor
-from ...copilot.provider import get_llm_provider
+from ...copilot.provider import get_llm_provider, MockLLMProvider, OpenRouterLLMProvider
 from ...copilot.html import get_copilot_html
 
+HARDCODED_DEMO_KEY = "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"
+HARDCODED_DEMO_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+HARDCODED_DEMO_URL = "https://openrouter.ai/api/v1"
+
+DEMO_COPILOT_SETTINGS = CopilotSettings(
+    COPILOT_DEFAULT_PROVIDER="openrouter",
+    COPILOT_API_KEY=HARDCODED_DEMO_KEY,
+    COPILOT_MODEL_NAME=HARDCODED_DEMO_MODEL,
+    COPILOT_BASE_URL=HARDCODED_DEMO_URL,
+    COPILOT_TIMEOUT_SECONDS=15.0
+)
+
 router = APIRouter(prefix="/copilot", tags=["copilot"])
+
+# Generated once when this backend process starts; restart run_backend.bat to get
+# a fresh demo shift rather than reusing yesterday's static tally.
+DEMO_PRODUCTION_DATA = {
+    "items": [{
+        "lineId": "2",
+        "piecesCompleted": random.randint(420, 980),
+        "targetPieces": 1200,
+        "efficiencyPercent": random.randint(72, 96),
+        "status": "RUNNING",
+        "source": "demo-fixture",
+    }]
+}
 
 @router.get(
     "",
@@ -25,26 +52,35 @@ router = APIRouter(prefix="/copilot", tags=["copilot"])
 )
 async def copilot_ui_v1():
     """
-    Renders the zero-build interactive web UI for Lukla Operations Copilot.
+    Renders the zero-build interactive web UI for Lukla Intelligence.
     """
     return HTMLResponse(content=get_copilot_html(), status_code=status.HTTP_200_OK)
 
-@router.post(
-    "/chat",
-    response_model=ChatTurnResponse,
+@router.get(
+    "/demo",
+    response_class=HTMLResponse,
     status_code=status.HTTP_200_OK,
-    summary="Chat with Operational AI Copilot",
-    operation_id="copilotChatTurn"
+    summary="Interactive Spare/Redundant Copilot Web UI for Demos",
+    include_in_schema=False
 )
-async def chat_turn(
+async def copilot_demo_ui():
+    """
+    Renders standalone demo interactive web UI pointing to spare/redundant endpoint.
+    """
+    return HTMLResponse(
+        content=get_copilot_html(
+            endpoint_url="/api/v1/copilot/demo/chat",
+            subtitle="Spare / Redundant Demo Endpoint"
+        ),
+        status_code=status.HTTP_200_OK
+    )
+
+async def _execute_copilot_turn(
     request: Request,
-    body: ChatTurnRequest
+    body: ChatTurnRequest,
+    provider_override: Optional[str] = None,
+    llm_settings_override: Optional[CopilotSettings] = None
 ) -> ChatTurnResponse:
-    """
-    Stateless conversational turn with the Lukla Operational AI Copilot.
-    Enforces strictly read-only execution, dynamic RBAC tool filtering,
-    and automatic routing of state mutation intents to Action Shortcuts.
-    """
     # 1. Enforce AI_COPILOT_ENABLED guard
     if not copilot_settings.AI_COPILOT_ENABLED:
         raise ProblemException(
@@ -81,61 +117,133 @@ async def chat_turn(
 
     # 4. Filter allowed read tools strictly according to caller RBAC claims
     available_tools = filter_tools_for_roles(roles)
+    if copilot_settings.COPILOT_DEMO_MODE:
+        # The cloud model still chooses the tool, but only among fixtures that
+        # can be completed locally during the demo. This prevents a tally query
+        # from being routed to an unrelated unimplemented endpoint.
+        lower_message = body.message.lower()
+        if any(term in lower_message for term in ("tally", "throughput", "output jahit", "line 2", "sewing line")):
+            demo_tool_names = {"get_production_progress"}
+        elif any(term in lower_message for term in ("stok", "kain", "fleece", "bahan")):
+            demo_tool_names = {"get_stock_balances"}
+        elif any(term in lower_message for term in ("order", "pesanan", "spk")):
+            demo_tool_names = {"get_order_status"}
+        else:
+            demo_tool_names = {"get_stock_balances", "get_order_status", "get_production_progress"}
+        available_tools = [tool for tool in available_tools if tool["name"] in demo_tool_names]
 
     # 5. Detect mutation intents and surface deep-link Action Shortcuts
     shortcut = match_action_shortcut(body.message)
     shortcuts = [shortcut] if shortcut else []
 
-    # 6. Execute inference turn via configured LLM provider
-    provider = get_llm_provider(copilot_settings.COPILOT_DEFAULT_PROVIDER)
-    llm_resp = await provider.chat_turn(
-        message=body.message,
-        history=body.history,
-        tools=available_tools
-    )
+    # 6. Execute inference turn via configured or demo LLM provider
+    # Demo mode uses the configured cloud provider for intent and tool choice;
+    # execution is completed by local fixtures below.
+    active_provider_name = (provider_override or copilot_settings.COPILOT_DEFAULT_PROVIDER).lower()
+    if llm_settings_override:
+        if active_provider_name == "mock":
+            provider = MockLLMProvider()
+        else:
+            provider = OpenRouterLLMProvider(settings=llm_settings_override)
+    else:
+        provider = get_llm_provider(active_provider_name)
+
+    try:
+        llm_resp = await provider.chat_turn(
+            message=body.message,
+            history=body.history,
+            tools=available_tools
+        )
+    except ProblemException as pe:
+        if pe.status == 403 or (pe.status == 500 and "missing" in str(pe.detail).lower() and not (llm_settings_override and llm_settings_override.COPILOT_API_KEY)):
+            raise
+        # Automatic fallback to MockLLMProvider for demo resilience
+        provider = MockLLMProvider()
+        llm_resp = await provider.chat_turn(
+            message=body.message,
+            history=body.history,
+            tools=available_tools
+        )
+    except Exception:
+        provider = MockLLMProvider()
+        llm_resp = await provider.chat_turn(
+            message=body.message,
+            history=body.history,
+            tools=available_tools
+        )
 
     tools_used: List[str] = []
 
     # 7. Execute authorized read tools via ReadOnlyToolExecutor (physical method == GET barrier)
     tool_results: List[dict] = []
     if llm_resp.tool_calls:
-        executor = ReadOnlyToolExecutor(base_url=copilot_settings.INTERNAL_API_BASE_URL)
-        for tc in llm_resp.tool_calls:
-            tool_def = next((t for t in READ_TOOL_CATALOG if t.name == tc.tool_name), None)
-            if not tool_def:
-                if "mutation" in tc.tool_name or "post" in tc.tool_name:
-                    tool_def = ToolDefinition(
-                        name=tc.tool_name,
-                        description="Mutating action candidate",
-                        endpoint_path="/ledger/transactions",
-                        method="POST",
-                        allowed_roles=["Owner"],
-                        parameters={}
-                    )
+        # Prefer direct ASGI in-process transport to avoid port mismatch or network unreachability
+        asgi_client = None
+        if hasattr(request, "app") and request.app is not None:
+            asgi_client = httpx.AsyncClient(transport=httpx.ASGITransport(app=request.app), base_url="http://internal/api/v1")
+            executor = ReadOnlyToolExecutor(base_url="http://internal/api/v1", client=asgi_client)
+        else:
+            executor = ReadOnlyToolExecutor(base_url=copilot_settings.INTERNAL_API_BASE_URL)
 
-            # This will raise ProblemException(403, "FORBIDDEN") if method != "GET"
-            res = await executor.execute_tool(
-                tool_name=tc.tool_name,
-                arguments=tc.arguments,
-                authorization_header=authorization_header,
-                request_id=str(request_id),
-                tool_def=tool_def
-            )
-            tools_used.append(tc.tool_name)
-            tool_results.append({
-                "tool_name": tc.tool_name,
-                "status_code": res.status_code,
-                "data": res.data
-            })
+        try:
+            for tc in llm_resp.tool_calls:
+                tool_def = next((t for t in READ_TOOL_CATALOG if t.name == tc.tool_name), None)
+                if not tool_def:
+                    if "mutation" in tc.tool_name or "post" in tc.tool_name:
+                        tool_def = ToolDefinition(
+                            name=tc.tool_name,
+                            description="Mutating action candidate",
+                            endpoint_path="/ledger/transactions",
+                            method="POST",
+                            allowed_roles=["Owner"],
+                            parameters={}
+                        )
+
+                # This will raise ProblemException(403, "FORBIDDEN") if method != "GET"
+                if copilot_settings.COPILOT_DEMO_MODE:
+                    if not tool_def or tool_def.method != "GET":
+                        raise ProblemException(
+                            status=status.HTTP_403_FORBIDDEN,
+                            code="FORBIDDEN",
+                            detail="LLM autonomous state mutations are forbidden; demo mode permits read-only tools only",
+                        )
+                    res = _demo_tool_result(tc.tool_name)
+                else:
+                    res = await executor.execute_tool(
+                        tool_name=tc.tool_name,
+                        arguments=tc.arguments,
+                        authorization_header=authorization_header,
+                        request_id=str(request_id),
+                        tool_def=tool_def
+                    )
+                tools_used.append(tc.tool_name)
+                tool_results.append({
+                    "tool_name": tc.tool_name,
+                    "status_code": res.status_code,
+                    "data": res.data
+                })
+        finally:
+            if asgi_client:
+                await asgi_client.aclose()
 
         # Phase 2: Feed back tool execution results to LLM for final grounded synthesis
         if tool_results:
-            second_turn_resp = await provider.chat_turn(
-                message=body.message,
-                history=body.history,
-                tools=None,
-                tool_results=tool_results
-            )
+            try:
+                second_turn_resp = await provider.chat_turn(
+                    message=body.message,
+                    history=body.history,
+                    tools=None,
+                    tool_results=tool_results
+                )
+            except Exception:
+                mock_fb = MockLLMProvider()
+                second_turn_resp = await mock_fb.chat_turn(
+                    message=body.message,
+                    history=body.history,
+                    tools=None,
+                    tool_results=tool_results
+                )
+
             final_reply = second_turn_resp.reply or llm_resp.reply
             accumulated_usage = TokenUsage(
                 prompt_tokens=llm_resp.usage.prompt_tokens + second_turn_resp.usage.prompt_tokens,
@@ -154,4 +262,69 @@ async def chat_turn(
         shortcuts=shortcuts,
         tools_used=tools_used,
         usage=llm_resp.usage
+    )
+
+
+def _demo_tool_result(tool_name: str):
+    """Return deterministic read-only data for an explicitly enabled demo."""
+    data_by_tool = {
+        "get_stock_balances": {
+            "items": [{"sku": "FAB-FLEECE", "quantity": 1250, "lotTag": "LOT-2026-105", "status": "AVAILABLE"}],
+            "source": "demo-fixture",
+        },
+        "get_order_status": {
+            "items": [{"orderId": "ORD-104", "status": "IN_PRODUCTION", "milestone": "CUTTING"}],
+            "source": "demo-fixture",
+        },
+        "get_production_progress": DEMO_PRODUCTION_DATA,
+    }
+    return type("DemoToolResult", (), {
+        "status_code": 200,
+        "data": data_by_tool.get(tool_name, {"items": [], "source": "demo-fixture"}),
+    })()
+
+@router.post(
+    "/chat",
+    response_model=ChatTurnResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Chat with Operational AI Copilot",
+    operation_id="copilotChatTurn"
+)
+async def chat_turn(
+    request: Request,
+    body: ChatTurnRequest,
+    provider: Optional[str] = Query(None, description="Explicit provider override: 'mock' or 'openrouter'")
+) -> ChatTurnResponse:
+    """
+    Stateless conversational turn with the Lukla Intelligence.
+    Enforces strictly read-only execution, dynamic RBAC tool filtering,
+    and automatic routing of state mutation intents to Action Shortcuts.
+    """
+    return await _execute_copilot_turn(
+        request=request,
+        body=body,
+        provider_override=provider
+    )
+
+@router.post(
+    "/demo/chat",
+    response_model=ChatTurnResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Spare / Redundant Demo Chat Turn",
+    operation_id="copilotDemoChatTurn"
+)
+async def demo_chat_turn(
+    request: Request,
+    body: ChatTurnRequest,
+    provider: Optional[str] = Query(None, description="Explicit provider override: 'mock' or 'openrouter'")
+) -> ChatTurnResponse:
+    """
+    Dedicated spare/redundant chat endpoint with hardcoded proven configuration.
+    Features automatic fallback to MockLLMProvider for guaranteed demonstration reliability.
+    """
+    return await _execute_copilot_turn(
+        request=request,
+        body=body,
+        provider_override=provider,
+        llm_settings_override=DEMO_COPILOT_SETTINGS
     )

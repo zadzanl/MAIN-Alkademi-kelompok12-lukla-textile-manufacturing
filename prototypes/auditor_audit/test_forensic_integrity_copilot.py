@@ -41,7 +41,7 @@ def test_copilot_contract_openapi_structure():
     # 1. OpenAPI version and info
     assert spec.get("openapi") == "3.1.0", f"Expected openapi 3.1.0, got {spec.get('openapi')}"
     info = spec.get("info", {})
-    assert "Lukla Operational AI Copilot API" in info.get("title", ""), "Title mismatch"
+    assert "Lukla Intelligence API" in info.get("title", ""), "Title mismatch"
     assert info.get("version") == "1.0.0-contract", "Version mismatch"
 
     # 2. Paths and Operation

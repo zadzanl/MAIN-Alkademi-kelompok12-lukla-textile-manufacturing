@@ -1,4 +1,4 @@
-# Change Proposal: AI Operations Copilot Scaffolding & Planning Stub
+# Change Proposal: Lukla Intelligence Scaffolding & Planning Stub
 
 > [!IMPORTANT]
 > **HANDOFF DIRECTIVE FOR DOWNSTREAM AGENTS / ENGINEERS:**

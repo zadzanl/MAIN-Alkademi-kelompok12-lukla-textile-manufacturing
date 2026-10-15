@@ -9,6 +9,10 @@ from backend.app.copilot.registry import filter_tools_for_roles, READ_TOOL_CATAL
 from backend.app.copilot.shortcuts import match_action_shortcut
 from backend.app.copilot.executor import ReadOnlyToolExecutor
 
+@pytest.fixture(autouse=True)
+def ensure_mock_provider(monkeypatch):
+    monkeypatch.setattr(copilot_settings, "COPILOT_DEFAULT_PROVIDER", "mock")
+
 @pytest.fixture
 def client():
     return TestClient(app)
@@ -165,7 +169,7 @@ def test_copilot_web_ui_returns_200_html(client):
     assert resp_root.status_code == 200
     assert "text/html" in resp_root.headers.get("content-type", "")
     html = resp_root.text
-    assert "Lukla Operations Copilot" in html
+    assert "Lukla Intelligence" in html
     assert 'data-testid="copilot-chat"' in html
     assert 'data-testid="copilot-role-select"' in html
     assert 'data-testid="copilot-input"' in html
@@ -249,4 +253,102 @@ def test_openrouter_provider_mocked_turn(monkeypatch):
     assert "https://openrouter.ai/api/v1/chat/completions" in call_args[0][0]
     assert call_args[1]["headers"]["Authorization"] == "Bearer sk-or-v1-testkey12345"
 
+def test_copilot_stock_inquiry_clean_synthesis_without_json_error(client):
+    """
+    Test 11: Inquiry about fleece stock invokes /api/v1/stock via ASGI transport,
+    synthesizes real available lot quantities, and contains NO raw JSON problem dumps.
+    """
+    response = client.post(
+        "/api/v1/copilot/chat",
+        json={"message": "Berapa stok kain fleece saat ini?"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    reply = data["reply"]
 
+    # Verify no raw JSON or RFC 7807 404 dumps leaked into response
+    assert "VALIDATION_ERROR" not in reply
+    assert "Not Found" not in reply
+    assert '{"type"' not in reply
+    assert "/api/v1/warehouse/stock" not in reply
+
+    # Verify real synthesized data from /stock route
+    assert "1,250" in reply
+    assert "LOT-2026-105" in reply
+    assert "get_stock_balances" in data["tools_used"]
+
+def test_copilot_tool_error_degradation_notice():
+    """
+    Test 12: When a tool returns a non-200 error payload, provider returns an honest
+    operational degradation notice and never claims inventory is verified or sufficient.
+    """
+    import asyncio
+    from backend.app.copilot.provider import MockLLMProvider
+
+    provider = MockLLMProvider()
+    error_tool_results = [
+        {
+            "tool_name": "get_stock_balances",
+            "status_code": 404,
+            "data": {
+                "type": "about:blank",
+                "title": "Not Found",
+                "status": 404,
+                "code": "VALIDATION_ERROR",
+                "detail": "Not Found",
+                "instance": "/api/v1/warehouse/stock"
+            }
+        }
+    ]
+
+    res = asyncio.run(provider.chat_turn(
+        message="Berapa sisa kain fleece?",
+        tool_results=error_tool_results
+    ))
+
+    # Must NOT claim verified or sufficient when tool returned 404
+    assert "terverifikasi" not in res.reply.lower()
+    assert "mencukupi" not in res.reply.lower()
+    assert "tidak dapat diambil" in res.reply.lower() or "galat" in res.reply.lower()
+
+def test_copilot_demo_ui_endpoints(client):
+    """
+    Test 13: GET /copilot/demo and GET /api/v1/copilot/demo render the interactive
+    zero-build demo UI configured for the spare redundant chat endpoint.
+    """
+    resp1 = client.get("/copilot/demo")
+    assert resp1.status_code == 200
+    assert "Spare / Redundant Demo Endpoint" in resp1.text
+    assert "/api/v1/copilot/demo/chat" in resp1.text
+
+    resp2 = client.get("/api/v1/copilot/demo")
+    assert resp2.status_code == 200
+    assert "Spare / Redundant Demo Endpoint" in resp2.text
+    assert "/api/v1/copilot/demo/chat" in resp2.text
+
+def test_copilot_demo_chat_endpoint(client):
+    """
+    Test 14: POST /api/v1/copilot/demo/chat processes inquiries with hardcoded fallback configuration.
+    """
+    resp = client.post(
+        "/api/v1/copilot/demo/chat",
+        json={"message": "Berapa stok kain fleece?"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "reply" in data
+    assert "stok kain fleece" in data["reply"].lower()
+    assert "get_stock_balances" in data["tools_used"]
+
+def test_copilot_provider_query_param_override(client):
+    """
+    Test 15: Passing ?provider=mock forces MockLLMProvider execution regardless of environment.
+    """
+    resp = client.post(
+        "/api/v1/copilot/chat?provider=mock",
+        json={"message": "Tolong potong kain order ORD-104"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["shortcuts"]) > 0
+    assert data["shortcuts"][0]["url"] == "/cutting/new?orderId=ORD-104"

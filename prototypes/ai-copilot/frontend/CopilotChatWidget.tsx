@@ -98,7 +98,7 @@ export const CopilotChatWidget: React.FC<CopilotChatWidgetProps> = ({
       {/* Header */}
       <div className="bg-neutral-900 text-white p-4 flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-sm">Lukla Operations Copilot</h2>
+          <h2 className="font-semibold text-sm">Lukla Intelligence</h2>
           <p className="text-xs text-neutral-400">Strict Read-Only Intelligence</p>
         </div>
         <div className="flex items-center gap-1.5">

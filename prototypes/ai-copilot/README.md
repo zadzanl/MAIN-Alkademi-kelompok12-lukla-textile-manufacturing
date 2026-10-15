@@ -1,4 +1,4 @@
-# Prototype Spike: Lukla Operational AI Copilot
+# Prototype Spike: Lukla Intelligence
 
 > **Status:** Experimental Breadth-First-Search (BFS) Prototype  
 > **Location:** `prototypes/ai-copilot/`  
