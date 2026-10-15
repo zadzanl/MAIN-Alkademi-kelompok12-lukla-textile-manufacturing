@@ -34,7 +34,7 @@ class PeriodRequest(ContractModel):
     ends_on: date
     timezone: Literal["Asia/Jakarta"]
     cutoff_local: str = Field(pattern=CUTOFF_LOCAL_PATTERN)
-    rule_version: str
+    rule_version: UUID
 
 
 class Period(PeriodRequest):
