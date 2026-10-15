@@ -41,7 +41,7 @@ def period_payload() -> dict[str, Any]:
         "endsOn": "2026-10-18",
         "timezone": "Asia/Jakarta",
         "cutoffLocal": "12:00:00",
-        "ruleVersion": "v1",
+        "ruleVersion": "44444444-4444-4444-8444-444444444444",
     }
 
 
