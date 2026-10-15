@@ -27,6 +27,42 @@ uvicorn backend.sampling-spec-rnd.src.api.routes:app --host 0.0.0.0 --port 8000 
 
 The API will be available at `http://localhost:8000`
 
+## Portal Authentication (Prototype)
+
+Internal-user auth for the PT Luka portal: registration with Admin IT verification, password login
+by employee ID / NIK / email / phone, password change, and OTP-based recovery.
+
+- **Storage**: in-memory (`src/services/auth_store.py`); resets on restart. Passwords use stdlib
+  `hashlib.scrypt`; NIK/KTP is stored only as a SHA-256 lookup hash + masked last-4.
+- **No new dependencies**: email uses stdlib `smtplib`; tokens/OTPs use `secrets`.
+- **Email**: with no `SMTP_HOST`, the OTP is written to the backend log (`dev-log` mode).
+
+Endpoints (prefix `/api/auth`):
+
+```
+POST /register            ajukan akun (status pending)
+POST /login               identifier + password → access token + actor
+POST /logout              cabut sesi (Bearer)
+GET  /me                  konteks aktor (Bearer)
+POST /change-password     ganti password (Bearer)
+POST /forgot-password     kirim OTP (respons generik)
+POST /reset-password      setel ulang password dengan OTP
+GET  /admin/registrations daftar pengajuan pending (admin)
+POST /admin/registrations/{id}/approve|reject (admin)
+GET  /health              status modul + mode email
+```
+
+Default Admin IT seed (override via `.env`): `admin@luka.local` / `Admin#12345`.
+
+**"Did it work?" check** — with the server running:
+
+```bash
+curl http://localhost:8009/api/auth/health
+# → {"status":"healthy","module":"portal-auth","email_mode":"dev-log"}
+```
+
+Run the auth tests: `pytest tests/test_auth.py -q`.
+
 ## Project Structure
 
 ```

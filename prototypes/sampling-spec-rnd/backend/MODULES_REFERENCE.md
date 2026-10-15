@@ -299,13 +299,13 @@ Use when integrating from external systems/frontend:
 import requests
 
 response = requests.post(
-    'http://localhost:8000/api/sampling-spec-rnd/studies/create',
+    "http://localhost:8000/api/sampling-spec-rnd/studies/create",
     params={
-        'tenant_id': 'default',
-        'process_id': 'proc_001',
-        'process_name': 'Assembly A',
-        'operator_id': 'op_001'
-    }
+        "tenant_id": "default",
+        "process_id": "proc_001",
+        "process_name": "Assembly A",
+        "operator_id": "op_001",
+    },
 )
 ```
 
@@ -315,12 +315,10 @@ For batch operations:
 ```python
 from concurrent.futures import ThreadPoolExecutor
 
+
 def batch_process_samples(study_id, samples):
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [
-            executor.submit(workflow.add_time_sample, study_id, s)
-            for s in samples
-        ]
+        futures = [executor.submit(workflow.add_time_sample, study_id, s) for s in samples]
         results = [f.result() for f in futures]
     return results
 ```
@@ -376,6 +374,7 @@ def test_time_study_lifecycle():
     assert study.start_study()
     assert study.status == StudyStatus.IN_PROGRESS
 
+
 # Integration tests for workflow
 def test_workflow_integration():
     workflow = SamplingRnDWorkflow()
@@ -383,9 +382,10 @@ def test_workflow_integration():
     workflow.start_time_study(study.study_id)
     # ... add samples, complete
 
+
 # E2E tests for API
 def test_api_create_study(client):
-    response = client.post('/api/sampling-spec-rnd/studies/create', ...)
+    response = client.post("/api/sampling-spec-rnd/studies/create", ...)
     assert response.status_code == 200
 ```
 

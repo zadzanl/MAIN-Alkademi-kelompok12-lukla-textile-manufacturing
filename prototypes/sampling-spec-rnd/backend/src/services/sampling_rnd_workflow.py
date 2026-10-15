@@ -3,19 +3,18 @@ Sampling & Spec R&D Workflow Service
 Orchestrates time study and specification tracking workflows
 """
 
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-import statistics
-from ..models.time_study_recorder import TimeStudyRecorder, TimeSample, StudyStatus
-from ..models.spec_version_tracker import SpecVersionTracker, SpecChange, SpecDrift, ChangeType
+from typing import Any
+
+from ..models.spec_version_tracker import ChangeType, SpecChange, SpecDrift, SpecVersionTracker
+from ..models.time_study_recorder import StudyStatus, TimeSample, TimeStudyRecorder
 
 
 class SamplingRnDWorkflow:
     """Main workflow orchestrator for sampling and spec R&D"""
 
-    def __init__(self):
-        self.active_studies: Dict[str, TimeStudyRecorder] = {}
-        self.active_specs: Dict[str, SpecVersionTracker] = {}
+    def __init__(self) -> None:
+        self.active_studies: dict[str, TimeStudyRecorder] = {}
+        self.active_specs: dict[str, SpecVersionTracker] = {}
 
     # ==================== TIME STUDY OPERATIONS ====================
 
@@ -38,7 +37,7 @@ class SamplingRnDWorkflow:
         self.active_studies[study.study_id] = study
         return study
 
-    def start_time_study(self, study_id: str) -> Tuple[bool, str]:
+    def start_time_study(self, study_id: str) -> tuple[bool, str]:
         """Start a time study"""
         if study_id not in self.active_studies:
             return False, "Study not found"
@@ -53,10 +52,10 @@ class SamplingRnDWorkflow:
         study_id: str,
         cycle_time_ms: float,
         element_name: str,
-        observations: Dict[str, Any] = None,
+        observations: dict[str, Any] | None = None,
         is_abnormal: bool = False,
         notes: str = "",
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Add a time sample to a study"""
         if study_id not in self.active_studies:
             return False, "Study not found"
@@ -76,7 +75,7 @@ class SamplingRnDWorkflow:
             return True, f"Sample added. Progress: {study.total_cycles}/{study.target_sample_size}"
         return False, "Cannot add sample to study in current status"
 
-    def complete_time_study(self, study_id: str) -> Tuple[bool, str]:
+    def complete_time_study(self, study_id: str) -> tuple[bool, str]:
         """Complete a time study"""
         if study_id not in self.active_studies:
             return False, "Study not found"
@@ -85,9 +84,13 @@ class SamplingRnDWorkflow:
         if study.complete_study():
             result = self._analyze_study(study)
             return True, f"Study completed. {result}"
-        return False, f"Cannot complete: need at least 1 sample (current: {len(study.samples)}, status: {study.status.value})"
+        return (
+            False,
+            "Cannot complete: need at least 1 sample "
+            f"(current: {len(study.samples)}, status: {study.status.value})",
+        )
 
-    def pause_time_study(self, study_id: str) -> Tuple[bool, str]:
+    def pause_time_study(self, study_id: str) -> tuple[bool, str]:
         """Pause a time study"""
         if study_id not in self.active_studies:
             return False, "Study not found"
@@ -97,7 +100,7 @@ class SamplingRnDWorkflow:
             return True, f"Study {study_id} paused"
         return False, "Cannot pause study in current status"
 
-    def resume_time_study(self, study_id: str) -> Tuple[bool, str]:
+    def resume_time_study(self, study_id: str) -> tuple[bool, str]:
         """Resume a paused time study"""
         if study_id not in self.active_studies:
             return False, "Study not found"
@@ -107,14 +110,28 @@ class SamplingRnDWorkflow:
             return True, f"Study {study_id} resumed"
         return False, "Cannot resume study in current status"
 
-    def get_study_statistics(self, study_id: str) -> Dict[str, Any]:
+    def get_study_statistics(self, study_id: str) -> dict[str, Any]:
         """Get statistical analysis of a study"""
         if study_id not in self.active_studies:
             return {}
 
         study = self.active_studies[study_id]
         if not study.samples:
-            return {"status": "no_samples"}
+            # Return the full TimeStudyStats shape with zeroed values so clients
+            # can render without null checks. `status` flags the empty case.
+            return {
+                "status": "no_samples",
+                "total_samples": 0,
+                "normal_samples": 0,
+                "abnormal_samples": 0,
+                "mean_cycle_time_ms": 0.0,
+                "std_dev": 0.0,
+                "min_cycle_time_ms": 0.0,
+                "max_cycle_time_ms": 0.0,
+                "coeff_of_variation": 0.0,
+                "confidence_level": study.confidence_level,
+                "allowance_percent": study.allowance_percent,
+            }
 
         cycle_times = [s.cycle_time_ms for s in study.samples if not s.is_abnormal]
         normal_count = len(cycle_times)
@@ -178,7 +195,7 @@ class SamplingRnDWorkflow:
         changed_by: str,
         reason: str = "",
         impact_assessment: str = "",
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Record a change to a specification"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -206,7 +223,7 @@ class SamplingRnDWorkflow:
         measured_value: float,
         severity: str = "low",
         corrective_action: str = "",
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Record a specification drift"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -236,7 +253,7 @@ class SamplingRnDWorkflow:
         version_id: str,
         drift_id: str,
         corrective_action: str,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Resolve a recorded drift"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -246,7 +263,7 @@ class SamplingRnDWorkflow:
             return True, f"Drift {drift_id} resolved"
         return False, "Drift not found or already resolved"
 
-    def submit_spec_for_review(self, version_id: str, reviewer_id: str) -> Tuple[bool, str]:
+    def submit_spec_for_review(self, version_id: str, reviewer_id: str) -> tuple[bool, str]:
         """Submit specification for review"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -256,7 +273,7 @@ class SamplingRnDWorkflow:
             return True, f"Spec {version_id} submitted for review"
         return False, "Cannot submit spec in current status"
 
-    def approve_spec(self, version_id: str, approver_id: str) -> Tuple[bool, str]:
+    def approve_spec(self, version_id: str, approver_id: str) -> tuple[bool, str]:
         """Approve a specification version"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -266,7 +283,7 @@ class SamplingRnDWorkflow:
             return True, f"Spec {version_id} approved"
         return False, "Cannot approve spec in current status"
 
-    def activate_spec(self, version_id: str) -> Tuple[bool, str]:
+    def activate_spec(self, version_id: str) -> tuple[bool, str]:
         """Activate a specification as the current standard"""
         if version_id not in self.active_specs:
             return False, "Spec version not found"
@@ -276,7 +293,7 @@ class SamplingRnDWorkflow:
             return True, f"Spec {version_id} activated as current standard"
         return False, "Cannot activate spec in current status"
 
-    def get_drift_report(self, version_id: str) -> Dict[str, Any]:
+    def get_drift_report(self, version_id: str) -> dict[str, Any]:
         """Get drift summary report"""
         if version_id not in self.active_specs:
             return {}
@@ -284,7 +301,9 @@ class SamplingRnDWorkflow:
         spec = self.active_specs[version_id]
         return spec.get_drift_summary()
 
-    def get_change_history(self, version_id: str, parameter_name: str = None) -> Dict[str, Any]:
+    def get_change_history(
+        self, version_id: str, parameter_name: str | None = None
+    ) -> dict[str, Any]:
         """Get change history for a parameter or entire spec"""
         if version_id not in self.active_specs:
             return {}
@@ -299,7 +318,7 @@ class SamplingRnDWorkflow:
 
     # ==================== EXPORT & REPORTING ====================
 
-    def export_study_data(self, study_id: str) -> Dict[str, Any]:
+    def export_study_data(self, study_id: str) -> dict[str, Any]:
         """Export complete study data"""
         if study_id not in self.active_studies:
             return {}
@@ -307,7 +326,7 @@ class SamplingRnDWorkflow:
         study = self.active_studies[study_id]
         return study.to_dict()
 
-    def export_spec_data(self, version_id: str) -> Dict[str, Any]:
+    def export_spec_data(self, version_id: str) -> dict[str, Any]:
         """Export complete specification data"""
         if version_id not in self.active_specs:
             return {}
@@ -315,16 +334,18 @@ class SamplingRnDWorkflow:
         spec = self.active_specs[version_id]
         return spec.to_dict()
 
-    def get_workflow_summary(self, tenant_id: str) -> Dict[str, Any]:
+    def get_workflow_summary(self, tenant_id: str) -> dict[str, Any]:
         """Get summary of active workflows for tenant"""
-        active_studies = [
-            s for s in self.active_studies.values() if s.tenant_id == tenant_id
-        ]
+        active_studies = [s for s in self.active_studies.values() if s.tenant_id == tenant_id]
         active_specs = [s for s in self.active_specs.values() if s.tenant_id == tenant_id]
 
         return {
-            "active_studies": len([s for s in active_studies if s.status == StudyStatus.IN_PROGRESS]),
-            "completed_studies": len([s for s in active_studies if s.status == StudyStatus.COMPLETED]),
+            "active_studies": len(
+                [s for s in active_studies if s.status == StudyStatus.IN_PROGRESS]
+            ),
+            "completed_studies": len(
+                [s for s in active_studies if s.status == StudyStatus.COMPLETED]
+            ),
             "active_specs": len([s for s in active_specs if s.status.value == "active"]),
             "specs_in_review": len([s for s in active_specs if s.status.value == "review"]),
             "total_drifts": sum(s.total_drifts for s in active_specs),

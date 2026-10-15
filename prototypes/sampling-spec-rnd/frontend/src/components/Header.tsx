@@ -12,9 +12,10 @@ interface HeaderProps {
   globalSearch: string;
   onGlobalSearchChange: (value: string) => void;
   onNotificationsClick?: () => void;
+  onMenuClick?: () => void;
   profileName?: string;
   profileInitials?: string;
-  isDark?: boolean;
+  onLogout?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -24,22 +25,34 @@ const Header: React.FC<HeaderProps> = ({
   globalSearch,
   onGlobalSearchChange,
   onNotificationsClick,
+  onMenuClick,
   profileName = 'Admin Produksi',
   profileInitials = 'AD',
-  isDark = false,
+  onLogout,
 }) => (
   <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 mb-8">
     {/* Title block */}
-    <div>
+    <div className="flex items-start gap-3">
+      {onMenuClick && (
+        <button
+          type="button"
+          aria-label="Buka navigasi"
+          onClick={onMenuClick}
+          className="btn-secondary w-10 h-10 !p-0 justify-center rounded-[10px] lg:hidden"
+        >
+          <LucideIcon name="menu" className="w-[18px] h-[18px]" />
+        </button>
+      )}
+      <div>
       <p
         className="text-[11px] font-bold uppercase tracking-[.14em] mb-1"
-        style={{ color: isDark ? '#64748b' : '#64748b' }}
+        style={{ color: 'var(--c-ink-muted)' }}
       >
         {subtitle}
       </p>
       <h1
         className="text-[30px] font-bold tracking-tight leading-tight"
-        style={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
+        style={{ color: 'var(--c-ink)' }}
       >
         {title}
       </h1>
@@ -52,8 +65,8 @@ const Header: React.FC<HeaderProps> = ({
             className="text-[13px] font-medium"
             style={{
               color: caption.startsWith('Backend terhubung')
-                ? (isDark ? '#34d058' : '#15803d')
-                : (isDark ? '#f87171' : '#dc2626'),
+                ? 'var(--c-ok-2)'
+                : 'var(--c-bad-4)',
             }}
             aria-live="polite"
           >
@@ -61,6 +74,7 @@ const Header: React.FC<HeaderProps> = ({
           </p>
         </div>
       )}
+      </div>
     </div>
 
     {/* Right tools */}
@@ -70,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
         <LucideIcon
           name="search"
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-          style={{ color: isDark ? '#64748b' : '#94a3b8' } as React.CSSProperties}
+          style={{ color: 'var(--c-ink-faint)' } as React.CSSProperties}
         />
         <label htmlFor="global-search" className="sr-only">Pencarian global</label>
         <input
@@ -80,11 +94,6 @@ const Header: React.FC<HeaderProps> = ({
           value={globalSearch}
           onChange={e => onGlobalSearchChange(e.target.value)}
           className="pl-9 w-full lg:w-56 rounded-[10px] text-[13px] min-h-[40px]"
-          style={{
-            background: isDark ? '#161616' : '#ffffff',
-            color: isDark ? '#f1f5f9' : '#0f172a',
-            border: `1.5px solid ${isDark ? '#3d3d3d' : '#cbd5e1'}`,
-          }}
         />
       </div>
 
@@ -105,9 +114,9 @@ const Header: React.FC<HeaderProps> = ({
         <span
           className="w-9 h-9 rounded-full grid place-items-center text-[12px] font-bold ring-2"
           style={{
-            background: isDark ? '#1e3a5f' : '#dbeafe',
-            color: isDark ? '#93c5fd' : '#1d4ed8',
-            outlineColor: isDark ? '#1d4ed8' : '#bfdbfe',
+            background: 'var(--c-brand-bg-5)',
+            color: 'var(--c-brand)',
+            outlineColor: 'var(--c-brand-bg-5)',
           }}
           aria-hidden="true"
         >
@@ -115,10 +124,26 @@ const Header: React.FC<HeaderProps> = ({
         </span>
         <span
           className="text-[13px] font-semibold hidden lg:block"
-          style={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
+          style={{ color: 'var(--c-ink)' }}
         >
           {profileName}
         </span>
+        {onLogout && (
+          <button
+            type="button"
+            aria-label="Keluar dari portal"
+            onClick={onLogout}
+            className="btn-secondary w-10 h-10 !p-0 justify-center rounded-[10px]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                 className="w-[17px] h-[17px]">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" x2="9" y1="12" y2="12"/>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   </header>
