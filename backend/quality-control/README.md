@@ -47,7 +47,9 @@ Written by this module:
   superseded by `11-database-schema-spec.md` §2 ("derived from immutable component source, not
   supplied by caller"), and the frozen `Defect` schema has no field to carry it.
 - **The defect taxonomy is configuration.** The module ships no code list. The BRD's three named
-  defects are examples, not an enum; an unknown code is refused with `VALIDATION_ERROR`.
+  defects are examples, not an enum; an unknown code is refused with `VALIDATION_ERROR`. The API
+  layer reads the tenant's codes from `config/defect_taxonomy.json` (override the path with
+  `QC_DEFECT_TAXONOMY_PATH`): a `default` list and a per-tenant `tenants` map that replaces it.
 - **One credit per piece, one accrual per assembly.** Both are structural: eligibility is produced
   on the first pass only, and a pass is terminal, so a repaired unit cannot be credited twice.
 
@@ -56,15 +58,23 @@ Written by this module:
 ```
 backend/quality-control/
 ├── src/
-│   ├── api/        # HTTP routers bound 1:1 to contract operationIds (not implemented yet)
+│   ├── api/        # placeholder: the routers live in backend/app/api/v1/quality.py (decision 15)
 │   ├── models/     # contract-shaped schemas, status vocabularies, taxonomy, bonus rule
 │   └── services/   # classification, repair routing, dashboard summary, domain errors
+├── config/         # defect_taxonomy.json — deployment configuration, not code
 ├── tests/          # pytest suite, including the M007 database invariants
 ├── API_CONTRACTS.md
 ├── pyproject.toml
 ├── requirements.txt
 └── requirements-dev.txt
 ```
+
+The HTTP layer cannot live in this directory: `backend/quality-control` carries a hyphen and its
+package is the generic `src`, so `backend/app` cannot import it. The routers therefore sit next to
+the ledger's in `backend/app/api/v1/quality.py`, with the persistence in
+`backend/app/services/qc.py`, and the shared authority between the two layers is the named-error
+contract of `M007` plus `API_CONTRACTS.md`. `src/api/` stays a placeholder until the module
+directory is importable.
 
 `src/utils/` is absent until it has content: this module needs no shared arithmetic, and an empty
 package would be dead weight.
@@ -117,14 +127,42 @@ That test builds a throwaway `qc_verify` schema, applies `M001` and `M007` plus 
 stand-in for the not-yet-authored `M004`/`M006` tables, and drops the schema afterwards. It is
 local-only by design, matching how the ledger's database tests are run.
 
+The HTTP layer is verified from the repository root, because the app is imported as
+`backend.app`:
+
+```bash
+QC_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres pytest -q backend/tests/test_qc_api.py
+```
+
+It builds the same stand-in in the `qc_api_verify` schema, drives the real app through
+`fastapi.testclient` as the unprivileged `lukla_app` role, and covers the disposition, the
+terminal refusal, the defect rules, the taxonomy, the idempotency replay and conflict, the role
+refusals, and the queue.
+
 ## Status
 
 The disposition state machine, the defect rules, the first-pass eligibility and wage-credit
 boundary, the pending-rule path, idempotent replay and conflict handling, repair routing, and the
 dashboard summary are implemented and tested. `M007` is authored and verified against PostgreSQL,
-including the append-only log, the tenant isolation, and the cross-assembly defect rule. The HTTP
-layer, authentication, the tenant defect taxonomy read, and the `classify_qc_unit` routine are not
-implemented yet: the routers land with the real repository so that no endpoint ships against a
-fake store, and the routine lands with `M009`, because the eligibility event, wage credit, and
-bonus accrual tables it writes belong to the payroll migration. Work proceeds through the phases
-in `openspec/changes/lukla-qc-mes-engine/tasks.md`.
+including the append-only log, the tenant isolation, and the cross-assembly defect rule.
+
+`POST /qc-inspections` (`inspectUnit`) and `GET /assemblies` (`listAssemblies`) are implemented in
+`backend/app` against the real database, with the contract's roles, `Idempotency-Key` handling, and
+`Problem` mapping, and are covered by `backend/tests/test_qc_api.py`. The tenant defect taxonomy is
+read from deployment configuration.
+
+Not implemented, with the reason each waits:
+
+- The money a first `PASS` produces — one `eligibility_events` row, one `wage_credits` row per
+  allocated piece, one `qc_bonus_accruals` row. Task 3.2's `classify_qc_unit` writes them, and the
+  three tables are the payroll migration `M009`, which does not exist yet. Until it lands, an
+  inspection records the disposition, the defects, and the piece statuses, and produces no money
+  rows: keep the QC and payroll modules on one release, or re-valuate the inspections recorded in
+  between, because the routine runs at inspection time and cannot see them afterwards.
+- `POST /assemblies` (`createAssembly`) and `GET /production/progress` — both need `orders` (M004)
+  and `garment_units`/`sewing_tallies` (M006), which no branch has authored yet.
+- The `qc` section of `GET /dashboard` — its route cannot answer until the `orders` and `production`
+  sections of the same response can be filled.
+- `VIEW-05` (phase 6).
+
+Work proceeds through the phases in `openspec/changes/lukla-qc-mes-engine/tasks.md`.
