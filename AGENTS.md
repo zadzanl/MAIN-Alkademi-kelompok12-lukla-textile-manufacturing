@@ -17,6 +17,41 @@ This never permits skipping retrieval, trust-boundary validation, data-loss prev
 
 Leave one smallest runnable regression check for non-trivial logic; document a deliberate known ceiling with a file header comment and its upgrade path.
 
+### Browser Verification Default
+
+Playwright GitHub Actions is intentionally disabled to control CI costs. Keep `.github/workflows/prototype-e2e.yml` for future use, but do not re-enable or dispatch it without explicit maintainer approval. Use local browser tools or the local Playwright harness for verification instead.
+
+For pre-commit checks involving user-visible web behavior, prefer an available **interactive browser tool**: a tool that can open a page, interact with rendered controls, and inspect the result. Tool names are environment-specific; in GitHub Copilot for VS Code, `open_browser_page` is one example.
+
+If no interactive browser tool is available, run the repository's automated Playwright smoke command when the harness exists. Report whether evidence came from an interactive tool, automated Playwright, both, or neither. If neither is available, mark browser verification **unverified**; an API request or static inspection is not equivalent browser evidence.
+
+#### Non-Root Playwright Harness Locations
+
+Due to root isolation rules (`scripts/check_workspace_hygiene.py`), Playwright is **never** installed or configured at the repository root (`/tests/` or root `playwright.config.ts`). Automated E2E harnesses exist in two dedicated locations:
+
+1. **Operations Engine Frontend Harness (`frontend/`):**
+   - **Configuration:** [`frontend/playwright.config.ts`](frontend/playwright.config.ts)
+   - **Tests:** [`frontend/tests/`](frontend/tests/) (e.g., `closing-01-mismatch.spec.ts`, `view-04-stepper.spec.ts`)
+   - **Run Command:**
+     ```bash
+     cd frontend
+     node ../node_modules/@playwright/test/cli.js test
+     ```
+   - **Evidence Normalization:**
+     ```bash
+     python tools/collect_evidence.py
+     ```
+     Generates deterministic `frontend/artifacts/evidence/results.json` and JUnit `results.xml` conforming to `16-test-harness-and-agent-verification.md` §4.
+
+2. **Prototype Sampling & Spec R&D Smoke Harness (`prototypes/sampling-spec-rnd/frontend/`):**
+   - **Configuration:** [`prototypes/sampling-spec-rnd/frontend/playwright.config.ts`](prototypes/sampling-spec-rnd/frontend/playwright.config.ts)
+   - **Tests:** [`prototypes/sampling-spec-rnd/frontend/tests/smoke.spec.ts`](prototypes/sampling-spec-rnd/frontend/tests/smoke.spec.ts)
+   - **Run Command:**
+     ```bash
+     cd prototypes/sampling-spec-rnd/frontend
+     npm run test:e2e
+     ```
+
 ### Working With a Multiple Developer Seniority and Discipline
 
 This repository are maintained by multiple maintainers. Some of them are senior, but most of them are junior. Some of them comes from system , embedded, or data engineering. Always adjust the communication, planning, and report to be understandable by any developer, regardless of seniority or backgrounds. 

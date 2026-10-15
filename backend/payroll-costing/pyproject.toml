@@ -18,6 +18,7 @@ ignore = []
 
 [tool.mypy]
 python_version = "3.11"
+mypy_path = "../.."
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -30,4 +31,5 @@ warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../.."]
+addopts = ["--import-mode=importlib"]

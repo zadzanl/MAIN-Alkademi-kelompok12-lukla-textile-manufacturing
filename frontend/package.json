@@ -1,0 +1,13 @@
+{
+  "name": "lukla-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "verify:e2e": "playwright test && python ../tools/collect_evidence.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

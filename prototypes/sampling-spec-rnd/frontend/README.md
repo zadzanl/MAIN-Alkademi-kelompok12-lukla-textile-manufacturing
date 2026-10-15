@@ -2,6 +2,68 @@
 
 React frontend for time-study recording and specification management in the Lukla Operations Engine. Built with Vite + React 18 + TypeScript + Tailwind CSS, tablet-first, with a semantic token design system and full light/dark theming.
 
+## Advisory browser smoke
+
+This repository includes one non-blocking Playwright Chromium smoke. It starts the
+FastAPI backend on `127.0.0.1:8009` and Vite on `127.0.0.1:3009`; both ports must be
+free. The smoke is read-only and does not create production data. It intentionally
+exposes the current missing `src/pages/SpecVersionPage.tsx` import instead of
+repairing application code, so a failed smoke is valid evidence of that existing
+application defect.
+
+### Prerequisites
+
+- Node.js 20 or newer (the pinned Playwright version requires Node 20+).
+- Python 3.11, or another Python version supported by the pinned backend requirements.
+- A local virtual environment; do not install the prototype's backend dependencies globally.
+
+### Windows PowerShell
+
+```powershell
+cd prototypes\sampling-spec-rnd\backend
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+
+cd ..\frontend
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+### Linux/macOS
+
+```bash
+cd prototypes/sampling-spec-rnd/backend
+python3.11 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+source .venv/bin/activate
+
+cd ../frontend
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+On Linux, install browser system dependencies with `npx playwright install --with-deps chromium`
+if needed. This may require administrator access; CI performs this step on its disposable runner.
+
+`npm run test:e2e` owns both services and stops them when it exits. Do not start
+another copy first. `npm run test:e2e -- --list` should list exactly one Chromium
+test without starting the services. Reports are written to `playwright-report/` and
+failure artifacts to `test-results/`; both are ignored by Git.
+
+The smoke is advisory. A nonzero Playwright exit is retained as failure evidence;
+the GitHub job is configured with `continue-on-error: true`. Do not add this advisory
+check to required branch rules; repository rules can independently affect merge eligibility.
+Open the local report with `npx playwright show-report`. Reports expire after seven
+days in CI; startup failures may leave only workflow logs, without browser artifacts.
+Use only local test services without production data or secrets in captured reports.
+For pre-commit user-visible verification, use an available interactive
+browser tool first; otherwise run this automated smoke, and mark verification
+unverified if neither option is available. This setup does not replace production
+monitoring or a full browser test suite.
+
 ## Quick Start
 
 ```bash

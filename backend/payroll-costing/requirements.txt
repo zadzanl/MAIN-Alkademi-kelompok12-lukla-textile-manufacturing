@@ -1,2 +1,6 @@
 # Runtime dependencies
 pydantic>=2.7
+SQLAlchemy>=2.0
+psycopg[binary]>=3.1
+fastapi>=0.111
+PyJWT>=2.8
