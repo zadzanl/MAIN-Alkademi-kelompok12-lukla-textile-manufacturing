@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Any, Dict
+from typing import Optional, List, Any, Dict, Callable
 from dataclasses import dataclass
 import jwt
 from fastapi import Request, Header, Depends
@@ -27,14 +27,15 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-def get_current_auth_context(
+def authenticate_request(
     request: Request,
-    authorization: Optional[str] = Header(None, alias="Authorization"),
-    db: Session = Depends(get_db)
+    authorization: Optional[str],
+    db: Session
 ) -> AuthContext:
     """
-    Authenticate Bearer JWT, enforce HS256, verify Owner or FinancePayroll roles,
-    and derive tenant context strictly from verified token claims.
+    Authenticate Bearer JWT, enforce HS256, and derive tenant context strictly from
+    verified token claims. Role authorization is a separate step, so each operation
+    can demand the roles its contract entry declares (`x-roles`).
     """
     if not authorization:
         raise ProblemException(
@@ -92,16 +93,6 @@ def get_current_auth_context(
         roles = [str(r) for r in raw_roles]
     else:
         roles = []
-
-    # RBAC: Only Owner and FinancePayroll are authorized
-    allowed_roles = {"Owner", "FinancePayroll"}
-    if not any(r in allowed_roles for r in roles):
-        raise ProblemException(
-            status=403,
-            code="FORBIDDEN",
-            detail=f"Forbidden: caller roles {roles} do not have permission for ledger operations",
-            instance=request.url.path
-        )
 
     # Derive tenant_id strictly from token claims; never trust caller-supplied headers
     raw_tenant = payload.get("tenant_id") or payload.get("tenantId")
@@ -167,3 +158,49 @@ def get_current_auth_context(
     set_db_tenant_context(db, tenant_id=tenant_id, actor_id=actor_id, role=roles[0] if roles else None)
 
     return AuthContext(actor_id=actor_id, tenant_id=tenant_id, roles=roles)
+
+# The ledger operations declare x-roles: [Owner, FinancePayroll] in the frozen contract.
+LEDGER_ROLES = ("Owner", "FinancePayroll")
+
+def enforce_roles(
+    context: AuthContext,
+    request: Request,
+    allowed: tuple[str, ...],
+    capability: str
+) -> None:
+    """Refuse a caller whose verified token carries none of the operation's roles."""
+    if not any(role in allowed for role in context.roles):
+        raise ProblemException(
+            status=403,
+            code="FORBIDDEN",
+            detail=f"Forbidden: caller roles {context.roles} do not have permission for {capability}",
+            instance=request.url.path
+        )
+
+def get_current_auth_context(
+    request: Request,
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    db: Session = Depends(get_db)
+) -> AuthContext:
+    """Authenticate and require the ledger's declared roles."""
+    context = authenticate_request(request, authorization, db)
+    enforce_roles(context, request, LEDGER_ROLES, "ledger operations")
+    return context
+
+def require_roles(*allowed: str, capability: str) -> Callable[..., AuthContext]:
+    """
+    Build a dependency that authenticates the bearer token and requires one of `allowed`.
+
+    `capability` names the operation in the 403 detail, so the message says which
+    permission is missing rather than only that something is forbidden.
+    """
+    def dependency(
+        request: Request,
+        authorization: Optional[str] = Header(None, alias="Authorization"),
+        db: Session = Depends(get_db)
+    ) -> AuthContext:
+        context = authenticate_request(request, authorization, db)
+        enforce_roles(context, request, allowed, capability)
+        return context
+
+    return dependency
