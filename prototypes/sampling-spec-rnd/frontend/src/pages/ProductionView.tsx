@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
+import MockModeBanner from '../components/MockModeBanner';
 import {
   listLines, createLine,
   listOperators, createOperator,
@@ -21,6 +22,8 @@ import {
   type Line, type Operator, type Assignment, type Assembly, type ProgressItem,
   type AssemblyStatus, type TallyResult, type TallyInput,
 } from '../services/opsApi';
+import { buildStacked } from '../utils/chartData';
+import StackedBarChart, { type StackedKey } from '../components/StackedBarChart';
 import FloorTerminalView from './FloorTerminalView';
 
 const inputCls = 'w-full rounded-[10px] px-3 py-2.5 text-[13px]';
@@ -31,6 +34,13 @@ const STATUS_STYLE: Record<AssemblyStatus, string> = {
   REWORK: 'bg-[#e8f2ff] text-[#0066cc]',
   REJECT_SCRAP: 'bg-[#ffebee] text-[#dc2626]',
 };
+
+const STACKED_STATUS_KEYS: StackedKey[] = [
+  { key: 'MENUNGGU_QC', label: 'Menunggu QC', color: '#ff9500' },
+  { key: 'REWORK', label: 'Repair', color: '#0071e3' },
+  { key: 'QC_PASS', label: 'Pass', color: '#34c759' },
+  { key: 'REJECT_SCRAP', label: 'Reject', color: '#ff3b30' },
+];
 
 const TABS = [
   { id: 'floor', label: 'Line & Operator' },
@@ -116,6 +126,20 @@ const ProductionView: React.FC = () => {
   const operatorName = (id: string) => operators.find(o => o.id === id)?.displayName ?? id.slice(0, 8);
   const pendingQc = assemblies.filter(a => a.status === 'MENUNGGU_QC').length;
 
+  // Output composition: pieces per component, stacked by assembly status.
+  const byComponent = new Map<string, Record<string, number>>();
+  for (const p of progress) {
+    const comp = p.componentCode || '—';
+    const qty = Number(p.quantity?.value) || 0;
+    const row = byComponent.get(comp) ?? {};
+    row[p.status] = (row[p.status] ?? 0) + qty;
+    byComponent.set(comp, row);
+  }
+  const stackedData = buildStacked(
+    [...byComponent.entries()].map(([label, values]) => ({ label, values })),
+    STACKED_STATUS_KEYS.map(k => k.key),
+  );
+
   const kpis = [
     { label: 'Line Aktif', value: lines.filter(l => l.active).length },
     { label: 'Operator', value: operators.length },
@@ -128,7 +152,7 @@ const ProductionView: React.FC = () => {
       <div className="inline-flex gap-1 rounded-[12px] bg-[#f0f0f2] p-1">
         {([['terminal', 'Terminal Lantai'], ['admin', 'Admin']] as const).map(([id, label]) => (
           <button key={id} onClick={() => setMode(id)}
-            className={`min-h-[40px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#626269]'}`}>
+            className={`min-h-[48px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#626269]'}`}>
             {label}
           </button>
         ))}
@@ -144,11 +168,7 @@ const ProductionView: React.FC = () => {
         <button onClick={load} className="btn-secondary"><LucideIcon name="activity" className="w-4 h-4" /> Refresh</button>
       </div>
 
-      {isMockOps && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — data disimpan di memori. Set <code className="font-mono">VITE_LEDGER_MODE=live</code> untuk service asli.
-        </div>
-      )}
+      {isMockOps && <MockModeBanner detail="data disimpan di memori." />}
       {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -164,7 +184,7 @@ const ProductionView: React.FC = () => {
         <div className="flex gap-1 p-3 border-b border-[#f0f0f2] overflow-x-auto">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`tab rounded-[9px] px-4 py-2 text-[13px] whitespace-nowrap transition-all ${
+              className={`tab min-h-[44px] rounded-[9px] px-4 py-2 text-[13px] whitespace-nowrap transition-all ${
                 tab === t.id ? 'bg-[#eaf3fe] text-[#0066cc] font-semibold' : 'text-[#626269] hover:bg-[#f5f5f7]'
               }`}>{t.label}</button>
           ))}
@@ -339,7 +359,14 @@ const ProductionView: React.FC = () => {
 
           {/* Progress */}
           {tab === 'progress' && (
-            <div className="overflow-x-auto">
+            <div className="space-y-5">
+              <StackedBarChart
+                data={stackedData}
+                keys={STACKED_STATUS_KEYS}
+                title="Komposisi Output per Komponen"
+                subtitle="Jumlah pieces per komponen, dipecah menurut status QC"
+              />
+              <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead><tr>{['Order', 'Komponen', 'Jumlah', 'Status'].map(h => (
                   <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
@@ -358,6 +385,7 @@ const ProductionView: React.FC = () => {
                 </tbody>
               </table>
               {progress.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada progress.</p>}
+              </div>
             </div>
           )}
         </div>

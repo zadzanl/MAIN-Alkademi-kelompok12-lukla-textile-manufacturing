@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import Modal from '../components/Modal';
+import MockModeBanner from '../components/MockModeBanner';
 import {
   getLedgerEntries,
   appendLedgerTransaction,
@@ -153,10 +154,10 @@ const LedgerView: React.FC = () => {
       </div>
 
       {isMockLedger && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — data disimpan di memori dan hilang saat halaman di-reload.
-          Set <code className="font-mono">VITE_LEDGER_MODE=live</code> untuk memakai service ledger asli.
-        </div>
+        <MockModeBanner
+          detail="data disimpan di memori dan hilang saat halaman di-reload."
+          hint="untuk memakai service ledger asli."
+        />
       )}
 
       {error && (
@@ -288,6 +289,7 @@ const LedgerView: React.FC = () => {
                   <select
                     value={line.accountCode}
                     onChange={e => updateLine(idx, { accountCode: e.target.value })}
+                    aria-label={`Akun baris ${idx + 1}`}
                     className={inputCls + ' flex-1'}
                   >
                     {ACCOUNTS.map(a => <option key={a.code} value={a.code}>{a.code} · {a.name}</option>)}
@@ -295,6 +297,7 @@ const LedgerView: React.FC = () => {
                   <select
                     value={line.direction}
                     onChange={e => updateLine(idx, { direction: e.target.value as LedgerDirection })}
+                    aria-label={`Arah baris ${idx + 1}`}
                     className={inputCls + ' w-[110px]'}
                   >
                     <option value="DEBIT">DEBIT</option>
@@ -307,6 +310,7 @@ const LedgerView: React.FC = () => {
                     placeholder="0.00"
                     value={line.amount}
                     onChange={e => updateLine(idx, { amount: e.target.value })}
+                    aria-label={`Nominal baris ${idx + 1}`}
                     className={inputCls + ' w-[130px]'}
                   />
                   <button

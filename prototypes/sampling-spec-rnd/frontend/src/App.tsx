@@ -25,6 +25,8 @@ import DataTable from './components/DataTable';
 import ActivityLog, { Activity } from './components/ActivityLog';
 import Modal from './components/Modal';
 import FontSelector, { FontKey } from './components/FontSelector';
+import Toaster from './components/Toaster';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Page views
 import SampleVersionView   from './pages/SampleVersionView';
@@ -42,6 +44,7 @@ import PayrollView         from './pages/PayrollView';
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
 import { SAMPLING_BASE, DATA_MODE } from './services/config';
 import * as api from './services/api';
+import { toast } from './services/toast';
 import { TENANT_ID, actor } from './services/identity';
 import { matchesQuery } from './utils/filter';
 
@@ -210,7 +213,7 @@ function App() {
 
   const createTimeStudy = async () => {
     if (!newStudy.process_id || !newStudy.process_name) {
-      alert('ID Proses dan Nama Proses wajib diisi.'); return;
+      toast.error('ID Proses dan Nama Proses wajib diisi.'); return;
     }
     const res = await api.createStudy({
       tenant_id: TENANT_ID,
@@ -220,16 +223,16 @@ function App() {
       target_sample_size: newStudy.target_sample_size,
     });
     if (res.success && res.data) {
-      alert(`✓ Studi dibuat: ${res.data.study_id.substring(0,8)}`);
+      toast.success(`Studi dibuat: ${res.data.study_id.substring(0,8)}`);
       setShowCreateStudyModal(false);
       setNewStudy({ process_id:'', process_name:'', target_sample_size:30, confidence_level:95, allowance_percent:15, operator_id:'', notes:'' });
       fetchTimeStudies(); fetchWorkflowSummary();
-    } else { alert(`Error: ${res.error}`); }
+    } else { toast.error(res.error ?? 'Gagal membuat studi.'); }
   };
 
   const createSpecVersion = async () => {
     if (!newSpec.spec_id || !newSpec.spec_name) {
-      alert('ID Spec dan Nama Spec wajib diisi.'); return;
+      toast.error('ID Spec dan Nama Spec wajib diisi.'); return;
     }
     const res = await api.createSpec({
       tenant_id: TENANT_ID, spec_id: newSpec.spec_id,
@@ -237,17 +240,17 @@ function App() {
       version_number: newSpec.version_number,
     });
     if (res.success && res.data) {
-      alert(`✓ Spec dibuat: ${res.data.version_id.substring(0,8)}`);
+      toast.success(`Spec dibuat: ${res.data.version_id.substring(0,8)}`);
       setShowCreateSpecModal(false);
       setNewSpec({ spec_id:'', spec_name:'', version_number:'1.0.0', materials:'', process_steps:'', notes:'' });
       fetchSpecVersions(); fetchWorkflowSummary();
-    } else { alert(`Error: ${res.error}`); }
+    } else { toast.error(res.error ?? 'Gagal membuat spec.'); }
   };
 
   // ── CSV export (UTF-8 BOM) ────────────────────────────────────────────────────
 
   const exportToCSV: ExportCSV = (data, filename) => {
-    if (!data.length) { alert('Tidak ada data untuk diekspor.'); return; }
+    if (!data.length) { toast.info('Tidak ada data untuk diekspor.'); return; }
     const headers = Object.keys(data[0] as Record<string, unknown>);
     const rows = data.map(item => {
       const row = item as Record<string, unknown>;
@@ -416,6 +419,7 @@ function App() {
           {/* key={currentView} remounts this wrapper on navigation so the
               page-turn animation replays for the newly opened view. */}
           <div key={currentView} className="page-turn">
+            <ErrorBoundary>
 
           {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
           {currentView === 'overview' && (
@@ -659,7 +663,8 @@ function App() {
                   <button
                     onClick={async () => {
                       const ok = await checkHealth();
-                      alert(ok ? '✓ Backend terhubung dan sehat.' : '✗ Backend tidak dapat dijangkau. Periksa port 8009.');
+                      if (ok) toast.success('Backend terhubung dan sehat.');
+                      else toast.error('Backend tidak dapat dijangkau. Periksa port 8009.');
                     }}
                     className={btnSecondary + ' inline-flex items-center gap-2'}>
                     <LucideIcon name="activity" className="w-4 h-4" /> Test Koneksi Backend
@@ -670,6 +675,7 @@ function App() {
             </div>
           )}
 
+            </ErrorBoundary>
           </div>
         </div>
       </main>
@@ -737,6 +743,8 @@ function App() {
           </FormField>
         </div>
       </Modal>
+
+      <Toaster />
     </div>
   );
 }

@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { LucideIcon } from '../components/Sidebar';
+import MockModeBanner from '../components/MockModeBanner';
 import {
   listLines, listOperators, listAssignments, recordSewingTally, isMockOps,
   type Line, type Operator, type Assignment,
@@ -102,11 +103,7 @@ const FloorTerminalView: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      {isMockOps && (
-        <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
-          Mode mock aktif — data disimpan di memori. Set <code className="font-mono">VITE_LEDGER_MODE=live</code> untuk service asli.
-        </div>
-      )}
+      {isMockOps && <MockModeBanner detail="data disimpan di memori." />}
       {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
 
       {/* Context bar */}
@@ -114,7 +111,7 @@ const FloorTerminalView: React.FC = () => {
         <label className="flex items-center gap-2 text-[13px] text-[#6e6e73]">
           <span className="font-medium">Line</span>
           <select value={lineId} onChange={e => { setLineId(e.target.value); setCounts({}); setResults({}); }}
-            className="min-h-[44px] rounded-[10px] px-3 text-[13px] font-semibold text-[#1d1d1f]">
+            className="min-h-[48px] rounded-[10px] px-3 text-[13px] font-semibold text-[#1d1d1f]">
             {lines.map(l => <option key={l.id} value={l.id}>{l.lineCode}</option>)}
           </select>
         </label>
