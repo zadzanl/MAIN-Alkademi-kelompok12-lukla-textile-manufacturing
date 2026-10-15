@@ -1,0 +1,356 @@
+openapi: 3.1.0
+info:
+  title: Lukla Operational AI Copilot API
+  version: 1.0.0-contract
+  description: Delta OpenAPI 3.1 specification for the in-app conversational operational copilot gateway.
+servers:
+  - url: https://api.example.invalid
+security:
+  - bearerAuth: []
+x-planning-status: PROPOSED_NOT_RUNTIME_VERIFIED
+tags:
+  - name: copilot
+    description: Operational AI Copilot conversational gateway
+paths:
+  /api/v1/copilot/chat:
+    post:
+      tags:
+        - copilot
+      operationId: submitCopilotChatTurn
+      summary: Submit a conversational chat turn to the operational copilot
+      description: Accepts a natural language query with optional conversation history, dynamically selects authorized read-only tools according to caller RBAC roles, executes queries, and returns synthesized answers with Action Shortcut deep links to audited web UI views.
+      x-source-ids:
+        - FR-COPILOT-01
+        - FR-COPILOT-02
+      x-roles:
+        - Owner
+        - SampleTeam
+        - Warehouse
+        - ProductionHead
+        - Tailor
+        - QCInspector
+        - FinancePayroll
+        - MaklonClient
+      x-view:
+        - all
+      x-invariant: Strictly read-only execution; all mutating methods (POST/PUT/PATCH/DELETE) are physically rejected with RFC 7807 403 Forbidden. Caller Bearer token is forwarded to preserve PostgreSQL Row-Level Security.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatTurnRequest'
+            example:
+              message: "Berapa sisa stok kain untuk pesanan SO-2026-001?"
+              history: []
+              stream: false
+      responses:
+        '200':
+          description: Successful conversational response with optional action shortcuts and tool execution metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatTurnResponse'
+              example:
+                sessionId: "a0000000-0000-4000-8000-000000000001"
+                reply: "Stok kain untuk pesanan SO-2026-001 saat ini tersedia 1.250 meter di Gudang Bahan (Lot ML-2026-042)."
+                shortcuts:
+                  - id: "b0000000-0000-4000-8000-000000000001"
+                    title: "Catat Hasil Pemotongan (Cutting)"
+                    description: "Buka formulir input pemotongan kain dan input buangan."
+                    url: "/app/materials?action=cutting&orderId=SO-2026-001"
+                    icon: "scissors"
+                toolsUsed:
+                  - "getStock"
+                usage:
+                  promptTokens: 520
+                  completionTokens: 85
+                  totalTokens: 605
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/AuthRequired'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: false
+      schema:
+        $ref: '#/components/schemas/Uuid'
+  responses:
+    BadRequest:
+      description: Bad request, malformed JSON payload, or unparseable turn parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "https://api.lukla.invalid/errors/bad-request"
+            title: "Bad Request"
+            status: 400
+            code: "BAD_REQUEST"
+            detail: "The chat turn request payload contains malformed JSON."
+            instance: "/api/v1/copilot/chat"
+            requestId: "c0000000-0000-4000-8000-000000000001"
+            violations: []
+    AuthRequired:
+      description: Authentication required or expired Bearer token
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "https://api.lukla.invalid/errors/auth-required"
+            title: "Authentication Required"
+            status: 401
+            code: "AUTH_REQUIRED"
+            detail: "Missing or invalid OAuth2 Bearer token in Authorization header."
+            instance: "/api/v1/copilot/chat"
+            requestId: "c0000000-0000-4000-8000-000000000002"
+            violations: []
+    Forbidden:
+      description: Role or tenant scope denied, or mutating HTTP method blocked by physical barrier
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "https://api.lukla.invalid/errors/forbidden"
+            title: "Forbidden"
+            status: 403
+            code: "FORBIDDEN"
+            detail: "Execution of mutating method 'POST' is blocked by security policy."
+            instance: "/api/v1/copilot/chat"
+            requestId: "c0000000-0000-4000-8000-000000000003"
+            violations: []
+    ValidationError:
+      description: Input semantic or length validation failure
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "https://api.lukla.invalid/errors/validation-error"
+            title: "Validation Error"
+            status: 422
+            code: "VALIDATION_ERROR"
+            detail: "Message length exceeds maximum limit of 4000 characters."
+            instance: "/api/v1/copilot/chat"
+            requestId: "c0000000-0000-4000-8000-000000000004"
+            violations:
+              - field: "message"
+                message: "String should have at most 4000 characters"
+    GatewayTimeout:
+      description: Downstream LLM inference provider or internal tool query timed out
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "https://api.lukla.invalid/errors/gateway-timeout"
+            title: "Gateway Timeout"
+            status: 504
+            code: "GATEWAY_TIMEOUT"
+            detail: "Downstream LLM inference provider timed out after 15.0 seconds."
+            instance: "/api/v1/copilot/chat"
+            requestId: "c0000000-0000-4000-8000-000000000005"
+            violations: []
+
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    Timestamp:
+      type: string
+      format: date-time
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - code
+        - detail
+        - instance
+        - requestId
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        code:
+          type: string
+          enum:
+            - AUTH_REQUIRED
+            - FORBIDDEN
+            - TENANT_CONTEXT_MISSING
+            - LEGAL_OWNER_MISMATCH
+            - ORDER_BENEFICIARY_MISMATCH
+            - IDEMPOTENCY_CONFLICT
+            - INVALID_STATE
+            - LEDGER_IMMUTABLE
+            - DUPLICATE_REPAIR_CREDIT
+            - FINANCIAL_RULE_PENDING
+            - VALIDATION_ERROR
+            - INSUFFICIENT_STOCK
+            - OVER_CONSUMPTION
+            - SERVICE_SCOPE_REQUIRED
+            - BAD_REQUEST
+            - GATEWAY_TIMEOUT
+        detail:
+          type: string
+        instance:
+          type: string
+        requestId:
+          $ref: '#/components/schemas/Uuid'
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+    Violation:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    ChatTurnRequest:
+      type: object
+      required:
+        - message
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/Uuid'
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        history:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        stream:
+          type: boolean
+          default: false
+
+    ChatMessage:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+            - system
+            - tool
+        content:
+          type: string
+          nullable: true
+        toolCalls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCallRequest'
+        toolCallId:
+          type: string
+
+    ToolCallRequest:
+      type: object
+      required:
+        - id
+        - toolName
+        - arguments
+      properties:
+        id:
+          type: string
+        toolName:
+          type: string
+        arguments:
+          type: object
+          additionalProperties: true
+
+    ChatTurnResponse:
+      type: object
+      required:
+        - sessionId
+        - reply
+        - shortcuts
+        - toolsUsed
+        - usage
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/Uuid'
+        reply:
+          type: string
+        shortcuts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionShortcut'
+        toolsUsed:
+          type: array
+          items:
+            type: string
+        usage:
+          $ref: '#/components/schemas/TokenUsage'
+
+    ActionShortcut:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - url
+        - icon
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        icon:
+          type: string
+
+    TokenUsage:
+      type: object
+      required:
+        - promptTokens
+        - completionTokens
+        - totalTokens
+      properties:
+        promptTokens:
+          type: integer
+          minimum: 0
+        completionTokens:
+          type: integer
+          minimum: 0
+        totalTokens:
+          type: integer
+          minimum: 0
