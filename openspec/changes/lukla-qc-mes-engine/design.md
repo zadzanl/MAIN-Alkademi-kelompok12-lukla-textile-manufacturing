@@ -1,0 +1,81 @@
+# Technical Design: Quality Control & MES Runtime Implementation
+
+## Context
+`lukla-ops-engine-planning` (Phases A–C, review-approved) froze the QC requirements (`specs/quality-control-and-inspection/spec.md`), the shop-floor staging requirement (`specs/production-output-tracking/spec.md`), the OpenAPI 3.1 contract, and the database schema, and authorizes no application code. The stack decision is FastAPI with plain PostgreSQL, business logic in Python and invariants in the database (D-1), and a machine-readable evidence bundle per verification run.
+
+The QC surface is small in the contract (`POST /qc-inspections`, `GET|POST /assemblies`, the `qc` section of `GET /dashboard`) and dense in the schema: `qc_inspections` is append-only and serialized per assembly, `qc_defects` carries a defect code per component piece, `qc_bonus_accruals` is unique per assembly, and `wage_credits` is unique per garment unit. Four business items stay `UNRESOLVED / PRODUCTION_BLOCKED` in this area (`19-business-defaults-register.md` OQ-3, OQ-4, OQ-7, OQ-8), and the frozen schema answers a pending rule with an *unvalued* eligibility event rather than a refusal.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Implement the assembly-level QC disposition state machine exactly as `11-database-schema-spec.md` §6 describes it, including the terminal states and the no-override rule.
+- Make the defect taxonomy a configured input, never a list invented in code, and refuse an unknown code instead of storing it.
+- Make repair routing and wage eligibility structurally incapable of double-crediting a unit.
+- Record a disposition even when the bonus rule version is not approved, and refuse to produce a monetary amount in that path.
+- Deliver the phase that can be verified without a database or an HTTP client: contract-shaped models, domain services, and tests, so the persistence phase writes rows rather than deciding policy.
+
+**Non-Goals:**
+- The HTTP layer, bearer authentication, `Idempotency-Key` middleware, and role enforcement (`x-roles: [QCInspector]`). These land with the real repository in phase 4.
+- PostgreSQL DDL. `M007` and the `classify_qc_unit` routine are authored in phase 3, when a database is available to verify them; this change pins their ownership and content instead.
+- `createAssembly`'s BOM-count, same-order, and distinct-unallocated-piece validation, which belongs to the shop-floor service and needs the locked BOM.
+- `VIEW-05` frontend work, and defect-to-time-study drift correlation (no join key exists between `qc_defects` and `time_study_observations` in the frozen schema).
+- Resolving OQ-3, OQ-4, OQ-7, or OQ-8, and any amendment to `contracts/openapi.yaml`.
+
+## Decisions
+
+### 1. The assembly is the QC target; the function index signature is superseded
+- **Choice:** `classify_assembly` takes an `assemblyId` and a defect list, matching the frozen `QcRequest` schema and the prose in `11-database-schema-spec.md` §6, and treats the whole assembly as the unit of disposition. The function index signature `classify_qc_unit(p_unit_id uuid, p_disposition text, p_defect_code text, p_idempotency_key text)` is not implemented.
+- **Rationale:** The two signatures disagree. The prose version is the one the contract, `create_assembly` ("entire assembly remains the QC target"), `FR-8.1`, and `research/blueprint-boundaries-001.md` §3.1 all agree with; the index version also accepts a single defect code, which cannot express a multi-piece defect list.
+- **Alternatives Considered:** Implement both (rejected: two entry points would need to agree on the terminal-state and first-Pass rules, and the index version cannot express `qc_defects` per component piece); implement the index version and extend it (rejected: that is a schema change, not an implementation).
+
+### 2. A pending rule records the disposition unvalued; it does not block the inspection
+- **Choice:** An inspection is always recorded, and on the first `PASS` the service emits exactly one eligibility event for the assembly carrying the rule version effective at disposition time (`eligibility_events` is unique per assembly) and no monetary row. The wage credits and the bonus accrual are emitted only when that rule version is `APPROVED`, and no amount is ever derived from a fallback rate, environment variable, or seeded default.
+- **Rationale:** `11-database-schema-spec.md` §6 states it directly: "A pending rule records quality disposition plus an unvalued eligibility event; later valuation uses that event's effective rate/rule, never a silently chosen current rule." The contract also lists no `FINANCIAL_RULE_PENDING` response for `inspectUnit`, unlike the payroll operations. Refusing the inspection would stop the floor to protect an amount that is not being computed yet.
+- **Alternatives Considered:** Return `409 FINANCIAL_RULE_PENDING` from `inspectUnit` (rejected: contradicts the schema and adds an undocumented response to the frozen contract); accrue a zero bonus while pending (rejected: a zero accrual is indistinguishable from a real zero-rate accrual in `qc_bonus_accruals` and would silently finalize the pool).
+
+### 3. The repair operator is derived, never supplied
+- **Choice:** `route_repair` resolves each defect's component piece through the assembly's immutable allocation and returns that allocation's `operator_id`. `FR-8.2`'s "requires `original_operator_id`" is superseded.
+- **Rationale:** `11-database-schema-spec.md` §2 and §6 state that the repair operator is "derived from immutable component source, not supplied by caller", and the frozen `Defect` schema has no operator field, so a caller-supplied value would be rejected by `extra="forbid"` before it could be validated. Trusting the caller here is also how a repair gets routed to a cheaper operator.
+- **Alternatives Considered:** Add the field to the contract (rejected: a public-contract change reopens the Phase A review); accept it as optional metadata and ignore it (rejected: dead input invites a wrong assumption).
+
+### 4. The defect taxonomy is configuration, and the module ships no list
+- **Choice:** `classify_assembly` receives a `DefectTaxonomy` built from the tenant's configured codes. `REPAIR` and `REJECT` require at least one defect whose code is in that taxonomy; `PASS` must carry none; an unknown code raises `VALIDATION_ERROR` naming the code.
+- **Rationale:** `qc_defects.defect_code` is untyped `text`, the taxonomy is Priority 2, and the only source-backed codes are the three BRD examples (`broken stitch`, `puckering`, `uneven seam`). Hard-coding those three as an enum would convert a BRD illustration into policy and would make a legitimate fourth defect unrecordable.
+- **Alternatives Considered:** A `DefectCode` enum in code (rejected: invents policy, see above); accept any non-empty string (rejected: the BRD requires a selected category, and a free-text code makes the taxonomy uncountable for R&D review).
+
+### 5. Terminal states are terminal, and idempotency is checked first
+- **Choice:** A new inspection against `QC_PASS`, `REJECT_SCRAP`, or `ASSEMBLING` raises `INVALID_STATE`. A replayed request is answered from the stored inspection before that check runs. "No final PASS or REJECT override in initial release" is enforced, not documented away.
+- **Rationale:** `11-database-schema-spec.md` §2 marks `qc_inspections` append-only and states the no-override rule; corrections after final QC require "a separately authorized future policy, not reinspection through this endpoint". Ordering idempotency first is required because the retried delivery of the request that *caused* `QC_PASS` arrives when the assembly is already terminal.
+- **Alternatives Considered:** Allow a supervisor override (rejected: not in this release and not in the contract); check state before idempotency (rejected: it turns a safe retry into a spurious `409`, the exact failure the `Idempotency-Key` header exists to prevent).
+
+### 6. One eligibility event per assembly, one wage credit per piece, one accrual per assembly
+- **Choice:** On the first `PASS` (the first inspection whose disposition is `PASS`, which is also the only one possible while `PASS` is terminal) the service emits exactly one `eligibility_events` row for the assembly, one `WageCredit` per component allocation valued from that piece's immutable `piece_rate_snapshots` rate, and exactly one `qc_bonus_accruals` row for the assembly valued from the approved rule's `bonus_rate`. A `REPAIR` emits routes only; a `REJECT` emits neither, so a rejected assembly is worth Rp 0 with no automatic deduction.
+- **Rationale:** `11-database-schema-spec.md` §4 pins `eligibility_events` to `unique assembly` and `qc_bonus_accruals` to `unique (assembly_id)`, while §6 requires "one wage credit per allocated component piece/contributor and ONE bonus per assembly atomically" and `FR-9.1`/`FR-10.3` require "ONE event per Pass — no double pool". Structuring the credit as "first `PASS` only" makes AT-05's no-double-credit outcome a property of the state machine rather than a check that can be forgotten.
+- **Alternatives Considered:** Emit eligibility per component piece (rejected: contradicts the unique-per-assembly constraint); emit eligibility on every `PASS` and deduplicate in Payroll (rejected: Payroll's unique index on `wage_credits (garment_unit_id)` would then reject a legitimate row and surface as a database error instead of a domain rule); accrue per component piece (rejected: multiplies the pool by the piece count).
+
+### 7. The dashboard summary counts assemblies, not inspections
+- **Choice:** `summarize_assemblies` counts each assembly once by its current status: `QC_PASS` → `passCount`, `REWORK` → `repairCount`, `REJECT_SCRAP` → `rejectCount`, and `MENUNGGU_QC`/`ASSEMBLING` → none.
+- **Rationale:** `QcSummary` has three counters and no total, and `qc_inspections` holds one row per inspection cycle, so counting rows would report a repaired-then-passed unit as both a repair and a pass — a double count that also contradicts the state machine.
+- **Alternatives Considered:** Count inspection rows (rejected: double counts re-inspected assemblies); count by latest disposition across the whole tenant including unassembled pieces (rejected: `garment_units` awaiting assembly are not a QC disposition, which is why the schema has two status enums).
+
+### 8. Module location and migration ownership
+- **Choice:** Place the module at `backend/quality-control/`, which the hygiene allow-list already permits. This module owns `M007` (`garment_assemblies`, `assembly_components`, `qc_inspections`, `qc_defects`) and the `classify_qc_unit` routine in `M012`; `qc_bonus_accruals` stays in Payroll's `M009`.
+- **Rationale:** `11-database-schema-spec.md` §"Migration sequence" assigns `M007` to "assemblies/allocations/QC", and `18-parallelization-and-workstreams.md` §4 assigns the touch-floor and QC tables to the QC/MES developer. The Payroll change claimed `M007` in its task 3.2 because it needed the tables to exist, not because it owns them; recording the split prevents two authors writing the same migration.
+- **Alternatives Considered:** Let Payroll author `M007` (rejected: the QC tables would then be shaped by a consumer, and this module's tests could not verify their invariants); create `M007a`/`M007b` (rejected: the migration sequence is fixed by the schema spec and a split sequence breaks the documented order).
+
+### 9. Authorization and persistence stay out of the domain service
+- **Choice:** The domain services take no actor token and open no connection; role enforcement (`QCInspector` for `inspectUnit`, `ProductionHead | QCInspector` for `listAssemblies`), tenant context installation, and the `idempotency_records` reservation are phase-4/5 concerns at the API layer. The service detects a replay only within the assembly's own inspection history.
+- **Rationale:** `AGENTS.md` requires the module to be runnable and reviewable by a junior developer: a service that needs a live database and a JWT to be exercised is neither. The one boundary this creates — a key reused across two different assemblies is caught by `idempotency_records (tenant_id, operation_id, key)`, not by this service — is stated in the README rather than papered over.
+- **Alternatives Considered:** Inject a repository port now (rejected: an unused protocol with one fake implementation is exactly the abstraction `AGENTS.md` says to delete); make the service async to match FastAPI (rejected: nothing here awaits).
+
+## Risks / Trade-offs
+- **The eligibility event and wage credits have no tables yet.** `eligibility_events` and `wage_credits` are in Payroll's `M009` and the QC classification path writes them. Until phase 3 lands, the shapes are fixed in `services/inspection.py` and the risk is a column-name mismatch at integration; the fields mirror `11-database-schema-spec.md` §4 exactly (`assembly_id`, `passed_at`, `rule_version_id`, and `garment_unit_id`, `operator_id`, `amount_minor`, `currency`) to keep that diff mechanical.
+- **The taxonomy has no configuration surface.** This change refuses unknown codes and therefore cannot record a defect until a tenant taxonomy exists. That is deliberate — a defect recorded against an invented code is worse than a refusal — but it means phase 4 must land the configuration read alongside `inspectUnit`, or the QC terminal is blocked on its first `REPAIR`.
+- **Terminal states with no correction path.** `PASS` and `REJECT` cannot be corrected through this endpoint by design. Until a separately authorized correction policy exists, a mis-scanned assembly is corrected by direct database intervention under audit, which is the outcome the schema spec accepts for this release.
+
+## Migration Plan
+Additive only. The module is new, no existing caller changes, and the branch is green at its own tip (`ruff check`, `ruff format --check`, `mypy src/ --strict`, `pytest`, `python scripts/check_workspace_hygiene.py`). Rollback is deleting `backend/quality-control/` and reverting the one CI job; no data or contract artifact is touched.
+
+## Open Questions
+- Where the tenant's defect taxonomy is read from, and whether its version is recorded on `qc_inspections` the way the rule version is recorded on the eligibility event. Phase 4 decides; the taxonomy is deliberately a parameter here so the answer does not change this layer.
+- Whether a defect may be attached to a `PASS` for observation without a disposition consequence. The current answer is no, because the BRD requires the category only for `Repair` and `Reject`; revisit if the QC lead asks for it.
