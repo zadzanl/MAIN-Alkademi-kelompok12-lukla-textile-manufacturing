@@ -27,6 +27,7 @@ ALLOWED_ROOT_DIRS = {
     ".github",
     ".agents",
     ".vscode",
+    # Production payroll lives under backend/; keep the root allow-list explicit.
     "backend",
     "docs",
     "frontend",
