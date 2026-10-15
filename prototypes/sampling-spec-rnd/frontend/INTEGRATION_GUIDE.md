@@ -189,6 +189,43 @@ VITE_LEDGER_TOKEN=<signed JWT>
 
 ---
 
+## 🔐 Portal Auth (Login / Registrasi / Lupa Akses)
+
+Halaman portal (`pages/PortalAuthView.tsx`) tampil sebagai **auth gate** sebelum dashboard:
+selama belum ada sesi, `App.tsx` hanya merender halaman portal. Setelah login, dashboard lama
+muncul seperti biasa.
+
+**Alur:**
+1. **Registrasi** — isi Nama, Email, Nomor karyawan, NIK/KTP (16 digit), Nomor HP, Departemen,
+   Password + Konfirmasi, centang persetujuan. Akun masuk status **pending**.
+2. **Verifikasi Admin IT** — login sebagai admin → chapter **Administrasi → Persetujuan Akses** →
+   Setujui/Tolak. Hanya setelah disetujui akun bisa login.
+3. **Login** — identitas bisa berupa **Nomor karyawan, NIK/KTP, email, atau Nomor HP** + password.
+4. **Lupa akses** — masukkan identitas → kode OTP dikirim ke email (mode dev: tercetak di log
+   backend) → masukkan OTP + password baru.
+5. **Ganti password** — Settings → kartu **Keamanan** (sesi dicabut, lalu login ulang).
+
+**Endpoint** (prefix `/api/auth`, `services/authApi.ts`):
+```
+POST /register  POST /login  POST /logout  GET /me
+POST /change-password  POST /forgot-password  POST /reset-password
+GET  /admin/registrations  POST /admin/registrations/{id}/approve|reject
+```
+
+**Akun admin default:** `admin@luka.local` / `Admin#12345` (ubah via `.env` backend:
+`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`).
+
+**Layer terkait:** `services/authRules.ts` (validasi murni, diuji `tests/auth.test.ts`),
+`services/authSession.ts` (token opaque di memori + `sessionStorage`), `services/identity.ts`
+(`actor()` membaca pengguna aktif).
+
+**"Did it work?" check:**
+1. `curl http://localhost:8009/api/auth/health` → `{"status":"healthy","module":"portal-auth",...}`.
+2. Buka `http://localhost:3009` → halaman portal muncul (bukan dashboard).
+3. Registrasi → login gagal (pending) → setujui sebagai admin → login berhasil → dashboard muncul.
+
+---
+
 ## 🚀 Development Workflow
 
 ### Prerequisites
@@ -206,6 +243,7 @@ File `.env` (lihat `.env.example`):
 ```env
 # Path relatif agar lewat Vite proxy (JANGAN pakai http://localhost:...)
 VITE_API_URL=/api/sampling-spec-rnd
+VITE_AUTH_URL=/api/auth
 ```
 
 ### Development

@@ -31,15 +31,15 @@ function DataTable<T>({
   emptyMessage = 'Tidak ada data yang cocok.',
 }: DataTableProps<T>) {
   return (
-  <section className="surface bg-white border border-[#e2e8f0] rounded-[18px] overflow-hidden mb-4">
+  <section className="surface bg-white border border-hair rounded-[18px] overflow-hidden mb-4">
     {/* Header row */}
-    <div className="p-5 flex flex-col lg:flex-row lg:justify-between gap-4 border-b border-[#f1f5f9]">
+    <div className="p-5 flex flex-col lg:flex-row lg:justify-between gap-4 border-b border-panel-2">
       <div>
-        <h2 className="text-[16px] font-bold text-[#0f172a]">{title}</h2>
-        <p className="text-[12px] font-medium text-[#64748b] mt-0.5">{subtitle}</p>
+        <h2 className="text-[16px] font-bold text-ink">{title}</h2>
+        <p className="text-[12px] font-medium text-ink-muted mt-0.5">{subtitle}</p>
       </div>
       <div className="relative">
-        <LucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8] pointer-events-none" />
+        <LucideIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint pointer-events-none" />
         <label htmlFor="tbl-search" className="sr-only">Cari</label>
         <input
           id="tbl-search" type="search"
@@ -52,7 +52,7 @@ function DataTable<T>({
     </div>
 
     {/* Tabs */}
-    <div role="tablist" aria-label="Filter status" className="flex gap-1 px-4 py-3 overflow-x-auto border-b border-[#f1f5f9]">
+    <div role="tablist" aria-label="Filter status" className="flex gap-1 px-4 py-3 overflow-x-auto border-b border-panel-2">
       {tabs.map(tab => (
         <button
           key={tab.id} type="button" role="tab"
@@ -82,7 +82,7 @@ function DataTable<T>({
                 {columns.map(col => (
                   <td key={col.key} className="px-4 py-3 whitespace-nowrap">
                     {col.render ? col.render(row[col.key], row) : (
-                      <span className="text-[#334155]">{row[col.key] as React.ReactNode}</span>
+                      <span className="text-ink-2">{row[col.key] as React.ReactNode}</span>
                     )}
                   </td>
                 ))}
@@ -92,7 +92,7 @@ function DataTable<T>({
         </table>
       </div>
     ) : (
-      <p className="px-5 py-10 text-[13px] font-medium text-[#64748b] text-center">
+      <p className="px-5 py-10 text-[13px] font-medium text-ink-muted text-center">
         {emptyMessage}
       </p>
     )}

@@ -2,7 +2,6 @@
  * Type definitions for Sampling & Spec R&D
  * Includes: TimeStudy, SpecVersion, SampleVersion, WorkflowSummary
  */
-import React from 'react';
 
 // ─────────────────────────────────────────────
 // TIME STUDY
@@ -212,40 +211,3 @@ export interface WorkflowSummary {
 
 /** CSV export handler shared by App and page views. */
 export type ExportCSV = (data: unknown[], filename: string) => void;
-
-// ─────────────────────────────────────────────
-// COMPONENT PROPS
-// ─────────────────────────────────────────────
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
-  children: React.ReactNode;
-}
-
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'glass' | 'outlined';
-  children: React.ReactNode;
-}
-
-export interface ModalProps {
-  isOpen: boolean;
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-  footer?: React.ReactNode;
-}
-
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  variant?: 'outlined' | 'filled';
-}
-
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  options: Array<{ label: string; value: string | number }>;
-}

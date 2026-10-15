@@ -9,12 +9,9 @@
  *   --text-faint     #64748b  contrast ≈  4.6:1  ← floor
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
+/* Font families for the in-app FontSelector — a single request (was 6 separate
+   render-blocking @imports) with display=swap to avoid invisible text. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
 
 /* ── Design Tokens ──────────────────────────────────────────────────────────── */
 :root {
@@ -73,6 +70,44 @@
   --dur-slow:     320ms;
 }
 
+/* ── Semantic color tokens (light) ────────────────────────────────────────────
+   Consolidated set (Fase 2b). Values are the canonical representatives of the
+   near-duplicate groups they replaced; dark counterparts live under `.dark`. */
+:root {
+  --c-ink:        #1d1d1f;
+  --c-ink-2:      #374151;
+  --c-ink-muted:  #6e6e73;
+  --c-ink-faint:  #94a3b8;
+
+  --c-brand:      #0071e3;
+  --c-brand-soft: #80baff;
+  --c-brand-bg:   #e8f2ff;
+  --c-brand-bg-5: #dbeafe;
+
+  --c-ok:    #34c759;
+  --c-ok-2:  #1a7a34;
+  --c-ok-bg: #e8f5e9;
+
+  --c-warn:      #ff9500;
+  --c-warn-2:    #b86800;
+  --c-warn-bg:   #fff4e6;
+  --c-warn-bg-2: #fef3c7;
+
+  --c-bad:      #ff3b30;
+  --c-bad-4:    #dc2626;
+  --c-bad-bg:   #fee2e2;
+  --c-bad-bg-2: #fecaca;
+
+  --c-page:    #f5f5f7;
+  --c-panel:   #fafafa;
+  --c-panel-2: #f0f0f2;
+  --c-panel-6: #161616;
+
+  --c-hair:    #e6e6e9;
+  --c-hair-2:  #dedee2;
+  --c-hair-4:  #d5d5da;
+}
+
 /* ── Reset ──────────────────────────────────────────────────────────────────── */
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -80,7 +115,14 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-size: 14px;
+  /* Root font size is the single source for all rem-based sizing.
+     Kept at 16px to preserve the rendered design (previously supplied by globals.css). */
+  font-size: 16px;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
 }
 
 body {
@@ -399,25 +441,32 @@ label {
   white-space: nowrap;
   border: 1px solid transparent;
 }
+/* Pill colour variants — driven by the same semantic tokens as the
+   `bg-*/text-*` badges, so both badge styles are visually identical and
+   dark-aware without per-variant `.dark` overrides. */
 /* blue */
 .pill.blue, .pill-blue {
-  background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe;
+  background: var(--c-brand-bg-5); color: var(--c-brand); border-color: var(--c-brand-bg-5);
 }
 /* green */
 .pill.success, .pill-green {
-  background: #dcfce7; color: #15803d; border-color: #bbf7d0;
+  background: var(--c-ok-bg); color: var(--c-ok-2); border-color: var(--c-ok-bg);
 }
 /* orange */
 .pill.warning, .pill-orange {
-  background: #fef3c7; color: #b45309; border-color: #fde68a;
+  background: var(--c-warn-bg-2); color: var(--c-warn-2); border-color: var(--c-warn-bg-2);
 }
 /* red */
 .pill.danger, .pill-red {
-  background: #fee2e2; color: #b91c1c; border-color: #fecaca;
+  background: var(--c-bad-bg); color: var(--c-bad-4); border-color: var(--c-bad-bg);
 }
 /* grey */
 .pill.gray, .pill-gray {
-  background: #f1f5f9; color: #475569; border-color: #e2e8f0;
+  background: var(--c-panel-2); color: var(--c-ink-muted); border-color: var(--c-panel-2);
+}
+/* dark (neutral emphasis, e.g. PAID / converted) */
+.pill.dark, .pill-dark {
+  background: var(--c-ink); color: #ffffff; border-color: var(--c-ink);
 }
 
 /* ── Tables ──────────────────────────────────────────────────────────────────── */
@@ -556,6 +605,35 @@ article.surface:hover {
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp var(--dur-slow) var(--ease-smooth) both; }
+
+/* ── Migrated animation utilities (previously in globals.css) ──────────────────
+   Kept here so the sidebar chapter reveal ("sampul") and any fade/slide usage
+   continue to work after globals.css is removed. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(8px);  opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes slideDown {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-fadeIn    { animation: fadeIn 0.2s ease-in-out; }
+.animate-slideUp   { animation: slideUp 0.3s ease-out; }
+.animate-slideDown { animation: slideDown 0.3s ease-out; }
+
+/* ── Text selection ────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(139, 92, 246, 0.3);
+  color: inherit;
+}
+::-moz-selection {
+  background-color: rgba(139, 92, 246, 0.3);
+  color: inherit;
+}
 
 /* ── Book page-turn transition (navigation between views) ──────────────────── */
 .page-stage { perspective: 1600px; }
@@ -704,6 +782,39 @@ article.surface:hover {
   --shadow-sm: 0 1px 3px rgba(0,0,0,.40), 0 1px 2px rgba(0,0,0,.20);
   --shadow-md: 0 4px 8px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.25);
   --shadow-lg: 0 10px 24px rgba(0,0,0,.50), 0 4px 8px rgba(0,0,0,.30);
+
+  /* Semantic color tokens — dark counterparts. These mirror the previous
+     `.dark .text-[#…]` override block, now driven by variables. */
+  --c-ink:       #f1f5f9;
+  --c-ink-2:     #cbd5e1;
+  --c-ink-muted: #94a3b8;
+  --c-ink-faint: #94a3b8;
+
+  --c-brand:      #3b9eff;
+  --c-brand-bg:   #1e3a5f;
+  --c-brand-bg-5: #1e3a5f;
+
+  --c-ok:     #34d058;
+  --c-ok-2:   #86efac;
+  --c-ok-bg:  #0d2a1a;
+
+  --c-warn:     #fbbf24;
+  --c-warn-2:   #fcd34d;
+  --c-warn-bg:  #2d1f00;
+  --c-warn-bg-2:#2d1f00;
+
+  --c-bad:    #f87171;
+  --c-bad-4:  #fca5a5;
+  --c-bad-bg: #2a0d0d;
+  --c-bad-bg-2:#2a0d0d;
+
+  --c-page:    #161616;
+  --c-panel:   #161616;
+  --c-panel-2: #262626;
+
+  --c-hair:    #262626;
+  --c-hair-2:  #3d3d3d;
+  --c-hair-4:  #3d3d3d;
 }
 
 /* ── Dark: body & html ───────────────────────────────────────────────────── */
@@ -809,21 +920,8 @@ article.surface:hover {
 }
 
 /* ── Dark: Pills / badges ────────────────────────────────────────────────── */
-.dark .pill.blue, .dark .pill-blue {
-  background: #1e3a5f; color: #93c5fd; border-color: #1d4ed8;
-}
-.dark .pill.success, .dark .pill-green {
-  background: #0d2a1a; color: #86efac; border-color: #166534;
-}
-.dark .pill.warning, .dark .pill-orange {
-  background: #2d1f00; color: #fcd34d; border-color: #92400e;
-}
-.dark .pill.danger, .dark .pill-red {
-  background: #2a0d0d; color: #fca5a5; border-color: #991b1b;
-}
-.dark .pill.gray, .dark .pill-gray {
-  background: #161616; color: #94a3b8; border-color: #262626;
-}
+/* (Removed) `.pill-*` variants now read the semantic tokens, whose dark values
+   are defined under `.dark`. No per-variant override is needed. */
 
 /* ── Dark: pill buttons (inline table actions) ───────────────────────────── */
 .dark .btn-pill-blue   { color: #93c5fd; border-color: #1d4ed8; background: #1e3a5f; }
@@ -856,36 +954,9 @@ article.surface:hover {
 }
 
 /* ── Dark: inline hardcoded Tailwind color overrides ────────────────────── */
-/* Pages use inline hex Tailwind classes like text-[#1d1d1f], bg-[#f5f5f7], etc.
-   We override the most common ones here so pages look correct in dark mode.  */
-
-/* Card/surface backgrounds */
-.dark .bg-\[\#f5f5f7\]  { background: #161616 !important; }
-.dark .bg-\[\#fafafa\]  { background: #161616 !important; }
-.dark .bg-\[\#f0f0f2\]  { background: #262626 !important; }
-.dark .bg-\[\#f1f5f9\]  { background: #161616 !important; }
-
-/* Border colours */
-.dark .border-\[\#e6e6e9\]  { border-color: #262626 !important; }
-.dark .border-\[\#e2e8f0\]  { border-color: #262626 !important; }
-.dark .border-\[\#f0f0f2\]  { border-color: #161616 !important; }
-.dark .border-\[\#d5d5da\]  { border-color: #3d3d3d !important; }
-.dark .border-\[\#dedee2\]  { border-color: #3d3d3d !important; }
-
-/* Text colours */
-.dark .text-\[\#1d1d1f\]  { color: #f1f5f9 !important; }
-.dark .text-\[\#0f172a\]  { color: #f1f5f9 !important; }
-.dark .text-\[\#111827\]  { color: #f1f5f9 !important; }
-.dark .text-\[\#374151\]  { color: #cbd5e1 !important; }
-.dark .text-\[\#6b7280\]  { color: #94a3b8 !important; }
-.dark .text-\[\#626269\]  { color: #94a3b8 !important; }
-.dark .text-\[\#6e6e73\]  { color: #94a3b8 !important; }
-.dark .text-\[\#64748b\]  { color: #94a3b8 !important; }
-.dark .text-\[\#334155\]  { color: #cbd5e1 !important; }
-.dark .text-\[\#475569\]  { color: #94a3b8 !important; }
-
-/* Stopwatch clock face background in dark */
-.dark .bg-\[\#1d1d1f\]   { background: #f1f5f9 !important; }
+/* (Removed) Inline hex utility classes are now mapped to the `--c-*` semantic
+   tokens defined under `.dark`, so dark mode is handled by variables instead of
+   brittle `.dark .text-[#…]` selectors. */
 
 /* ── Dark: header search input ───────────────────────────────────────────── */
 .dark #global-search {
@@ -959,8 +1030,22 @@ html.theme-transition *:not(.theme-icon)::after {
 @media (prefers-reduced-motion: reduce) {
   .theme-icon { transition: none; }
   .page-turn { animation: none; }
+  .animate-slideDown,
+  .animate-slideUp,
+  .animate-fadeIn { animation: none; }
   html.theme-transition,
   html.theme-transition *,
   html.theme-transition *::before,
   html.theme-transition *::after { transition: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Tailwind layers — kept LAST on purpose.
+   These directives previously lived in globals.css, which main.tsx imported
+   AFTER index.css. Keeping them at the end of this file preserves the exact
+   cascade position of Tailwind base/components/utilities, so the rendered
+   design is unchanged while the legacy globals.css file is removed.
+   ══════════════════════════════════════════════════════════════════════════════ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

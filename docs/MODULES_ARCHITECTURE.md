@@ -316,7 +316,7 @@ For each new module, ensure:
 1. **Copy template structure**
    ```bash
    mkdir -p backend/new-module/src/{models,services,utils,api}
-   cp backend/sampling-spec-rnd/README.md backend/new-module/
+   cp prototypes/sampling-spec-rnd/backend/README.md backend/new-module/
    ```
 
 2. **Define models** → `src/models/your_model.py`

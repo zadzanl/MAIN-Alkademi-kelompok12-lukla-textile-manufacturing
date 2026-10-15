@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SpecListView — Full list of spec versions with action buttons
  */
 
@@ -12,12 +12,12 @@ import { TENANT_ID, REVIEWER_ID, APPROVER_ID } from '../services/identity';
 import { matchesQuery } from '../utils/filter';
 
 const STATUS_STYLE: Record<string, string> = {
-  draft:      'bg-[#e8f2ff] text-[#0066cc]',
-  review:     'bg-[#fff4e6] text-[#ff9500]',
-  approved:   'bg-[#e8f5e9] text-[#34c759]',
-  active:     'bg-[#e8f5e9] text-[#34c759]',
-  superseded: 'bg-[#f0f0f2] text-[#626269]',
-  archived:   'bg-[#f0f0f2] text-[#626269]',
+  draft:      'bg-brand-bg text-brand',
+  review:     'bg-warn-bg text-warn',
+  approved:   'bg-ok-bg text-ok',
+  active:     'bg-ok-bg text-ok',
+  superseded: 'bg-panel-2 text-ink-muted',
+  archived:   'bg-panel-2 text-ink-muted',
 };
 
 interface Props { onExportCSV: ExportCSV; globalSearch?: string; }
@@ -63,13 +63,13 @@ const SpecListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Daftar Versi Spec</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">{specs.length} spec version tercatat</p>
+          <h2 className="text-2xl font-semibold text-ink">Daftar Versi Spec</h2>
+          <p className="text-ink-muted text-sm mt-1">{specs.length} spec version tercatat</p>
         </div>
       </div>
 
       {actionMsg && (
-        <div className="bg-[#e8f5e9] border border-[#34c759] rounded-[10px] px-4 py-2.5 text-[13px] text-[#1a7a34] font-medium">✓ {actionMsg}</div>
+        <div className="bg-ok-bg border border-ok rounded-[10px] px-4 py-2.5 text-[13px] text-ok-2 font-medium">✓ {actionMsg}</div>
       )}
 
       <DataTable
@@ -91,10 +91,10 @@ const SpecListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
           { key: 'spec_name',  label: 'Nama Spec' },
           { key: 'version_number', label: 'Versi' },
           { key: 'status',     label: 'Status',
-            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[String(v)]??'bg-[#f0f0f2] text-[#626269]'}`}>{String(v)}</span> },
+            render: v => <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[String(v)]??'bg-panel-2 text-ink-muted'}`}>{String(v)}</span> },
           { key: 'total_drifts',    label: 'Drifts',  render: v => Number(v ?? 0) },
           { key: 'critical_drifts', label: 'Kritis',
-            render: v => { const n = Number(v); return <span className={n > 0 ? 'text-[#ff3b30] font-semibold' : ''}>{n}</span>; } },
+            render: v => { const n = Number(v); return <span className={n > 0 ? 'text-bad font-semibold' : ''}>{n}</span>; } },
           { key: 'created_by', label: 'Dibuat oleh', render: v => v ? String(v) : '—' },
           {
             key: 'version_id', label: 'Aksi',
@@ -118,7 +118,7 @@ const SpecListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
                 )}
                 {row.status === 'approved' && (
                   <button onClick={() => doAction(row, 'activate')}
-                    className="btn-pill btn-pill-dark !bg-[#0071e3]">
+                    className="btn-pill btn-pill-dark !bg-brand">
                     Aktifkan
                   </button>
                 )}
@@ -152,38 +152,38 @@ const SpecListView: React.FC<Props> = ({ onExportCSV, globalSearch = '' }) => {
                 { label: 'Catatan',      value: detail.notes || '—' },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <p className="text-[11px] text-[#6e6e73] uppercase tracking-wider">{label}</p>
-                  <p className="font-medium text-[#1d1d1f] mt-0.5">{String(value)}</p>
+                  <p className="text-[11px] text-ink-muted uppercase tracking-wider">{label}</p>
+                  <p className="font-medium text-ink mt-0.5">{String(value)}</p>
                 </div>
               ))}
             </div>
             {detail.process_steps?.length > 0 && (
               <div>
-                <p className="text-[11px] text-[#6e6e73] uppercase tracking-wider mb-1">Langkah Proses</p>
+                <p className="text-[11px] text-ink-muted uppercase tracking-wider mb-1">Langkah Proses</p>
                 <ul className="list-disc list-inside space-y-0.5">
                   {detail.process_steps.map((s: string, i: number) => (
-                    <li key={i} className="text-[#1d1d1f]">{s}</li>
+                    <li key={i} className="text-ink">{s}</li>
                   ))}
                 </ul>
               </div>
             )}
             {detail.drifts?.length > 0 && (
               <div>
-                <p className="text-[11px] text-[#6e6e73] uppercase tracking-wider mb-2">Daftar Drift ({detail.drifts.length})</p>
+                <p className="text-[11px] text-ink-muted uppercase tracking-wider mb-2">Daftar Drift ({detail.drifts.length})</p>
                 {detail.drifts.map((d: SpecDrift) => (
                   <div key={d.drift_id} className={`rounded-[10px] px-3 py-2 mb-2 text-[12px] ${
-                    d.severity === 'critical' ? 'bg-[#ffebee] text-[#ff3b30]' :
-                    d.severity === 'high'     ? 'bg-[#fff4e6] text-[#ff9500]' : 'bg-[#f5f5f7] text-[#626269]'
+                    d.severity === 'critical' ? 'bg-bad-bg text-bad' :
+                    d.severity === 'high'     ? 'bg-warn-bg text-warn' : 'bg-page text-ink-muted'
                   }`}>
                     <span className="font-semibold">{d.parameter_name}</span>: limit {d.specification_limit} → measured {d.measured_value} ({d.deviation_percent?.toFixed(1)}% dev) · {d.severity}
-                    {d.resolved && <span className="ml-2 text-[#34c759] font-semibold">✓ Resolved</span>}
+                    {d.resolved && <span className="ml-2 text-ok font-semibold">✓ Resolved</span>}
                   </div>
                 ))}
               </div>
             )}
           </div>
         ) : (
-          <p className="text-[#6e6e73] text-sm text-center py-4">Memuat data…</p>
+          <p className="text-ink-muted text-sm text-center py-4">Memuat data…</p>
         )}
       </Modal>
     </div>

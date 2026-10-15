@@ -8,21 +8,17 @@ export default {
   // These come from SEV_COLOR map in DriftAnalysisView and STATUS_STYLE maps.
   safelist: [
     // severity pill backgrounds / text used via variable lookup
-    'bg-[#e8f2ff]', 'text-[#0066cc]',
-    'bg-[#fff4e6]', 'text-[#ff9500]',
-    'bg-[#ffebee]', 'text-[#ff3b30]',
-    'bg-[#ff3b30]', 'text-white',
+    'bg-brand-bg', 'text-brand',
+    'bg-warn-bg', 'text-warn',
+    'bg-bad-bg', 'text-bad',
+    'bg-bad', 'text-white',
     // status badge colours
-    'bg-[#e8f5e9]', 'text-[#34c759]',
-    'bg-[#f0f0f2]', 'text-[#626269]',
+    'bg-ok-bg', 'text-ok',
+    'bg-panel-2', 'text-ink-muted',
     // border-left accent on study cards
-    'border-l-[#34c759]', 'border-l-[#ff9500]', 'border-l-[#0071e3]',
+    'border-l-ok', 'border-l-warn', 'border-l-brand',
     // trend text colours
-    'text-[#34c759]',
-    // dark mode overrides for hardcoded hex classes
-    'dark:bg-[#1e293b]', 'dark:bg-[#263447]', 'dark:bg-[#0f172a]',
-    'dark:border-[#334155]', 'dark:border-[#475569]',
-    'dark:text-[#f1f5f9]', 'dark:text-[#cbd5e1]', 'dark:text-[#94a3b8]',
+    'text-ok',
   ],
   theme: {
     extend: {
@@ -74,6 +70,35 @@ export default {
           red: '#FF3B30',     // Apple red
           purple: '#AF52DE',  // Apple purple
         },
+        // ── Semantic token layer (CSS-variable backed, dark-aware) ──────────
+        // Light values are defined in index.css :root, dark values in .dark.
+        // Near-duplicate tokens were consolidated (see Fase 2b).
+        ink: 'var(--c-ink)',
+        'ink-2': 'var(--c-ink-2)',
+        'ink-muted': 'var(--c-ink-muted)',
+        'ink-faint': 'var(--c-ink-faint)',
+        brand: 'var(--c-brand)',
+        'brand-soft': 'var(--c-brand-soft)',
+        'brand-bg': 'var(--c-brand-bg)',
+        'brand-bg-5': 'var(--c-brand-bg-5)',
+        ok: 'var(--c-ok)',
+        'ok-2': 'var(--c-ok-2)',
+        'ok-bg': 'var(--c-ok-bg)',
+        warn: 'var(--c-warn)',
+        'warn-2': 'var(--c-warn-2)',
+        'warn-bg': 'var(--c-warn-bg)',
+        'warn-bg-2': 'var(--c-warn-bg-2)',
+        bad: 'var(--c-bad)',
+        'bad-4': 'var(--c-bad-4)',
+        'bad-bg': 'var(--c-bad-bg)',
+        'bad-bg-2': 'var(--c-bad-bg-2)',
+        page: 'var(--c-page)',
+        panel: 'var(--c-panel)',
+        'panel-2': 'var(--c-panel-2)',
+        'panel-6': 'var(--c-panel-6)',
+        hair: 'var(--c-hair)',
+        'hair-2': 'var(--c-hair-2)',
+        'hair-4': 'var(--c-hair-4)',
       },
       spacing: {
         '3xs': '0.25rem',
@@ -105,15 +130,6 @@ export default {
         xl: ['20px', { lineHeight: '28px' }],
         '2xl': ['24px', { lineHeight: '32px' }],
         '3xl': ['30px', { lineHeight: '36px' }],
-      },
-      shadows: {
-        xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        base: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
       },
       backdropBlur: {
         xs: '2px',

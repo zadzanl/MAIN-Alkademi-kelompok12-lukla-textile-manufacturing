@@ -43,19 +43,19 @@ const ParetoChart: React.FC<ParetoChartProps> = ({
     .join(' ');
 
   return (
-    <section className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 shadow-sm">
+    <section className="bg-white border border-hair rounded-[18px] p-5 shadow-sm">
       <div className="flex justify-between items-start gap-3 mb-6">
         <div>
-          <h2 className="text-[17px] font-semibold text-[#111827] tracking-tight">{title}</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">{subtitle}</p>
+          <h2 className="text-[17px] font-semibold text-ink tracking-tight">{title}</h2>
+          <p className="text-[12px] text-ink-muted mt-0.5">{subtitle}</p>
         </div>
-        <span className="bg-[#dbeafe] text-[#1d4ed8] rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
+        <span className="bg-brand-bg-5 text-brand rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap">
           {badge}
         </span>
       </div>
 
       {points.length === 0 || max <= 0 ? (
-        <p className="text-center text-[#6e6e73] py-10 text-[13px]">
+        <p className="text-center text-ink-muted py-10 text-[13px]">
           Belum ada data defect untuk dianalisis.
         </p>
       ) : (
@@ -88,13 +88,13 @@ const ParetoChart: React.FC<ParetoChartProps> = ({
               return (
                 <div key={`${p.label}-${idx}`} className="relative flex-1 h-full flex items-end justify-center">
                   <span
-                    className="absolute text-[11px] font-semibold text-[#374151] whitespace-nowrap"
+                    className="absolute text-[11px] font-semibold text-ink-2 whitespace-nowrap"
                     style={{ bottom: barH + 4 }}
                   >
                     {p.value.toLocaleString('id-ID')}{unit ? ` ${unit}` : ''}
                   </span>
                   <div
-                    className="w-full max-w-[48px] rounded-t-[6px] rounded-b-[2px] bg-[#0071e3]"
+                    className="w-full max-w-[48px] rounded-t-[6px] rounded-b-[2px] bg-brand"
                     style={{ height: barH, minHeight: MIN_BAR_H }}
                     title={`${p.label}: ${p.value}${unit ? ` ${unit}` : ''} · ${p.sharePct}% · kumulatif ${p.cumulativePct}%`}
                   />
@@ -107,7 +107,7 @@ const ParetoChart: React.FC<ParetoChartProps> = ({
             {points.map((p, idx) => (
               <div
                 key={`${p.label}-label-${idx}`}
-                className="flex-1 text-center text-[11px] text-[#374151] truncate"
+                className="flex-1 text-center text-[11px] text-ink-2 truncate"
                 title={p.label}
               >
                 {p.label}
@@ -115,14 +115,14 @@ const ParetoChart: React.FC<ParetoChartProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#f3f4f6]">
+          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-panel">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#0071e3' }} />
-              <span className="text-[11px] text-[#6b7280]">Frekuensi</span>
+              <span className="text-[11px] text-ink-muted">Frekuensi</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-0.5" style={{ backgroundColor: '#0071e3' }} />
-              <span className="text-[11px] text-[#6b7280]">Kumulatif %</span>
+              <span className="text-[11px] text-ink-muted">Kumulatif %</span>
             </div>
           </div>
         </>

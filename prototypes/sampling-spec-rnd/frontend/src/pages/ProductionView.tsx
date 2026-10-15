@@ -29,10 +29,10 @@ import FloorTerminalView from './FloorTerminalView';
 const inputCls = 'w-full rounded-[10px] px-3 py-2.5 text-[13px]';
 
 const STATUS_STYLE: Record<AssemblyStatus, string> = {
-  MENUNGGU_QC: 'bg-[#fff4e6] text-[#b86800]',
-  QC_PASS: 'bg-[#e8f5e9] text-[#1a7a34]',
-  REWORK: 'bg-[#e8f2ff] text-[#0066cc]',
-  REJECT_SCRAP: 'bg-[#ffebee] text-[#dc2626]',
+  MENUNGGU_QC: 'bg-warn-bg text-warn-2',
+  QC_PASS: 'bg-ok-bg text-ok-2',
+  REWORK: 'bg-brand-bg text-brand',
+  REJECT_SCRAP: 'bg-bad-bg text-bad-4',
 };
 
 const STACKED_STATUS_KEYS: StackedKey[] = [
@@ -149,10 +149,10 @@ const ProductionView: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div className="inline-flex gap-1 rounded-[12px] bg-[#f0f0f2] p-1">
+      <div className="inline-flex gap-1 rounded-[12px] bg-panel-2 p-1">
         {([['terminal', 'Terminal Lantai'], ['admin', 'Admin']] as const).map(([id, label]) => (
           <button key={id} onClick={() => setMode(id)}
-            className={`min-h-[48px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#626269]'}`}>
+            className={`min-h-[48px] rounded-[9px] px-4 text-[13px] font-semibold transition-all ${mode === id ? 'bg-white text-ink shadow-sm' : 'text-ink-muted'}`}>
             {label}
           </button>
         ))}
@@ -162,30 +162,30 @@ const ProductionView: React.FC = () => {
       <>
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1d1d1f]">Produksi &amp; Tally 30 Menit</h2>
-          <p className="text-[#6e6e73] text-sm mt-1">Line, operator, penugasan, output per 30 menit, dan staging assembly ke QC</p>
+          <h2 className="text-2xl font-semibold text-ink">Produksi &amp; Tally 30 Menit</h2>
+          <p className="text-ink-muted text-sm mt-1">Line, operator, penugasan, output per 30 menit, dan staging assembly ke QC</p>
         </div>
         <button onClick={load} className="btn-secondary"><LucideIcon name="activity" className="w-4 h-4" /> Refresh</button>
       </div>
 
       {isMockOps && <MockModeBanner detail="data disimpan di memori." />}
-      {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
+      {error && <div className="rounded-[14px] border border-bad-bg-2 bg-bad-bg px-4 py-3 text-[13px] text-bad-4">{error}</div>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(({ label, value }) => (
-          <div key={label} className="bg-white border border-[#e6e6e9] rounded-[18px] p-5 text-center">
-            <p className="text-xs text-[#6e6e73] uppercase tracking-wider mb-1">{label}</p>
-            <p className="text-[30px] font-semibold text-[#1d1d1f]">{value}</p>
+          <div key={label} className="bg-white border border-hair rounded-[18px] p-5 text-center">
+            <p className="text-xs text-ink-muted uppercase tracking-wider mb-1">{label}</p>
+            <p className="text-[30px] font-semibold text-ink">{value}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white border border-[#e6e6e9] rounded-[18px] overflow-hidden">
-        <div className="flex gap-1 p-3 border-b border-[#f0f0f2] overflow-x-auto">
+      <div className="bg-white border border-hair rounded-[18px] overflow-hidden">
+        <div className="flex gap-1 p-3 border-b border-panel-2 overflow-x-auto">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`tab min-h-[44px] rounded-[9px] px-4 py-2 text-[13px] whitespace-nowrap transition-all ${
-                tab === t.id ? 'bg-[#eaf3fe] text-[#0066cc] font-semibold' : 'text-[#626269] hover:bg-[#f5f5f7]'
+                tab === t.id ? 'bg-brand-bg text-brand font-semibold' : 'text-ink-muted hover:bg-page'
               }`}>{t.label}</button>
           ))}
         </div>
@@ -196,21 +196,21 @@ const ProductionView: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <p className="text-[15px] font-semibold text-[#1d1d1f]">Line Produksi</p>
+                  <p className="text-[15px] font-semibold text-ink">Line Produksi</p>
                   <button onClick={() => { setLineCode(''); setFormError(null); setShowLine(true); }} className="btn-secondary !py-1.5 !px-3 !text-xs">
                     <LucideIcon name="plus" className="w-3.5 h-3.5" /> Line
                   </button>
                 </div>
                 <table className="w-full text-[13px]">
                   <thead><tr>{['Kode', 'Status'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                   ))}</tr></thead>
                   <tbody>
                     {lines.map(l => (
-                      <tr key={l.id} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-3 py-2.5 font-medium text-[#1d1d1f]">{l.lineCode}</td>
+                      <tr key={l.id} className="border-b border-panel-2 last:border-0">
+                        <td className="px-3 py-2.5 font-medium text-ink">{l.lineCode}</td>
                         <td className="px-3 py-2.5">
-                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${l.active ? 'bg-[#e8f5e9] text-[#1a7a34]' : 'bg-[#f0f0f2] text-[#626269]'}`}>
+                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${l.active ? 'bg-ok-bg text-ok-2' : 'bg-panel-2 text-ink-muted'}`}>
                             {l.active ? 'Aktif' : 'Nonaktif'}
                           </span>
                         </td>
@@ -218,27 +218,27 @@ const ProductionView: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-                {lines.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada line.</p>}
+                {lines.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada line.</p>}
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <p className="text-[15px] font-semibold text-[#1d1d1f]">Operator</p>
+                  <p className="text-[15px] font-semibold text-ink">Operator</p>
                   <button onClick={() => { setOpName(''); setOpCode(''); setFormError(null); setShowOperator(true); }} className="btn-secondary !py-1.5 !px-3 !text-xs">
                     <LucideIcon name="plus" className="w-3.5 h-3.5" /> Operator
                   </button>
                 </div>
                 <table className="w-full text-[13px]">
                   <thead><tr>{['Nama', 'Kode', 'Status'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                   ))}</tr></thead>
                   <tbody>
                     {operators.map(o => (
-                      <tr key={o.id} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-3 py-2.5 font-medium text-[#1d1d1f]">{o.displayName}</td>
-                        <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{o.employeeCode}</td>
+                      <tr key={o.id} className="border-b border-panel-2 last:border-0">
+                        <td className="px-3 py-2.5 font-medium text-ink">{o.displayName}</td>
+                        <td className="px-3 py-2.5 font-mono text-ink-muted">{o.employeeCode}</td>
                         <td className="px-3 py-2.5">
-                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${o.active ? 'bg-[#e8f5e9] text-[#1a7a34]' : 'bg-[#f0f0f2] text-[#626269]'}`}>
+                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${o.active ? 'bg-ok-bg text-ok-2' : 'bg-panel-2 text-ink-muted'}`}>
                             {o.active ? 'Aktif' : 'Nonaktif'}
                           </span>
                         </td>
@@ -246,7 +246,7 @@ const ProductionView: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-                {operators.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada operator.</p>}
+                {operators.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada operator.</p>}
               </div>
             </div>
           )}
@@ -255,7 +255,7 @@ const ProductionView: React.FC = () => {
           {tab === 'assign' && (
             <>
               <div className="flex justify-between items-center mb-4">
-                <p className="text-[15px] font-semibold text-[#1d1d1f]">Penugasan Operator ke Line</p>
+                <p className="text-[15px] font-semibold text-ink">Penugasan Operator ke Line</p>
                 <button onClick={() => { setAssignDraft({ lineId: lines[0]?.id ?? '', operatorId: operators[0]?.id ?? '', componentCode: 'SLEEVE', validFrom: '', validThrough: '' }); setFormError(null); setShowAssign(true); }} className="btn-secondary !py-1.5 !px-3 !text-xs">
                   <LucideIcon name="plus" className="w-3.5 h-3.5" /> Assign
                 </button>
@@ -263,20 +263,20 @@ const ProductionView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead><tr>{['Line', 'Operator', 'Komponen', 'Berlaku'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                   ))}</tr></thead>
                   <tbody>
                     {assignments.map(a => (
-                      <tr key={a.id} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-3 py-2.5 font-medium text-[#1d1d1f]">{lineName(a.lineId)}</td>
-                        <td className="px-3 py-2.5 text-[#334155]">{operatorName(a.operatorId)}</td>
-                        <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{a.componentCode}</td>
-                        <td className="px-3 py-2.5 text-[#6e6e73] text-xs">{a.validFrom} → {a.validThrough}</td>
+                      <tr key={a.id} className="border-b border-panel-2 last:border-0">
+                        <td className="px-3 py-2.5 font-medium text-ink">{lineName(a.lineId)}</td>
+                        <td className="px-3 py-2.5 text-ink-2">{operatorName(a.operatorId)}</td>
+                        <td className="px-3 py-2.5 font-mono text-ink-muted">{a.componentCode}</td>
+                        <td className="px-3 py-2.5 text-ink-muted text-xs">{a.validFrom} → {a.validThrough}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {assignments.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada penugasan.</p>}
+                {assignments.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada penugasan.</p>}
               </div>
             </>
           )}
@@ -286,8 +286,8 @@ const ProductionView: React.FC = () => {
             <>
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-[15px] font-semibold text-[#1d1d1f]">Tally Output 30 Menit</p>
-                  <p className="text-xs text-[#6e6e73] mt-0.5">Satu tally = idempotency + alokasi komponen + snapshot rate + unit menunggu QC</p>
+                  <p className="text-[15px] font-semibold text-ink">Tally Output 30 Menit</p>
+                  <p className="text-xs text-ink-muted mt-0.5">Satu tally = idempotency + alokasi komponen + snapshot rate + unit menunggu QC</p>
                 </div>
                 <button onClick={() => { const { start, end } = defaultInterval(); setTallyDraft(d => ({ ...d, lineId: lines[0]?.id ?? '', operatorId: operators[0]?.id ?? '', intervalStart: start, intervalEnd: end, pieces: 0 })); setFormError(null); setShowTally(true); }} className="btn-primary inline-flex items-center gap-2">
                   <LucideIcon name="plus" className="w-4 h-4" /> Catat Tally
@@ -296,18 +296,18 @@ const ProductionView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead><tr>{['Tally ID', 'Komponen', 'Line', 'Operator', 'Pieces', 'Status', 'Aksi'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                   ))}</tr></thead>
                   <tbody>
                     {tallies.map(t => (
-                      <tr key={t.result.tallyId} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-3 py-2.5"><code className="text-xs text-[#64748b]">{t.result.tallyId.slice(0, 8)}</code></td>
-                        <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{t.input.componentCode}</td>
-                        <td className="px-3 py-2.5 text-[#334155]">{lineName(t.input.lineId)}</td>
-                        <td className="px-3 py-2.5 text-[#334155]">{operatorName(t.input.operatorId)}</td>
+                      <tr key={t.result.tallyId} className="border-b border-panel-2 last:border-0">
+                        <td className="px-3 py-2.5"><code className="text-xs text-ink-muted">{t.result.tallyId.slice(0, 8)}</code></td>
+                        <td className="px-3 py-2.5 font-mono text-ink-muted">{t.input.componentCode}</td>
+                        <td className="px-3 py-2.5 text-ink-2">{lineName(t.input.lineId)}</td>
+                        <td className="px-3 py-2.5 text-ink-2">{operatorName(t.input.operatorId)}</td>
                         <td className="px-3 py-2.5 font-mono">{t.input.pieces}</td>
                         <td className="px-3 py-2.5">
-                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.result.status === 'VERIFIED' ? 'bg-[#e8f5e9] text-[#1a7a34]' : 'bg-[#fff4e6] text-[#b86800]'}`}>
+                          <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.result.status === 'VERIFIED' ? 'bg-ok-bg text-ok-2' : 'bg-warn-bg text-warn-2'}`}>
                             {t.result.status}
                           </span>
                         </td>
@@ -320,7 +320,7 @@ const ProductionView: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-                {tallies.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada tally pada sesi ini.</p>}
+                {tallies.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada tally pada sesi ini.</p>}
               </div>
             </>
           )}
@@ -329,7 +329,7 @@ const ProductionView: React.FC = () => {
           {tab === 'assembly' && (
             <>
               <div className="flex justify-between items-center mb-4">
-                <p className="text-[15px] font-semibold text-[#1d1d1f]">Assembly &amp; Staging QC</p>
+                <p className="text-[15px] font-semibold text-ink">Assembly &amp; Staging QC</p>
                 <button onClick={() => { setAssemblyDraft({ orderId: '33333333-3333-4333-8333-333333333333', serialCode: '', componentUnitIds: '' }); setFormError(null); setShowAssembly(true); }} className="btn-secondary !py-1.5 !px-3 !text-xs">
                   <LucideIcon name="plus" className="w-3.5 h-3.5" /> Assembly
                 </button>
@@ -337,14 +337,14 @@ const ProductionView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead><tr>{['Serial', 'Order', 'Komponen', 'Status'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                   ))}</tr></thead>
                   <tbody>
                     {assemblies.map(a => (
-                      <tr key={a.id} className="border-b border-[#f0f0f2] last:border-0">
-                        <td className="px-3 py-2.5 font-medium text-[#1d1d1f]">{a.serialCode}</td>
-                        <td className="px-3 py-2.5"><code className="text-xs text-[#64748b]">{a.orderId.slice(0, 8)}</code></td>
-                        <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{a.componentUnitIds.length}</td>
+                      <tr key={a.id} className="border-b border-panel-2 last:border-0">
+                        <td className="px-3 py-2.5 font-medium text-ink">{a.serialCode}</td>
+                        <td className="px-3 py-2.5"><code className="text-xs text-ink-muted">{a.orderId.slice(0, 8)}</code></td>
+                        <td className="px-3 py-2.5 font-mono text-ink-muted">{a.componentUnitIds.length}</td>
                         <td className="px-3 py-2.5">
                           <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[a.status]}`}>{a.status}</span>
                         </td>
@@ -352,7 +352,7 @@ const ProductionView: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-                {assemblies.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada assembly.</p>}
+                {assemblies.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada assembly.</p>}
               </div>
             </>
           )}
@@ -369,13 +369,13 @@ const ProductionView: React.FC = () => {
               <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead><tr>{['Order', 'Komponen', 'Jumlah', 'Status'].map(h => (
-                  <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-[#6e6e73] uppercase tracking-wider bg-[#fafafa] border-b border-[#f0f0f2]">{h}</th>
+                  <th key={h} className="px-3 py-2 text-left text-[11px] font-medium text-ink-muted uppercase tracking-wider bg-panel border-b border-panel-2">{h}</th>
                 ))}</tr></thead>
                 <tbody>
                   {progress.map((p, i) => (
-                    <tr key={i} className="border-b border-[#f0f0f2] last:border-0">
-                      <td className="px-3 py-2.5"><code className="text-xs text-[#64748b]">{p.orderId.slice(0, 8)}</code></td>
-                      <td className="px-3 py-2.5 font-mono text-[#6e6e73]">{p.componentCode}</td>
+                    <tr key={i} className="border-b border-panel-2 last:border-0">
+                      <td className="px-3 py-2.5"><code className="text-xs text-ink-muted">{p.orderId.slice(0, 8)}</code></td>
+                      <td className="px-3 py-2.5 font-mono text-ink-muted">{p.componentCode}</td>
                       <td className="px-3 py-2.5 font-mono">{p.quantity.value} {p.quantity.unit}</td>
                       <td className="px-3 py-2.5">
                         <span className={`pill rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[p.status]}`}>{p.status}</span>
@@ -384,7 +384,7 @@ const ProductionView: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-              {progress.length === 0 && <p className="text-center text-[#6e6e73] py-6 text-[13px]">Belum ada progress.</p>}
+              {progress.length === 0 && <p className="text-center text-ink-muted py-6 text-[13px]">Belum ada progress.</p>}
               </div>
             </div>
           )}
@@ -398,9 +398,9 @@ const ProductionView: React.FC = () => {
           <button onClick={() => run(() => createLine(lineCode), () => setShowLine(false))} disabled={busy} className="btn-primary">Simpan</button>
         </div>}>
         <div className="space-y-3">
-          <label htmlFor="line-code" className="block text-sm font-medium text-[#1d1d1f]">Kode Line</label>
+          <label htmlFor="line-code" className="block text-sm font-medium text-ink">Kode Line</label>
           <input id="line-code" value={lineCode} onChange={e => setLineCode(e.target.value)} placeholder="LINE-B" className={inputCls} />
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
 
@@ -411,11 +411,11 @@ const ProductionView: React.FC = () => {
           <button onClick={() => run(() => createOperator(opName, opCode), () => setShowOperator(false))} disabled={busy} className="btn-primary">Simpan</button>
         </div>}>
         <div className="space-y-3">
-          <div><label htmlFor="op-name" className="block text-sm font-medium text-[#1d1d1f] mb-1">Nama</label>
+          <div><label htmlFor="op-name" className="block text-sm font-medium text-ink mb-1">Nama</label>
             <input id="op-name" value={opName} onChange={e => setOpName(e.target.value)} className={inputCls} /></div>
-          <div><label htmlFor="op-code" className="block text-sm font-medium text-[#1d1d1f] mb-1">Kode Karyawan</label>
+          <div><label htmlFor="op-code" className="block text-sm font-medium text-ink mb-1">Kode Karyawan</label>
             <input id="op-code" value={opCode} onChange={e => setOpCode(e.target.value)} placeholder="OPR-003" className={inputCls} /></div>
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
 
@@ -430,17 +430,17 @@ const ProductionView: React.FC = () => {
           }), () => setShowAssign(false))} disabled={busy} className="btn-primary">Simpan</button>
         </div>}>
         <div className="space-y-3">
-          <div><label htmlFor="as-line" className="block text-sm font-medium text-[#1d1d1f] mb-1">Line</label>
+          <div><label htmlFor="as-line" className="block text-sm font-medium text-ink mb-1">Line</label>
             <select id="as-line" value={assignDraft.lineId} onChange={e => setAssignDraft(d => ({ ...d, lineId: e.target.value }))} className={inputCls}>
               {lines.map(l => <option key={l.id} value={l.id}>{l.lineCode}</option>)}
             </select></div>
-          <div><label htmlFor="as-op" className="block text-sm font-medium text-[#1d1d1f] mb-1">Operator</label>
+          <div><label htmlFor="as-op" className="block text-sm font-medium text-ink mb-1">Operator</label>
             <select id="as-op" value={assignDraft.operatorId} onChange={e => setAssignDraft(d => ({ ...d, operatorId: e.target.value }))} className={inputCls}>
               {operators.map(o => <option key={o.id} value={o.id}>{o.displayName} ({o.employeeCode})</option>)}
             </select></div>
-          <div><label htmlFor="as-comp" className="block text-sm font-medium text-[#1d1d1f] mb-1">Komponen</label>
+          <div><label htmlFor="as-comp" className="block text-sm font-medium text-ink mb-1">Komponen</label>
             <input id="as-comp" value={assignDraft.componentCode} onChange={e => setAssignDraft(d => ({ ...d, componentCode: e.target.value }))} className={inputCls} /></div>
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
 
@@ -460,32 +460,32 @@ const ProductionView: React.FC = () => {
         </div>}>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div><label htmlFor="t-order" className="block text-sm font-medium text-[#1d1d1f] mb-1">Order ID</label>
+            <div><label htmlFor="t-order" className="block text-sm font-medium text-ink mb-1">Order ID</label>
               <input id="t-order" value={tallyDraft.orderId} onChange={e => setTallyDraft(d => ({ ...d, orderId: e.target.value }))} className={inputCls} /></div>
-            <div><label htmlFor="t-batch" className="block text-sm font-medium text-[#1d1d1f] mb-1">Cut Batch ID</label>
+            <div><label htmlFor="t-batch" className="block text-sm font-medium text-ink mb-1">Cut Batch ID</label>
               <input id="t-batch" value={tallyDraft.cutBatchId} onChange={e => setTallyDraft(d => ({ ...d, cutBatchId: e.target.value }))} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label htmlFor="t-line" className="block text-sm font-medium text-[#1d1d1f] mb-1">Line</label>
+            <div><label htmlFor="t-line" className="block text-sm font-medium text-ink mb-1">Line</label>
               <select id="t-line" value={tallyDraft.lineId} onChange={e => setTallyDraft(d => ({ ...d, lineId: e.target.value }))} className={inputCls}>
                 {lines.map(l => <option key={l.id} value={l.id}>{l.lineCode}</option>)}
               </select></div>
-            <div><label htmlFor="t-op" className="block text-sm font-medium text-[#1d1d1f] mb-1">Operator</label>
+            <div><label htmlFor="t-op" className="block text-sm font-medium text-ink mb-1">Operator</label>
               <select id="t-op" value={tallyDraft.operatorId} onChange={e => setTallyDraft(d => ({ ...d, operatorId: e.target.value }))} className={inputCls}>
                 {operators.map(o => <option key={o.id} value={o.id}>{o.displayName}</option>)}
               </select></div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <div><label htmlFor="t-comp" className="block text-sm font-medium text-[#1d1d1f] mb-1">Komponen</label>
+            <div><label htmlFor="t-comp" className="block text-sm font-medium text-ink mb-1">Komponen</label>
               <input id="t-comp" value={tallyDraft.componentCode} onChange={e => setTallyDraft(d => ({ ...d, componentCode: e.target.value }))} className={inputCls} /></div>
-            <div><label htmlFor="t-start" className="block text-sm font-medium text-[#1d1d1f] mb-1">Mulai</label>
+            <div><label htmlFor="t-start" className="block text-sm font-medium text-ink mb-1">Mulai</label>
               <input id="t-start" type="datetime-local" value={tallyDraft.intervalStart} onChange={e => setTallyDraft(d => ({ ...d, intervalStart: e.target.value }))} className={inputCls} /></div>
-            <div><label htmlFor="t-end" className="block text-sm font-medium text-[#1d1d1f] mb-1">Selesai</label>
+            <div><label htmlFor="t-end" className="block text-sm font-medium text-ink mb-1">Selesai</label>
               <input id="t-end" type="datetime-local" value={tallyDraft.intervalEnd} onChange={e => setTallyDraft(d => ({ ...d, intervalEnd: e.target.value }))} className={inputCls} /></div>
           </div>
-          <div><label htmlFor="t-pieces" className="block text-sm font-medium text-[#1d1d1f] mb-1">Pieces</label>
+          <div><label htmlFor="t-pieces" className="block text-sm font-medium text-ink mb-1">Pieces</label>
             <input id="t-pieces" type="number" min={1} value={tallyDraft.pieces || ''} onChange={e => setTallyDraft(d => ({ ...d, pieces: parseInt(e.target.value) || 0 }))} className={inputCls} /></div>
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
 
@@ -500,13 +500,13 @@ const ProductionView: React.FC = () => {
           }), () => setShowAssembly(false))} disabled={busy} className="btn-primary">Simpan</button>
         </div>}>
         <div className="space-y-3">
-          <div><label htmlFor="a-order" className="block text-sm font-medium text-[#1d1d1f] mb-1">Order ID</label>
+          <div><label htmlFor="a-order" className="block text-sm font-medium text-ink mb-1">Order ID</label>
             <input id="a-order" value={assemblyDraft.orderId} onChange={e => setAssemblyDraft(d => ({ ...d, orderId: e.target.value }))} className={inputCls} /></div>
-          <div><label htmlFor="a-serial" className="block text-sm font-medium text-[#1d1d1f] mb-1">Serial Code</label>
+          <div><label htmlFor="a-serial" className="block text-sm font-medium text-ink mb-1">Serial Code</label>
             <input id="a-serial" value={assemblyDraft.serialCode} onChange={e => setAssemblyDraft(d => ({ ...d, serialCode: e.target.value }))} placeholder="ASM-0002" className={inputCls} /></div>
-          <div><label htmlFor="a-units" className="block text-sm font-medium text-[#1d1d1f] mb-1">Component Unit IDs (pisahkan spasi/koma)</label>
+          <div><label htmlFor="a-units" className="block text-sm font-medium text-ink mb-1">Component Unit IDs (pisahkan spasi/koma)</label>
             <textarea id="a-units" rows={3} value={assemblyDraft.componentUnitIds} onChange={e => setAssemblyDraft(d => ({ ...d, componentUnitIds: e.target.value }))} className={inputCls} /></div>
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
 
@@ -521,10 +521,10 @@ const ProductionView: React.FC = () => {
           }, () => setVerifyTarget(null))} disabled={busy} className="btn-primary">Verifikasi</button>
         </div>}>
         <div className="space-y-3">
-          <p className="text-[13px] text-[#334155]">Tally <code className="font-mono">{verifyTarget?.result.tallyId.slice(0, 8)}</code> · {verifyTarget?.input.pieces} pieces.</p>
-          <div><label htmlFor="v-reason" className="block text-sm font-medium text-[#1d1d1f] mb-1">Catatan (opsional)</label>
+          <p className="text-[13px] text-ink-2">Tally <code className="font-mono">{verifyTarget?.result.tallyId.slice(0, 8)}</code> · {verifyTarget?.input.pieces} pieces.</p>
+          <div><label htmlFor="v-reason" className="block text-sm font-medium text-ink mb-1">Catatan (opsional)</label>
             <input id="v-reason" value={verifyReason} onChange={e => setVerifyReason(e.target.value)} className={inputCls} /></div>
-          {formError && <p className="text-[13px] text-[#dc2626]">{formError}</p>}
+          {formError && <p className="text-[13px] text-bad-4">{formError}</p>}
         </div>
       </Modal>
       </>

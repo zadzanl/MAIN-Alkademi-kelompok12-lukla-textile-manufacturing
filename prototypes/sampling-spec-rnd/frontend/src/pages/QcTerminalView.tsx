@@ -19,16 +19,16 @@ import {
 const TAXONOMY = ['Broken Stitch', 'Puckering', 'Uneven Seam'] as const;
 
 const DISPOSITIONS: { value: QcDisposition; label: string; cls: string; active: string }[] = [
-  { value: 'PASS',   label: '(A) PASS',           cls: 'border-[#34c759] text-[#1a7a34]', active: 'bg-[#34c759] text-white border-[#34c759]' },
-  { value: 'REPAIR', label: '(B) REPAIR',         cls: 'border-[#ff9500] text-[#b86800]', active: 'bg-[#ff9500] text-white border-[#ff9500]' },
-  { value: 'REJECT', label: '(C) SCRAP / REJECT', cls: 'border-[#ff3b30] text-[#dc2626]', active: 'bg-[#ff3b30] text-white border-[#ff3b30]' },
+  { value: 'PASS',   label: '(A) PASS',           cls: 'border-ok text-ok-2', active: 'bg-ok text-white border-ok' },
+  { value: 'REPAIR', label: '(B) REPAIR',         cls: 'border-warn text-warn-2', active: 'bg-warn text-white border-warn' },
+  { value: 'REJECT', label: '(C) SCRAP / REJECT', cls: 'border-bad text-bad-4', active: 'bg-bad text-white border-bad' },
 ];
 
 const STATUS_STYLE: Record<AssemblyStatus, string> = {
-  MENUNGGU_QC: 'bg-[#fff4e6] text-[#b86800]',
-  QC_PASS: 'bg-[#e8f5e9] text-[#1a7a34]',
-  REWORK: 'bg-[#e8f2ff] text-[#0066cc]',
-  REJECT_SCRAP: 'bg-[#ffebee] text-[#dc2626]',
+  MENUNGGU_QC: 'bg-warn-bg text-warn-2',
+  QC_PASS: 'bg-ok-bg text-ok-2',
+  REWORK: 'bg-brand-bg text-brand',
+  REJECT_SCRAP: 'bg-bad-bg text-bad-4',
 };
 
 const QcTerminalView: React.FC = () => {
@@ -75,20 +75,20 @@ const QcTerminalView: React.FC = () => {
   return (
     <div className="space-y-5">
       {isMockOps && <MockModeBanner detail="data inspeksi disimpan di memori." />}
-      {error && <div className="rounded-[14px] border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-[13px] text-[#dc2626]">{error}</div>}
-      {flash && <div className="rounded-[14px] border border-[#34c759] bg-[#e8f5e9] px-4 py-3 text-[13px] font-medium text-[#1a7a34]">{flash}</div>}
+      {error && <div className="rounded-[14px] border border-bad-bg-2 bg-bad-bg px-4 py-3 text-[13px] text-bad-4">{error}</div>}
+      {flash && <div className="rounded-[14px] border border-ok bg-ok-bg px-4 py-3 text-[13px] font-medium text-ok-2">{flash}</div>}
 
       {/* Context bar */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[16px] border border-[#e6e6e9] bg-white px-5 py-4">
-        <span className="text-[13px] text-[#6e6e73]">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[16px] border border-hair bg-white px-5 py-4">
+        <span className="text-[13px] text-ink-muted">
           <span className="font-medium">Antrian QC:</span> {queue.length} unit
         </span>
         {current ? (
           <>
-            <span className="text-[13px] text-[#6e6e73]">
+            <span className="text-[13px] text-ink-muted">
               <span className="font-medium">Order:</span> <code className="font-mono">{current.orderId.slice(0, 8)}</code>
             </span>
-            <span className="text-[13px] text-[#6e6e73]">
+            <span className="text-[13px] text-ink-muted">
               <span className="font-medium">Serial:</span> <code className="font-mono">{current.serialCode}</code>
             </span>
             <span className={`pill rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLE[current.status]}`}>
@@ -96,7 +96,7 @@ const QcTerminalView: React.FC = () => {
             </span>
           </>
         ) : (
-          <span className="text-[13px] text-[#6e6e73]">Tidak ada unit menunggu QC.</span>
+          <span className="text-[13px] text-ink-muted">Tidak ada unit menunggu QC.</span>
         )}
         <button onClick={load} className="btn-secondary ml-auto">
           <LucideIcon name="activity" className="w-4 h-4" /> Refresh
@@ -104,17 +104,17 @@ const QcTerminalView: React.FC = () => {
       </div>
 
       {loading ? (
-        <p className="py-10 text-center text-[13px] text-[#6e6e73]">Memuat…</p>
+        <p className="py-10 text-center text-[13px] text-ink-muted">Memuat…</p>
       ) : !current ? (
-        <div className="rounded-[18px] border border-dashed border-[#d5d5da] bg-white px-6 py-12 text-center text-[13px] text-[#6e6e73]">
+        <div className="rounded-[18px] border border-dashed border-hair-4 bg-white px-6 py-12 text-center text-[13px] text-ink-muted">
           Semua unit sudah diinspeksi. Buat assembly baru di tab <strong>Produksi &amp; Tally</strong>.
         </div>
       ) : (
         <>
           {/* Disposition */}
-          <div className="rounded-[18px] border border-[#e6e6e9] bg-white p-5">
-            <p className="text-[15px] font-semibold text-[#1d1d1f]">Disposition</p>
-            <p className="mb-4 text-[12px] text-[#6e6e73]">Pilih hasil inspeksi untuk unit ini.</p>
+          <div className="rounded-[18px] border border-hair bg-white p-5">
+            <p className="text-[15px] font-semibold text-ink">Disposition</p>
+            <p className="mb-4 text-[12px] text-ink-muted">Pilih hasil inspeksi untuk unit ini.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {DISPOSITIONS.map(d => (
                 <button key={d.value} type="button" onClick={() => setDisposition(d.value)}
@@ -130,18 +130,18 @@ const QcTerminalView: React.FC = () => {
 
           {/* Defect taxonomy */}
           {disposition !== 'PASS' && (
-            <div className="rounded-[18px] border border-[#e6e6e9] bg-white p-5">
-              <p className="text-[15px] font-semibold text-[#1d1d1f]">Defect taxonomy</p>
-              <p className="mb-4 text-[12px] text-[#6e6e73]">Pilih semua temuan yang sesuai.</p>
+            <div className="rounded-[18px] border border-hair bg-white p-5">
+              <p className="text-[15px] font-semibold text-ink">Defect taxonomy</p>
+              <p className="mb-4 text-[12px] text-ink-muted">Pilih semua temuan yang sesuai.</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {TAXONOMY.map(t => (
                   <label key={t}
                     className={`flex min-h-[56px] cursor-pointer items-center gap-3 rounded-[12px] border px-4 text-[14px] ${
-                      checked[t] ? 'border-[#0071e3] bg-[#eaf3fe]' : 'border-[#e6e6e9]'
+                      checked[t] ? 'border-brand bg-brand-bg' : 'border-hair'
                     }`}>
                     <input type="checkbox" checked={!!checked[t]}
                       onChange={e => setChecked(prev => ({ ...prev, [t]: e.target.checked }))} />
-                    <span className="font-medium text-[#1d1d1f]">{t}</span>
+                    <span className="font-medium text-ink">{t}</span>
                   </label>
                 ))}
               </div>
@@ -150,7 +150,7 @@ const QcTerminalView: React.FC = () => {
 
           <button type="button" onClick={submit}
             disabled={busy || (disposition !== 'PASS' && selectedDefects.length === 0)}
-            className="w-full min-h-[56px] rounded-[14px] bg-[#0071e3] text-white text-[15px] font-semibold tracking-wide transition-transform active:scale-[0.99] disabled:opacity-40">
+            className="w-full min-h-[56px] rounded-[14px] bg-brand text-white text-[15px] font-semibold tracking-wide transition-transform active:scale-[0.99] disabled:opacity-40">
             {busy ? 'Menyimpan…' : 'SIMPAN INSPEKSI'}
           </button>
         </>

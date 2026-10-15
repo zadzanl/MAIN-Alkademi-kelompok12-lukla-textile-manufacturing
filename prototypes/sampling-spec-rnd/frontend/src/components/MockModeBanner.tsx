@@ -16,7 +16,7 @@ interface MockModeBannerProps {
 }
 
 const MockModeBanner: React.FC<MockModeBannerProps> = ({ detail, hint = 'untuk service asli.' }) => (
-  <div className="rounded-[14px] border border-[#d5d5da] bg-[#f4f8fd] px-4 py-3 text-[12.5px] text-[#334155]">
+  <div className="rounded-[14px] border border-hair-4 bg-brand-bg px-4 py-3 text-[12.5px] text-ink-2">
     Mode mock aktif — {detail} Set <code className="font-mono">VITE_LEDGER_MODE=live</code> {hint}
   </div>
 );

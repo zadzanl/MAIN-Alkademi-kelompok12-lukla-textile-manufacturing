@@ -45,15 +45,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
     className="flex flex-col w-[226px] flex-none border-r"
     style={{
       height: '100vh',
-      background: isDark ? '#0a0a0a' : '#ffffff',
-      borderColor: isDark ? '#262626' : '#e6e6e9',
+      background: 'var(--bg-card)',
+      borderColor: 'var(--c-hair)',
     }}
   >
     {/* Brand — fixed at top */}
     <div className="px-6 pt-6 pb-4 shrink-0">
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
-        style={{ background: isDark ? '#3b9eff' : '#1d1d1f', color: '#fff' }}
+        style={{ background: isDark ? 'var(--c-brand)' : 'var(--c-ink)', color: '#fff' }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
           <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
         </svg>
       </div>
-      <p className="text-[10px] uppercase tracking-[.16em] font-semibold" style={{ color: isDark ? '#64748b' : '#6e6e73' }}>
+      <p className="text-[10px] uppercase tracking-[.16em] font-semibold" style={{ color: 'var(--c-ink-muted)' }}>
         LUKLA · R&amp;D
       </p>
     </div>
@@ -78,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
             <button type="button"
               onClick={() => setOpenChapter(open => (open === chapter.id ? null : chapter.id))}
               aria-expanded={isOpen}
-              style={{ color: hasActive ? (isDark ? '#3b9eff' : '#0066cc') : (isDark ? '#64748b' : '#86868b') }}
+              style={{ color: hasActive ? 'var(--c-brand)' : 'var(--c-ink-muted)' }}
               className="w-full flex items-center gap-2.5 text-left rounded-[10px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[.08em] transition-colors">
               <LucideIcon name={chapter.icon} className="w-[14px] h-[14px] shrink-0" />
               <span className="flex-1 truncate">{chapter.label}</span>
@@ -96,11 +96,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
                       onClick={() => onNavigate(item.view)}
                       aria-current={active ? 'page' : undefined}
                       style={active
-                        ? { background: isDark ? '#1e3a5f' : '#eaf3fe', color: isDark ? '#3b9eff' : '#0066cc' }
-                        : { color: isDark ? '#94a3b8' : '#626269' }
+                        ? { background: 'var(--c-brand-bg)', color: 'var(--c-brand)' }
+                        : { color: 'var(--c-ink-muted)' }
                       }
                       className={`w-full flex items-center gap-2.5 text-left rounded-[10px] pl-7 pr-3 py-2.5 text-[13px] font-medium transition-colors ${
-                        active ? 'font-semibold' : isDark ? 'hover:bg-[#161616] hover:text-[#f1f5f9]' : 'hover:bg-[#f5f5f7] hover:text-[#1d1d1f]'
+                        active ? 'font-semibold' : isDark ? 'hover:bg-panel-6 hover:text-ink' : 'hover:bg-page hover:text-ink'
                       }`}>
                       <LucideIcon name={item.icon} className="w-[15px] h-[15px] shrink-0" />
                       <span className="truncate">{item.label}</span>
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
     {/* Dark mode toggle — pinned to bottom */}
     <div
       className="px-4 py-4 shrink-0 border-t"
-      style={{ borderColor: isDark ? '#262626' : '#e6e6e9' }}
+      style={{ borderColor: 'var(--c-hair)' }}
     >
       <button
         type="button"
@@ -125,17 +125,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
         aria-label={isDark ? 'Aktifkan light mode' : 'Aktifkan dark mode'}
         className="w-full flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-colors"
         style={{
-          background: isDark ? '#161616' : '#f5f5f7',
-          color: isDark ? '#94a3b8' : '#626269',
+          background: 'var(--c-page)',
+          color: 'var(--c-ink-muted)',
           border: 'none',
         }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#262626' : '#e6e6e9';
-          (e.currentTarget as HTMLButtonElement).style.color = isDark ? '#f1f5f9' : '#1d1d1f';
+          (e.currentTarget as HTMLButtonElement).style.background = 'var(--c-hair)';
+          (e.currentTarget as HTMLButtonElement).style.color = 'var(--c-ink)';
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#161616' : '#f5f5f7';
-          (e.currentTarget as HTMLButtonElement).style.color = isDark ? '#94a3b8' : '#626269';
+          (e.currentTarget as HTMLButtonElement).style.background = 'var(--c-page)';
+          (e.currentTarget as HTMLButtonElement).style.color = 'var(--c-ink-muted)';
         }}
       >
         <span className="theme-icon-wrap" aria-hidden="true">
@@ -303,6 +303,14 @@ const icons: Record<string, React.FC<IconProps>> = {
          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
       <path d="m9 11 3 3L22 4"/>
+    </svg>
+  ),
+  menu: ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="4" x2="20" y1="6" y2="6"/>
+      <line x1="4" x2="20" y1="12" y2="12"/>
+      <line x1="4" x2="20" y1="18" y2="18"/>
     </svg>
   ),
 };

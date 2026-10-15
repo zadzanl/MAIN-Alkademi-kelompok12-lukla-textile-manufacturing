@@ -23,9 +23,9 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ title, subtitle, items }) => 
   const total = items.reduce((s, i) => s + i.count, 0) || 1;
 
   return (
-    <section className="surface bg-white border border-[#e2e8f0] rounded-[18px] p-5 h-full">
-      <h2 className="text-[16px] font-bold text-[#0f172a]">{title}</h2>
-      <p className="text-[12px] font-medium text-[#64748b] mt-0.5 mb-6">{subtitle}</p>
+    <section className="surface bg-white border border-hair rounded-[18px] p-5 h-full">
+      <h2 className="text-[16px] font-bold text-ink">{title}</h2>
+      <p className="text-[12px] font-medium text-ink-muted mt-0.5 mb-6">{subtitle}</p>
 
       <div className="space-y-5">
         {items.map((item, idx) => {
@@ -33,8 +33,8 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ title, subtitle, items }) => 
           return (
             <div key={idx}>
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[13px] font-semibold text-[#334155]">{item.label}</span>
-                <span className="text-[13px] font-bold text-[#0f172a]">{item.count}</span>
+                <span className="text-[13px] font-semibold text-ink-2">{item.label}</span>
+                <span className="text-[13px] font-bold text-ink">{item.count}</span>
               </div>
               <div className="mini-line">
                 <span style={{ width: `${pct}%`, background: BAR_COLORS[idx % BAR_COLORS.length] }} />

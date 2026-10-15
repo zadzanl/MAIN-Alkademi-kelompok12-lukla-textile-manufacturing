@@ -7,9 +7,9 @@ import React, { useEffect, useState } from 'react';
 import { subscribe, dismiss, type ToastItem } from '../services/toast';
 
 const KIND_STYLE: Record<ToastItem['kind'], string> = {
-  success: 'border-[#34c759] bg-[#e8f5e9] text-[#1a7a34]',
-  error:   'border-[#fecaca] bg-[#fee2e2] text-[#dc2626]',
-  info:    'border-[#d5d5da] bg-[#f4f8fd] text-[#334155]',
+  success: 'border-ok bg-ok-bg text-ok-2',
+  error:   'border-bad-bg-2 bg-bad-bg text-bad-4',
+  info:    'border-hair-4 bg-brand-bg text-ink-2',
 };
 
 const Toaster: React.FC = () => {
