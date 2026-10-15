@@ -815,7 +815,7 @@ paths:
       parameters:
         - {name: status, in: query, required: false, schema: {type: string, enum: [MENUNGGU_QC, REWORK, QC_PASS, REJECT_SCRAP]}}
         - {name: serialCode, in: query, required: false, schema: {type: string}}
-        - {name: orderId, in: query, required: false, schema: {$ref: '#/components/parameters/OrderId'}}
+        - {name: orderId, in: query, required: false, schema: {$ref: '#/components/schemas/Uuid'}}
         - {$ref: '#/components/parameters/Cursor'}
         - {$ref: '#/components/parameters/PageSize'}
       responses:
@@ -1188,9 +1188,9 @@ components:
     PeriodPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/Period'}}}}
     FinancialRulePage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/FinancialRule'}}}}
     ClientInvoicePage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/ClientInvoice'}}}}
-    OrderConfirmationRequest: {type: object, properties: {notes: {type: string}}}
-    OrderCancellationRequest: {type: object, required: [reason], properties: {reason: {type: string, minLength: 1}}}
-    SewingTallyItem: {type: object, required: [id, orderId, cutBatchId, lineId, componentCode, operatorId, intervalStart, intervalEnd, pieces, status], properties: {id: {$ref: '#/components/schemas/Uuid'}, orderId: {$ref: '#/components/schemas/Uuid'}, cutBatchId: {$ref: '#/components/schemas/Uuid'}, lineId: {$ref: '#/components/schemas/Uuid'}, componentCode: {type: string}, operatorId: {$ref: '#/components/schemas/Uuid'}, intervalStart: {$ref: '#/components/schemas/Timestamp'}, intervalEnd: {$ref: '#/components/schemas/Timestamp'}, pieces: {type: integer, minimum: 0}, status: {type: string, enum: [RECORDED, VERIFIED]}, verifiedBy: {$ref: '#/components/schemas/Uuid'}, verifiedAt: {$ref: '#/components/schemas/Timestamp'}}}
+    OrderConfirmationRequest: {type: object, additionalProperties: false, properties: {notes: {type: string, maxLength: 500}, evidenceFileId: {$ref: '#/components/schemas/Uuid'}}}
+    OrderCancellationRequest: {type: object, required: [reason], additionalProperties: false, properties: {reason: {type: string, minLength: 1, maxLength: 1000, pattern: '^\s*\S.*$'}}}
+    SewingTallyItem: {type: object, required: [id, orderId, cutBatchId, lineId, componentCode, operatorId, intervalStart, intervalEnd, pieces, status], properties: {id: {$ref: '#/components/schemas/Uuid'}, orderId: {$ref: '#/components/schemas/Uuid'}, cutBatchId: {$ref: '#/components/schemas/Uuid'}, lineId: {$ref: '#/components/schemas/Uuid'}, componentCode: {type: string}, operatorId: {$ref: '#/components/schemas/Uuid'}, intervalStart: {$ref: '#/components/schemas/Timestamp'}, intervalEnd: {$ref: '#/components/schemas/Timestamp'}, pieces: {type: integer, minimum: 0}, status: {type: string, enum: [RECORDED, VERIFIED]}, verifiedBy: {$ref: '#/components/schemas/Uuid', nullable: true}, verifiedAt: {$ref: '#/components/schemas/Timestamp', nullable: true}}}
     SewingTallyPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/SewingTallyItem'}}, nextCursor: {type: string, nullable: true}}}
     CutBatchItem: {type: object, required: [id, orderId, materialLotId, issueId, componentCode, producedPieces, consumedQuantity, returnedQuantity, wasteQuantity], properties: {id: {$ref: '#/components/schemas/Uuid'}, orderId: {$ref: '#/components/schemas/Uuid'}, materialLotId: {$ref: '#/components/schemas/Uuid'}, issueId: {$ref: '#/components/schemas/Uuid'}, componentCode: {type: string}, producedPieces: {type: integer, minimum: 0}, consumedQuantity: {$ref: '#/components/schemas/Quantity'}, returnedQuantity: {$ref: '#/components/schemas/Quantity'}, wasteQuantity: {$ref: '#/components/schemas/Quantity'}}}
     CutBatchPage: {type: object, required: [items], properties: {items: {type: array, items: {$ref: '#/components/schemas/CutBatchItem'}}, nextCursor: {type: string, nullable: true}}}

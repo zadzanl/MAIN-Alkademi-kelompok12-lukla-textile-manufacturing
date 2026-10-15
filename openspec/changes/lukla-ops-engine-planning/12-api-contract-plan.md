@@ -21,19 +21,40 @@ The OpenAPI document is the machine-readable source. Each operation has source I
 | Area | Operations | Primary source IDs / roles |
 |---|---|---|
 | Auth/session | `login`, `refreshSession`, `logout`, `getMyContext` | FR-2.1; all roles |
-| Provisioning/clients/orders | `provisionAccount`, `listClients`, `createClient`, `createOrder`, `getOrder`, `listOrders` | FR-1.1, FR-1.4 (status-only), FR-2.1; scoped roles per operation |
-| Ledger/audit | `appendLedgerTransaction`, `reverseLedgerTransaction`, `getLedgerEntries`, `listAuditEvents` | FR-3.1; Owner, Finance |
-| Samples/time study/rates | `createSample`, `createSampleRevision`, `lockSample`, `recordTimeStudy`, `upsertRateCard`, `listSampleRevisions`, `listSamples`, `approveSample`, `convertSampleToOrder`, `listRateCards` | FR-4.1..FR-4.3; scoped roles per operation |
-| Warehouse/cutting | `receiveMaterial`, `issueMaterial`, `getStock`, `createStocktake`, `createStockAdjustment`, `recordCuttingResult` | FR-5, FR-5.1..FR-5.2, FR-6, FR-6.1..FR-6.3; Warehouse, Owner |
-| Sewing/assembly | `listLines`, `createLine`, `listOperators`, `createOperator`, `listAssignments`, `assignOperator`, `recordSewingTally`, `verifySewingTally`, `listAssemblies`, `createAssembly`, `listProductionProgress` | FR-7.1..FR-7.4; scoped roles per operation |
+| Provisioning/clients/orders | `provisionAccount`, `listClients`, `createClient`, `getClient`, `createOrder`, `getOrder`, `listOrders`, `confirmOrder`, `cancelOrder` | FR-1.1, FR-1.4 (status-only), FR-2.1, FR-4.3; scoped roles per operation |
+| Ledger/audit | `appendLedgerTransaction`, `reverseLedgerTransaction`, `getLedgerEntries`, `listLedgerAccounts`, `getLedgerTransaction`, `listAuditEvents` | FR-3.1; Owner, Finance |
+| Samples/time study/rates | `createSample`, `getSample`, `listSamples`, `createSampleRevision`, `listSampleRevisions`, `lockSample`, `approveSample`, `convertSampleToOrder`, `recordTimeStudy`, `listTimeStudies`, `upsertRateCard`, `listRateCards` | FR-4.1..FR-4.3; scoped roles per operation |
+| Warehouse/cutting | `receiveMaterial`, `issueMaterial`, `getStock`, `createStocktake`, `createStockAdjustment`, `recordCuttingResult`, `listCutBatches` | FR-5, FR-5.1..FR-5.2, FR-6, FR-6.1..FR-6.3, FR-7.3; Warehouse, Owner, ProductionHead |
+| Sewing/assembly | `listLines`, `createLine`, `listOperators`, `createOperator`, `listAssignments`, `assignOperator`, `recordSewingTally`, `listSewingTallies`, `verifySewingTally`, `listAssemblies`, `createAssembly`, `getAssembly`, `listProductionProgress` | FR-7.1..FR-7.4, FR-8.1; scoped roles per operation |
 | QC/payroll | `inspectUnit`, `getBonusPool`, `createPayrollPeriod`, `listPayrollPeriods`, `calculateWeeklyPayroll`, `getPayrollStatement`, `approvePayroll`, `recordPayrollPayment`, `recordOverhead`, `calculateOverhead` | FR-8.1..FR-8.2, FR-9.1..FR-9.2, FR-10.1..FR-10.4; scoped roles per operation |
 | Financial governance | `listFinancialRules`, `proposeFinancialRule`, `approveFinancialRule` | Inferred approval workflow supporting FR-10.1..FR-10.4; permissions and business values pending authorized approval |
-| Client billing | `listClientInvoices`, `createClientInvoice`, `issueClientInvoice` | Proposed commercial workflow; audit dependency FR-3.1 alone is not evidence of a source requirement for invoicing |
-| Procurement | `createPurchaseOrder`, `approvePurchaseOrder`, `recordSupplierInvoice` | BRD/PRD in-scope manual PO/invoice; Finance |
+| Client billing | `listClientInvoices`, `createClientInvoice`, `getClientInvoice`, `issueClientInvoice` | Proposed commercial workflow; FR-3.1; Finance, Owner, MaklonClient |
+| Procurement | `listPurchaseOrders`, `createPurchaseOrder`, `getPurchaseOrder`, `approvePurchaseOrder`, `listSupplierInvoices`, `recordSupplierInvoice` | BRD/PRD in-scope manual PO/invoice; FR-3.1; Finance, Owner |
 | Files/portal/dashboard | `createFileUpload`, `completeFileUpload`, `getFileDownload`, `getDashboard`, `getPortalOrderStatus` | FR-1.1, FR-3.1, six PRD views; scoped role |
 | Jobs/search | `runSaturdayPayrollJob`, `runMonthlyOverheadJob`, `getJob`, `searchOperationalDocuments` | FR-10.1, FR-10.4; service scope or authorized read role; search is a fenced extension |
 
-This catalog enumerates 69 operation IDs, not 69 independently proven requirements. The YAML specifies each operation's roles and required headers. Source-ID presence is only an inventory check; requirement semantics, error completeness, and six-view usability still need independent review.
+This catalog enumerates 83 operation IDs, not 83 independently proven requirements. The YAML specifies each operation's roles and required headers. Source-ID presence is only an inventory check; requirement semantics, error completeness, and six-view usability still need independent review.
+
+### 3.1 Reconciled operational query and lifecycle endpoint catalog
+
+The 14 operational query and lifecycle endpoints bridge critical visibility and lifecycle gaps identified in `reconcile-openapi-endpoint-gaps`:
+
+| Operation ID | Method & Path | Summary | Tags | x-roles | x-source-ids | Key Request/Response Schemas |
+|---|---|---|---|---|---|---|
+| `getClient` | `GET /clients/{clientId}` | Get client profile detail | `clients-orders` | `Owner`, `FinancePayroll`, `SampleTeam` | `FR-1.1` | Resp: `Client` |
+| `confirmOrder` | `POST /orders/{orderId}/confirmation` | Confirm a draft order to lock production commitments | `clients-orders` | `Owner`, `ProductionHead` | `FR-1.1`, `FR-4.3` | Req: `OrderConfirmationRequest`, Resp: `Order` |
+| `cancelOrder` | `POST /orders/{orderId}/cancellation` | Cancel an order with required audit justification | `clients-orders` | `Owner` | `FR-1.1` | Req: `OrderCancellationRequest`, Resp: `Order` |
+| `listLedgerAccounts` | `GET /ledger/accounts` | List chart of accounts for double-entry journals | `ledger-audit` | `FinancePayroll`, `Owner` | `FR-3.1` | Query: `active`, Resp: `LedgerAccountPage` |
+| `getLedgerTransaction` | `GET /ledger/transactions/{transactionId}` | Get posted ledger transaction header and legs | `ledger-audit` | `FinancePayroll`, `Owner` | `FR-3.1` | Resp: `LedgerTransaction` |
+| `getSample` | `GET /samples/{sampleId}` | Get sample detail and current active revision metadata | `samples-rates` | `SampleTeam`, `Owner`, `ProductionHead` | `FR-4.1`, `FR-4.2` | Resp: `Sample` |
+| `listTimeStudies` | `GET /time-studies` | List stopwatch time study observations for sample revisions | `samples-rates` | `SampleTeam`, `Owner`, `ProductionHead` | `FR-4.2` | Query: `sampleRevisionId`, `componentCode`, Resp: `TimeStudyPage` |
+| `listCutBatches` | `GET /cut-batches` | List cut batches available for sewing line intake | `warehouse-cutting`, `sewing` | `Warehouse`, `ProductionHead`, `Owner` | `FR-6`, `FR-6.3`, `FR-7.3` | Query: `orderId`, `componentCode`, Resp: `CutBatchPage` |
+| `listSewingTallies` | `GET /sewing-tallies` | List recorded 30-minute sewing tallies for Mandor verification | `sewing` | `ProductionHead`, `Owner` | `FR-7.3`, `FR-7.4` | Query: `lineId`, `operatorId`, `orderId`, `status`, Resp: `SewingTallyPage` |
+| `listPurchaseOrders` | `GET /purchase-orders` | List purchase orders with status filter | `procurement` | `FinancePayroll`, `Owner` | `FR-3.1` | Query: `status`, Resp: `PurchaseOrderPage` |
+| `getPurchaseOrder` | `GET /purchase-orders/{purchaseOrderId}` | Get purchase order detail including lines and approval state | `procurement` | `FinancePayroll`, `Owner` | `FR-3.1` | Resp: `PurchaseOrder` |
+| `listSupplierInvoices` | `GET /supplier-invoices` | List recorded supplier AP invoices | `procurement` | `FinancePayroll`, `Owner` | `FR-3.1` | Query: `purchaseOrderId`, Resp: `SupplierInvoicePage` |
+| `getAssembly` | `GET /assemblies/{assemblyId}` | Get garment assembly detail, attached components, and inspection state | `sewing`, `quality-payroll` | `QCInspector`, `ProductionHead`, `Owner` | `FR-7.4`, `FR-8.1` | Resp: `Assembly` |
+| `getClientInvoice` | `GET /client-invoices/{invoiceId}` | Get detailed commercial invoice breakdown | `workflow` | `FinancePayroll`, `Owner`, `MaklonClient` | `FR-3.1` | Resp: `ClientInvoice` |
 
 `FR-5` and `FR-6` are group-level status markers only. Their child endpoints are mapped to the specific child IDs. `FR-1.4` has only an onboarding/order contract shape and remains `DEFINITION_PENDING`; it does not assert missing source text.
 
