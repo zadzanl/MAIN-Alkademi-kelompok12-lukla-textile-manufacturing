@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lukla Operations Engine — Unverified Subject Tracker</title>
+<style>
+:root{--ink:#17212b;--muted:#66727e;--line:#dce3e9;--paper:#f7f9fb;--card:#fff;--blue:#1769aa;--amber:#9a6700;--red:#a22929;--green:#26734d;--purple:#6741a5;--shadow:0 8px 26px #17212b12}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Inter,Segoe UI,system-ui,sans-serif}a{color:var(--blue)}
+:root{--ink:#17212b;--muted:#66727e;--line:#dce3e9;--paper:#f7f9fb;--card:#fff;--blue:#1769aa;--amber:#9a6700;--red:#a22929;--green:#26734d;--purple:#6741a5;--shadow:0 8px 26px #17212b12}
+</style>
+<style>
+.check{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:600;color:#304b62}.check input{width:20px;height:20px;accent-color:var(--green)}.item.done{border-color:#9cc9ae;background:#f6fcf8}.item.done h3{text-decoration:line-through;color:var(--muted)}.clear{border:1px solid #bfcbd5;border-radius:8px;background:#fff;padding:10px 12px;font:inherit;color:var(--red);cursor:pointer}
+</style>
+<style>
+:root{--ink:#152536;--muted:#657586;--line:#d9e3ec;--paper:#f3f7fb;--card:#fff;--blue:#1769aa;--amber:#956400;--red:#a33a3a;--green:#24724d;--purple:#6843a5;--shadow:0 12px 30px rgba(20,50,75,.08)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 0 0,#e9f3fb 0,#f3f7fb 32rem);color:var(--ink);font:15px/1.55 Inter,Segoe UI,system-ui,sans-serif}header{background:linear-gradient(135deg,#102a43 0%,#17618a 100%);color:#fff;padding:54px 22px 46px;box-shadow:0 8px 30px #102a4330}header .shell{padding-top:0;padding-bottom:0}header h1{margin:0 0 10px;font-size:clamp(28px,5vw,48px);letter-spacing:-.04em;line-height:1.05}header p{max-width:760px;margin:0;color:#dbeaf4;font-size:16px}.shell{max-width:1180px;margin:auto;padding:24px 22px}.toolbar{position:sticky;top:0;z-index:2;margin:0 -22px 24px;padding:14px 22px;background:#f3f7fbe8;border-bottom:1px solid #d9e3ecaa;backdrop-filter:blur(16px) saturate(140%)}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.controls input,.controls select{border:1px solid #c8d5e1;border-radius:10px;background:#fff;padding:11px 13px;color:var(--ink);font:inherit;box-shadow:0 2px 5px #17324a08}.controls input{flex:1;min-width:250px}.controls input:focus,.controls select:focus,.clear:focus,.check input:focus{outline:3px solid #7cc5ee66;outline-offset:2px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px}.metric{background:#ffffffcc;border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}.metric strong{display:block;font-size:28px;letter-spacing:-.03em}.metric span{color:var(--muted);font-size:13px}.notice{background:#fffaf0;border:1px solid #f0d99b;border-left:5px solid #d99a00;padding:15px 17px;border-radius:12px;margin:0 0 18px;color:#5d4a22}.group{margin:30px 0}.group h2{font-size:21px;letter-spacing:-.02em;margin:0 0 13px;padding:0 0 10px;border-bottom:1px solid var(--line)}.cards{display:grid;gap:12px}.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 19px;box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.item:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(20,50,75,.12);border-color:#b7cddd}.item.done{border-color:#9cc9ae;background:#f5fcf7}.item.done h3{text-decoration:line-through;color:var(--muted)}.item-top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between}.item h3{margin:0;font-size:17px;line-height:1.3}.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;white-space:nowrap}.source{background:#f3e8ff;color:var(--purple)}.policy{background:#ffe8e8;color:var(--red)}.contradiction{background:#e9e2ff;color:#553399}.runtime{background:#e3f3ea;color:var(--green)}.partial{background:#e2f0fb;color:#185d8f}.item p{margin:10px 0;color:#425363}.action{font-weight:650;color:#304b62!important}.check{display:flex;align-items:center;gap:9px;margin:0 0 12px;color:#486176;font-size:13px;font-weight:650;cursor:pointer}.check input{width:19px;height:19px;margin:0;accent-color:var(--green);cursor:pointer}.item details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.item summary{cursor:pointer;color:var(--blue);font-weight:650}.ref{margin-top:8px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:#596673;word-break:break-word}.clear{border:1px solid #c7d4df;border-radius:10px;background:#fff;padding:10px 13px;font:inherit;color:var(--red);cursor:pointer}.clear:hover{background:#fff5f5;border-color:#d99a9a}.empty{display:none;text-align:center;padding:40px;color:var(--muted)}footer{max-width:1180px;margin:auto;padding:8px 22px 36px;color:var(--muted);font-size:13px}@media(max-width:760px){header{padding-top:38px}.summary{grid-template-columns:repeat(2,1fr)}.item-top{display:block}.badges{justify-content:flex-start;margin-top:10px}.toolbar{position:static;margin-left:-22px;margin-right:-22px}.controls input{min-width:100%}}@media(prefers-reduced-motion:reduce){.item{transition:none}.item:hover{transform:none}}@media print{body{background:#fff}.toolbar{position:static;background:#fff}.controls{display:none}.item{break-inside:avoid;box-shadow:none}.notice{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="shell"><h1>Lukla Operations Engine</h1><p>Unverified Subject Tracker — complete register of source gaps, pending business decisions, contradictions, and missing runtime evidence identified from the planning suite.</p></div></header>
+<main class="shell">
+<div class="toolbar"><div class="controls"><input id="search" type="search" placeholder="Search every subject, reference, or action…" aria-label="Search tracker"><select id="status" aria-label="Filter by status"><option value="all">All statuses</option><option value="source">Source / provenance pending</option><option value="policy">Business policy pending</option><option value="contradiction">Contradiction / ambiguity</option><option value="runtime">Runtime evidence missing</option><option value="partial">Partial evidence</option></select><select id="area" aria-label="Filter by area"><option value="all">All areas</option><option value="source">Source & provenance</option><option value="policy">Business & finance</option><option value="contradiction">Document contradictions</option><option value="runtime">Runtime & operations</option></select></div></div>
+<div class="summary"><div class="metric"><strong id="shown">0</strong><span>subjects shown</span></div><div class="metric"><strong id="total">0</strong><span>subjects tracked</span></div><div class="metric"><strong>0</strong><span>production-ready claims</span></div><div class="metric"><strong>1</strong><span>traceability warning</span></div></div>
+<div class="notice"><strong>Interpretation rule:</strong> structural document checks are not runtime proof. “Pending” means the planning documents explicitly leave the subject unresolved. “Runtime evidence missing” means the intended behavior has not been proven in a running application, database, deployed environment, or approved business process.</div>
+<div class="controls"><strong><span id="completed">0</span> of 40 checked locally</strong><button class="clear" id="clearProgress" type="button">Clear saved progress</button></div>
+<div id="content"></div><div id="empty" class="empty">No subjects match the current filters.</div>
+</main><footer>Source basis: BRD v2.3.0, PRD v2.0, 00-deconstruction.md, 06-acceptance-tests.md, 08-client-clarification-register.md, 11–19 planning artifacts, implementation reports, and available evidence bundles. Last reviewed: 2026-10-15.</footer>
+<script>
+const groups=[
+{key:'source',title:'1. Source and provenance gaps',items:[
+['Slide 02c and FR-2.1 provenance','source','The original slide 02c is unavailable. The eight-role matrix is visible on slide 04, but the original FR-2.1 wording and alleged solution pillars are not verified.','Do not treat the missing slide content as source-backed.','00-deconstruction.md — Slide 02c; BRD §7 RC1 and §13.3 item 1; PRD A.9 OQ-1; 08-client-clarification-register.md §6.1'],
+['Original Slide 07 payroll artifact','source','FR-10.1 through FR-10.4 come from a chat attachment. The original high-resolution slide is not archived in the repository.','Archive and independently verify the original slide before treating its details as fully provenance-complete.','00-deconstruction.md — source inventory and Slide 07; BRD §13.3 item 2; PRD A.9 OQ-2; 08-client-clarification-register.md §6.2'],
+['FR-1.4 definition','source','FR-1.4 appears as a badge in slide 03, but its definition is absent. Possible meanings include client registration, legal data, tax identity, contract verification, or contacts.','Keep FR-1.4 status-only until the owner defines its scope.','00-deconstruction.md — Slide 03; BRD §13.3 item 5; PRD A.9 OQ-5 and B.1; 12-api-contract-plan.md'],
+['FR-5 warehouse group semantics','source','The source does not fully specify stock transactions, stock adjustments, stock-opname procedure, or detailed warehouse ownership behavior.','Do not invent transaction or adjustment semantics.','BRD §13.3 item 3; PRD A.9 OQ-3; 08-client-clarification-register.md; 16-test-harness-and-agent-verification.md'],
+['FR-6 cutting group semantics','source','The source does not fully specify cutting batches, markers, waste, output records, or whether FR-6.2 belongs to Warehouse, Cutting, or both.','Keep the mismatch-rejection behavior while leaving module ownership pending.','BRD §13.3 item 4; PRD A.9 OQ-4; 08-client-clarification-register.md; 16-test-harness-and-agent-verification.md']
+]},
+{key:'policy',title:'2. Unapproved business, financial, and legal policies',items:[
+['CMT shrinkage and scrap tolerance','policy','Contractual tolerance for shrinkage and cutting waste is undefined. Liability for mill defects and compensation for excess waste are also undefined.','Approve tolerance, liability, compensation, and audit treatment.','08-client-clarification-register.md §§1.1–1.2; 19-business-defaults-register.md §4'],
+['Remnant and branded-scrap ownership','policy','End-of-roll fabric, small remnants, branded scraps, disposal, return, resale, and destruction rules are not approved.','Define title, return, disposal, and brand-protection controls.','08-client-clarification-register.md §1.2; 19-business-defaults-register.md §4'],
+['Semi-CMT pricing and reimbursement','policy','It is unknown whether supplemental materials use fixed package pricing, cost-plus, or reimbursement at cost. Deposit timing is also undefined.','Approve pricing, reimbursement, deposit, and invoice behavior.','08-client-clarification-register.md §1.3; 19-business-defaults-register.md §4'],
+['Down payment and client payment terms','policy','The system does not know whether cutting requires a deposit or whether payment is cash-before-delivery, Net 14, Net 30, or another term.','Approve payment gates and terms.','08-client-clarification-register.md §1.4; 19-business-defaults-register.md §4'],
+['Overhead allocation basis','policy','Unit count versus SAM weighting, predetermined rate, idle capacity, and commercial effect are unresolved.','Approve denominator, weighting, idle-capacity treatment, and billing scope.','BRD FR-10.4 and §13.3; 08-client-clarification-register.md §2.1; 19-business-defaults-register.md'],
+['Custodial inventory valuation','policy','It is unknown whether client material is recorded monetarily or as a quantity-only subledger.','Approve valuation and ledger presentation with Finance.','08-client-clarification-register.md §2.2; BRD §9.1; 19-business-defaults-register.md'],
+['Tax treatment','policy','PKP status, PPN, PPh 23, withholding, and automation scope are not approved.','Obtain Finance/legal decision; do not infer statutory tax behavior.','08-client-clarification-register.md §2.3; BRD §3.2; 19-business-defaults-register.md'],
+['Meal-pool allocation basis','policy','The 10–15% pool is stated, but individual allocation is undefined: wage-proportional, equal headcount, or attendance/mandays.','Approve base and allocation method.','BRD FR-10.2 and §13.3 item 7; PRD A.7 AS-3 and A.9 OQ-7; 08-client-clarification-register.md §3.1'],
+['Meal-pool financial bearer','policy','It is unknown whether meal allowance is Lukla operating expense or a client surcharge.','Approve who bears the cost.','08-client-clarification-register.md §3.2; 19-business-defaults-register.md OQ-2'],
+['QC bonus recipients and dynamic headcount','policy','The baseline names two mandors and a Head of Operations, but configurability, QC participation, and changing mandor counts are unresolved.','Approve recipient policy and dynamic-count behavior.','BRD FR-9.2/FR-10.3; PRD A.9 OQ-6; 08-client-clarification-register.md §3.3'],
+['QC bonus remainder','policy','The documents conflict over whether a non-divisible remainder goes to a reserve. Current BRD status is unresolved.','Approve an explicit remainder rule before payment logic.','PRD A.9 OQ-9; BRD §13.2/§16.1; 06-acceptance-tests.md AT-08; 19-business-defaults-register.md OQ-4'],
+['Payroll cutoff and uninspected output','policy','Saturday cutoff time and treatment of output not yet inspected by QC are undefined.','Approve cutoff and carry-forward policy.','08-client-clarification-register.md §3.4; 19-business-defaults-register.md OQ-5; 06-acceptance-tests.md AT-04'],
+['Payroll approval and payment method','policy','Final approver and bank-versus-cash payment method are not authorized.','Approve authority and payment method.','08-client-clarification-register.md §3.4; 19-business-defaults-register.md OQ-6'],
+['Downtime and break treatment','policy','Rules for breaks, prayer, power loss, machine failure, material shortage, downtime codes, and waiting pay are undefined.','Approve downtime recording and compensation policy.','08-client-clarification-register.md §4.1; 19-business-defaults-register.md §5'],
+['Payroll dispute and correction window','policy','The process for reconciling operator disputes and the time allowed for correcting tally errors are undefined.','Approve daily closing, correction window, and lock timing.','08-client-clarification-register.md §4.2; 19-business-defaults-register.md §5'],
+['Reject, scrap, and wage deduction','policy','The BRD mentions possible wage deduction, but the amount, legal basis, approval, and material-loss treatment are not defined.','Do not automate deductions until Business/HR/Legal approve the rule.','BRD §6.1; 08-client-clarification-register.md §4.3; 19-business-defaults-register.md OQ-7'],
+['QC acceptance and external inspection','policy','AQL, external client inspection, needle detection, and acceptance thresholds are undefined.','Approve quality acceptance policy.','08-client-clarification-register.md §5.1; 19-business-defaults-register.md OQ-8'],
+['Returns, warranty, and client claims','policy','RMA responsibility, freight, rework cost, warranty period, and claim accounting are undefined.','Approve post-delivery quality and financial workflow.','08-client-clarification-register.md §5.2; 19-business-defaults-register.md OQ-8'],
+['Client IP Chinese wall','policy','Access rules for CAD, patterns, tech packs, and client designs versus Snøhund are not approved.','Approve IP isolation and role access policy.','08-client-clarification-register.md §5.3; 19-business-defaults-register.md OQ-9'],
+['Sample sign-off and mass-order authority','policy','Accepted sign-off evidence and the internal authority to convert a sample into a mass order are undefined.','Approve signatory, evidence, and conversion authority.','08-client-clarification-register.md §5.4; 06-acceptance-tests.md AT-09–AT-10; PRD A.9']
+]},
+{key:'contradiction',title:'3. Contradictions and ambiguities',items:[
+['QC status vocabulary','contradiction','Sources use Pass/Repair/Reject, Lolos/Repair/Reject, Lolos/Repair/Scrap, and Reject/Scrap/potong gaji.','Define canonical states and separate disposition from financial consequence.','00-deconstruction.md slide 04/05/08 notes; BRD §6.1 and FR-8.1; 06-acceptance-tests.md'],
+['Menunggu QC state position','contradiction','One source places Menunggu QC after QC and before payroll; another describes assembly output entering Menunggu QC before inspection.','Approve the state machine and wage eligibility transition.','00-deconstruction.md slide 04b and slide 06; 06-acceptance-tests.md AT-04/AT-05'],
+['Rate-card governance precedence','contradiction','Owner can change rate cards while Mandor can determine component rates. Approval precedence and historical scope are undefined.','Define proposal, approval, effective-date, and snapshot rules.','00-deconstruction.md slide 04; BRD FR-7.2 and §11.1; 06-acceptance-tests.md'],
+['Draft approval versus engineering review','contradiction','Engineering reviews approve planning artifacts, while the BRD and PRD remain Draft — Menunggu Persetujuan with placeholder approvers.','Do not treat technical review as business authorization.','BRD approval sheet/header; PRD header; 19-business-defaults-register.md; task-record.md']
+]},
+{key:'runtime',title:'4. Missing runtime and operational evidence',items:[
+['Production application behavior','runtime','Only narrow local mock UI interactions are evidenced. Real routing, persistence, API integration, authorization, and workflow transitions are not proven.','Run real application acceptance tests against a disposable environment.','artifacts/research/unverified-runtime-evidence-001.md; 06-acceptance-tests.md'],
+['Database, RLS, and ledger','runtime','Migration/test source exists, but live restricted-role results were not evidenced.','Run PostgreSQL integration, RLS, ledger immutability, reversal, rollback, and negative-control tests.','11-database-schema-spec.md; 16-test-harness-and-agent-verification.md; 15-deployment-and-operations.md'],
+['API/OpenAPI runtime conformance','runtime','OpenAPI inventory and structural checks exist; running-service conformance is not proven.','Run API tests and Schemathesis against the actual service.','contracts/openapi.yaml; 12-api-contract-plan.md; 16-test-harness-and-agent-verification.md'],
+['Browser/system integration','partial','Two Chromium tests pass against prototypes/design-mocks/lukla-ui-mock.html. They do not prove production frontend/backend integration.','Run all six real views and closing workflows against the API and database.','frontend/artifacts/evidence/manifest.json; frontend/artifacts/evidence/results.json; frontend/playwright.config.ts'],
+['Portal and tenant isolation','runtime','Client portal isolation and cross-tenant negative controls are specified but not proven in a running system.','Test explicit cross-tenant, beneficiary, legal-owner, and pooled-context reads.','16-test-harness-and-agent-verification.md §§5–9'],
+['Performance and concurrency','runtime','No latency, load, concurrency, queue, contention, offline recovery, or 70+ operator evidence exists.','Run performance and resilience tests against approved targets.','BRD NFR-03–NFR-06; 15-deployment-and-operations.md'],
+['Backup and restore','runtime','No backup policy output, snapshot, isolated restore, checksum, RTO, or RPO evidence exists.','Perform and record an isolated restore rehearsal.','15-deployment-and-operations.md §7'],
+['Deployment and cloud operations','runtime','AWS topology, secrets, scheduler, observability, rollback, and cost are design-only.','Build, deploy, health-check, schedule, retry, alert, and rollback in a non-production environment.','15-deployment-and-operations.md §§2–11'],
+['Security enforcement','runtime','Authentication, authorization, RLS, object ACL, secret redaction, replay protection, service-principal checks, and scanning are not proven.','Run security negative controls and environment checks.','13-authn-authz-design.md; 15-deployment-and-operations.md; 16-test-harness-and-agent-verification.md'],
+['Financial calculations in production flow','runtime','Arithmetic examples are checked, but real payroll records, eligibility, cutoff, meal basis, overhead, bonus remainder, approval, payment, and ledger posting are not proven.','Run approved-rule calculations end-to-end and preserve evidence bundles.','06-acceptance-tests.md; 19-business-defaults-register.md; backend/payroll-costing/'],
+['FR-10.4 acceptance coverage','partial','The traceability verifier exits 0 but warns that 06-acceptance-tests.md lacks an explicit acceptance case for monthly overhead allocation.','Add and execute a dedicated FR-10.4 scenario.','verify-traceability.ps1 output; 06-acceptance-tests.md; BRD FR-10.4']
+]}
+];
+const flat=groups.flatMap(g=>g.items.map(x=>({group:g.key,title:x[0],status:x[1],detail:x[2],action:x[3],refs:x[4]})));
+const content=document.getElementById('content'), search=document.getElementById('search'), status=document.getElementById('status'), area=document.getElementById('area');
+document.getElementById('total').textContent=flat.length;
+function esc(v){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){const q=search.value.trim().toLowerCase(), s=status.value, a=area.value;let shown=0;content.innerHTML=groups.map(g=>{const cards=g.items.map(x=>({group:g.key,title:x[0],status:x[1],detail:x[2],action:x[3],refs:x[4]})).filter(i=>(s==='all'||i.status===s)&&(a==='all'||i.group===a)&&(!q||Object.values(i).join(' ').toLowerCase().includes(q))).map(i=>{shown++;return `<article class="item"><div class="item-top"><h3>${esc(i.title)}</h3><div class="badges"><span class="badge ${i.status}">${label(i.status)}</span><span class="badge ${i.group}">${areaLabel(i.group)}</span></div></div><p>${esc(i.detail)}</p><p class="action">Next: ${esc(i.action)}</p><details><summary>References</summary><div class="ref">${esc(i.refs)}</div></details></article>`}).join('');return cards?`<section class="group"><h2>${esc(g.title)}</h2><div class="cards">${cards}</div></section>`:''}).join('');document.getElementById('shown').textContent=shown;document.getElementById('empty').style.display=shown?'none':'block'}
+function label(s){return {source:'Source pending',policy:'Policy pending',contradiction:'Contradiction',runtime:'Runtime missing',partial:'Partial evidence'}[s]}
+function areaLabel(s){return {source:'Source',policy:'Business/finance',contradiction:'Document conflict',runtime:'Runtime',partial:'Runtime'}[s]}
+const storageKey='lukla-unverified-subjects-v1';
+let checked=new Set();
+try{const saved=JSON.parse(localStorage.getItem(storageKey)||'[]');if(Array.isArray(saved))checked=new Set(saved.filter(v=>typeof v==='string'))}catch{document.getElementById('completed').title='Saved progress could not be read'}
+const originalRender=render;
+render=function(){
+	originalRender();
+	content.querySelectorAll('.item').forEach(card=>{
+		const title=card.querySelector('h3').textContent;
+		const group=card.closest('.group').querySelector('h2').textContent;
+		const id=group+'|'+title;
+		const label=document.createElement('label');
+		label.className='check';
+		const box=document.createElement('input');
+		box.type='checkbox';
+		box.checked=checked.has(id);
+		box.setAttribute('aria-label','Checked: '+title);
+		const text=document.createElement('span');
+		text.textContent='Mark subject as checked';
+		label.append(box,text);
+		card.prepend(label);
+		card.classList.toggle('done',box.checked);
+		box.addEventListener('change',()=>{
+			if(box.checked)checked.add(id);else checked.delete(id);
+			card.classList.toggle('done',box.checked);
+			document.getElementById('completed').textContent=checked.size;
+			try{localStorage.setItem(storageKey,JSON.stringify([...checked]))}catch{document.getElementById('completed').title='Storage unavailable; progress is only saved until this page closes'}
+		});
+	});
+	document.getElementById('completed').textContent=checked.size;
+};
+document.getElementById('clearProgress').addEventListener('click',()=>{
+	if(!checked.size||!confirm('Clear all saved checkbox progress?'))return;
+	checked.clear();
+	try{localStorage.removeItem(storageKey)}catch{}
+	render();
+});
+[search,status,area].forEach(el=>el.addEventListener('input',render));render();
+</script>
+</body>
+</html>
