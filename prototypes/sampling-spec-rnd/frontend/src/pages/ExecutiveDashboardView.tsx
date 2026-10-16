@@ -391,50 +391,6 @@ const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
 
   return (
     <div className="space-y-8 font-sf-pro">
-      {/* ── Top Bar: Dashboard Navigation Tabs & Live Controls ───────────── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#1c1c1e] p-3 sm:p-4 rounded-sm border border-hair shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          {(
-            [
-              { id: 'all', label: 'Ringkasan Utama' },
-              { id: 'operations', label: 'Throughput 30m' },
-              { id: 'capacity', label: 'Utilisasi 70 Mesin' },
-              { id: 'wip', label: 'Distribusi WIP Maklon' },
-              { id: 'financial', label: 'Buku Besar Keuangan' },
-            ] as const
-          ).map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              className={`min-h-[48px] px-4 py-2.5 rounded-[12px] text-[13px] font-semibold transition-all flex items-center justify-center ${
-                activeTab === t.id
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'text-ink-muted hover:text-ink hover:bg-panel-2'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-          <button
-            type="button"
-            onClick={loadData}
-            disabled={ledgerLoading}
-            title="Muat Ulang Data Operasional & Keuangan"
-            className="min-h-[48px] min-w-[48px] px-4 py-2.5 rounded-[12px] border border-hair text-[13px] font-medium text-ink hover:bg-panel-2 transition-all flex items-center justify-center gap-2"
-          >
-            <LucideIcon
-              name="activity"
-              className={`w-4 h-4 text-brand ${ledgerLoading ? 'animate-spin' : ''}`}
-            />
-            <span>Refresh</span>
-          </button>
-        </div>
-      </div>
-
       {/* ── Status Banner: Ciwidey Facility & Double-Entry Invariant ────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-panel border border-hair rounded-sm p-5 flex items-center justify-between">
@@ -509,6 +465,50 @@ const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
           note={`${financialSummary.transactionCount} transaksi berimbang tanpa selisih`}
           loading={ledgerLoading}
         />
+      </div>
+
+      {/* ── Top Bar: Dashboard Navigation Tabs & Live Controls ───────────── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#1c1c1e] p-3 sm:p-4 rounded-sm border border-hair shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          {(
+            [
+              { id: 'all', label: 'Ringkasan Utama' },
+              { id: 'operations', label: 'Throughput 30m' },
+              { id: 'capacity', label: 'Utilisasi 70 Mesin' },
+              { id: 'wip', label: 'Distribusi WIP Maklon' },
+              { id: 'financial', label: 'Buku Besar Keuangan' },
+            ] as const
+          ).map(t => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              className={`min-h-[48px] px-4 py-2.5 rounded-[12px] text-[13px] font-semibold transition-all flex items-center justify-center ${
+                activeTab === t.id
+                  ? 'bg-brand text-white shadow-sm'
+                  : 'text-ink-muted hover:text-ink hover:bg-panel-2'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            onClick={loadData}
+            disabled={ledgerLoading}
+            title="Muat Ulang Data Operasional & Keuangan"
+            className="min-h-[48px] min-w-[48px] px-4 py-2.5 rounded-[12px] border border-hair text-[13px] font-medium text-ink hover:bg-panel-2 transition-all flex items-center justify-center gap-2"
+          >
+            <LucideIcon
+              name="activity"
+              className={`w-4 h-4 text-brand ${ledgerLoading ? 'animate-spin' : ''}`}
+            />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════ */}

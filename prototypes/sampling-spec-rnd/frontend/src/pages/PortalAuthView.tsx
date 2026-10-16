@@ -284,50 +284,10 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
             Akses informasi operasional garment, produksi, order, inventori, dan laporan internal dalam satu portal.
           </p>
 
-          {/* Action cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 max-w-[980px]">
-            {([
-              { key: 'login' as Mode, title: 'Login', copy: 'Akses portal melalui sistem internal resmi.', glyph: '↗' },
-              { key: 'register' as Mode, title: 'Registrasi', copy: 'Siapkan permintaan akses untuk tim Admin IT.', glyph: '＋' },
-            ]).map((card) => {
-              const selected = mode === card.key || (mode === 'forgot' && card.key === 'login');
-              return (
-                <button
-                  key={card.key}
-                  type="button"
-                  onClick={() => selectMode(card.key)}
-                  aria-pressed={selected}
-                  className="text-left p-6 sm:p-7 rounded-[20px] border transition-transform"
-                  style={{
-                    background: 'var(--bg-card)',
-                    borderColor: selected ? 'var(--c-brand-soft)' : 'var(--c-hair)',
-                    boxShadow: selected
-                      ? '0 0 0 3px var(--c-brand-bg), 0 10px 30px rgba(29,29,31,.06)'
-                      : '0 10px 30px rgba(29,29,31,.03)',
-                  }}
-                >
-                  <span
-                    className="w-[46px] h-[46px] rounded-[13px] grid place-items-center text-[22px] font-semibold mb-6"
-                    style={{ background: 'var(--c-brand-bg)', color: 'var(--c-brand)' }}
-                    aria-hidden="true"
-                  >
-                    {card.glyph}
-                  </span>
-                  <span className="block text-[22px] font-semibold mb-2" style={{ color: 'var(--c-ink)' }}>
-                    {card.title}
-                  </span>
-                  <span className="block text-[14px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
-                    {card.copy}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Form surface */}
           <section
             aria-label="Akses portal"
-            className="surface max-w-[760px] p-6 sm:p-9"
+            className="surface max-w-[760px] mx-auto p-6 sm:p-9"
           >
             <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
               <div>
@@ -544,7 +504,7 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
 
           {/* Security aside */}
           <aside
-            className="surface max-w-[760px] mt-4 p-5 sm:px-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            className="surface max-w-[760px] mx-auto mt-4 p-5 sm:px-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div>
               <h2 className="text-[24px] font-semibold mb-1" style={{ color: 'var(--c-ink)' }}>
@@ -567,7 +527,7 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
 
           {guideOpen && (
             <div
-              className="max-w-[760px] mt-3 p-5 rounded-[12px] border"
+              className="max-w-[760px] mx-auto mt-3 p-5 rounded-[12px] border"
               style={{ background: 'var(--bg-card)', borderColor: 'var(--c-brand-soft)' }}
             >
               <h3 className="text-[19px] font-semibold mb-2" style={{ color: 'var(--c-ink)' }}>
