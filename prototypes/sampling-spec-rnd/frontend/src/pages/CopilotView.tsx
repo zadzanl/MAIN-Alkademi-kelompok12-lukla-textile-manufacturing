@@ -1,3 +1,14 @@
+/**
+ * CopilotView — AI Operational Assistant Interface
+ *
+ * NOTE FOR FUTURE RESOLUTION:
+ * For demo purposes, the external client portal shares this identical AI assistant
+ * view and prompt catalog with internal staff. In the future, a dedicated client-facing
+ * agent prompt and scoped read-tool catalog (client_id filtering for order status,
+ * sample approval, and consigned stock) must be implemented to prevent internal factory
+ * operational data from being queried by client roles.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon } from '../components/Sidebar';
 import { getToken } from '../services/authSession';

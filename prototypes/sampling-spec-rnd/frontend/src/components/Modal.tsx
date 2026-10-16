@@ -3,6 +3,7 @@
  * Animated entry, high-contrast title, close button with hover ring
  */
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { LucideIcon } from './Sidebar';
 
 interface ModalProps {
@@ -11,9 +12,11 @@ interface ModalProps {
   children: React.ReactNode;
   onClose: () => void;
   footer?: React.ReactNode;
+  /** Widen the dialog for table-heavy content (default max-w-lg). */
+  wide?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer, wide }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -43,7 +46,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer 
 
   if (!isOpen) return null;
 
-  return (
+  // Portal to <body>: ancestors with transform/perspective (e.g. .page-turn)
+  // become the containing block for fixed elements, which would shrink the
+  // backdrop to the content area instead of the viewport.
+  return createPortal(
     <div
       className="modal-backdrop fixed inset-0 flex items-center justify-center p-4 z-50"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
@@ -51,7 +57,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer 
       <div
         ref={dialogRef} tabIndex={-1}
         role="dialog" aria-modal="true" aria-labelledby="modal-title"
-        className="bg-white border border-hair rounded-[20px] w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto shadow-2xl outline-none"
+        className={`bg-white border border-hair rounded-[20px] w-full ${wide ? 'max-w-5xl' : 'max-w-lg'} p-6 max-h-[90vh] overflow-y-auto shadow-2xl outline-none`}
         onClick={e => e.stopPropagation()}
       >
         {/* Title row */}
@@ -75,7 +81,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer 
         {/* Footer */}
         {footer && <div className="mt-5 pt-4 border-t border-panel-2">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

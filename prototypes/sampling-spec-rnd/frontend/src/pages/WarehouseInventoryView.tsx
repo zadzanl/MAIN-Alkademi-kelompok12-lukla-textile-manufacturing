@@ -155,7 +155,7 @@ export const WarehouseInventoryView: React.FC = () => {
             owner: dispatchDialog.lot?.owner ?? '',
             orderId: targetOrder.orderId,
             orderClient: targetOrder.client,
-            detail: `FR-6.2 Mismatch Rejection: Stock ${dispatchDialog.lot?.owner} diblokir dari Order ${targetOrder.client}`,
+            detail: `Mismatch Rejection: Stock ${dispatchDialog.lot?.owner} diblokir dari Order ${targetOrder.client}`,
           },
           ...prev,
         ]);
@@ -465,8 +465,8 @@ export const WarehouseInventoryView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleSimulateCrossClientDispatch(lot)}
-                            title="Uji Guardrail FR-6.2 (Simulasi Cross-Client Dispatch)"
-                            aria-label={`Uji Guardrail FR-6.2 untuk ${lot.item}`}
+                            title="Uji Guardrail (Simulasi Cross-Client Dispatch)"
+                            aria-label={`Uji Guardrail untuk ${lot.item}`}
                             className="min-h-[48px] px-3 py-2.5 rounded-[12px] font-mono text-[11px] font-semibold border transition-all text-bad hover:bg-red-50 flex items-center justify-center"
                             style={{
                               borderColor: 'var(--c-bad)',
@@ -474,7 +474,7 @@ export const WarehouseInventoryView: React.FC = () => {
                               background: 'transparent',
                             }}
                           >
-                            Uji FR-6.2
+                            Uji Guardrail
                           </button>
                         </div>
                       </td>
@@ -499,7 +499,7 @@ export const WarehouseInventoryView: React.FC = () => {
           <div className="flex items-center gap-2">
             <LucideIcon name="activity" className="w-4 h-4 text-blue-600" />
             <h3 className="text-[14px] font-semibold" style={{ color: 'var(--c-ink)' }}>
-              Audit Log Penerbitan Bahan &amp; Guardrail Log (FR-6.2)
+              Audit Log Penerbitan Bahan &amp; Guardrail Log
             </h3>
           </div>
           <span className="font-mono text-[11px]" style={{ color: 'var(--c-ink-muted)' }}>
@@ -527,7 +527,7 @@ export const WarehouseInventoryView: React.FC = () => {
                       color: '#ffffff',
                     }}
                   >
-                    {isBlocked ? 'FR-6.2 BLOCKED' : 'DISPATCH'}
+                    {isBlocked ? 'BLOCKED' : 'DISPATCH'}
                   </span>
                   <div>
                     <p className="font-semibold" style={{ color: isBlocked ? 'var(--c-bad)' : 'var(--c-ink)' }}>
@@ -633,7 +633,7 @@ export const WarehouseInventoryView: React.FC = () => {
                 <p className="mt-2 text-[12px] font-semibold text-bad flex items-center gap-1.5" style={{ color: 'var(--c-bad)' }}>
                   <span>⚠️ Perhatian:</span>
                   <span>
-                    Stock milik <strong>{selectedLotForDialog.owner}</strong> tidak cocok dengan order <strong>{currentTargetOrder?.client}</strong>. Akan ditolak oleh guardrail FR-6.2!
+                    Stock milik <strong>{selectedLotForDialog.owner}</strong> tidak cocok dengan order <strong>{currentTargetOrder?.client}</strong>. Akan ditolak oleh guardrail kepemilikan!
                   </span>
                 </p>
               )}
@@ -706,7 +706,7 @@ export const WarehouseInventoryView: React.FC = () => {
               className="font-mono text-[11px] font-bold tracking-[.08em] uppercase mb-3"
               style={{ color: 'var(--c-bad)' }}
             >
-              FR-6.2 · Ownership guardrail
+              Ownership guardrail
             </p>
 
             {/* Exact modal title matching lukla-ui-mock.html */}

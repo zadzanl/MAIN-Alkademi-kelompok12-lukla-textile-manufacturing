@@ -22,6 +22,7 @@ import {
   type Line, type Operator, type Assignment,
 } from '../services/opsApi';
 import { toast } from '../services/toast';
+import { getActor, subscribe as subscribeAuth } from '../services/authSession';
 
 const DEFAULT_ORDER = '33333333-3333-4333-8333-333333333333';
 const DEFAULT_CUT_BATCH = '22222222-2222-4222-8222-222222222222';
@@ -112,6 +113,8 @@ const FloorTerminalView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedComponent, setSelectedComponent] = useState<string>('ALL');
   const [onlyNonZero, setOnlyNonZero] = useState(false);
+  const [bulkArticle, setBulkArticle] = useState('');
+  const [bulkQuantity, setBulkQuantity] = useState('');
 
   // Real-time network connectivity tracking
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -151,6 +154,14 @@ const FloorTerminalView: React.FC = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    return subscribeAuth(() => {
+      setCounts({});
+      setResults({});
+      setError(null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!lineId && lines.length > 0) setLineId(lines[0].id);
@@ -251,6 +262,33 @@ const FloorTerminalView: React.FC = () => {
       });
       return next;
     });
+  };
+
+  const handleBulkOrder = () => {
+    const quantity = Number.parseInt(bulkQuantity, 10);
+    if (!bulkArticle.trim()) {
+      toast.error('Masukkan nama artikel sebelum membuat order bulk.');
+      return;
+    }
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      toast.error('Jumlah order bulk harus berupa angka lebih dari 0.');
+      return;
+    }
+    if (lineCards.length === 0) {
+      toast.error('Belum ada tailor aktif untuk menerima order bulk.');
+      return;
+    }
+
+    const perTailor = Math.floor(quantity / lineCards.length);
+    const remainder = quantity % lineCards.length;
+    const nextCounts: Record<string, number> = {};
+    lineCards.forEach((card, index) => {
+      nextCounts[card.id] = perTailor + (index < remainder ? 1 : 0);
+    });
+    setCounts(nextCounts);
+    setResults({});
+    triggerHaptic();
+    toast.success(`Order ${bulkArticle.trim()} sebanyak ${quantity} pcs dibagi ke ${lineCards.length} tailor.`);
   };
 
   const handleResetAll = () => {
@@ -386,6 +424,31 @@ const FloorTerminalView: React.FC = () => {
         </div>
       )}
 
+      {/* ── Bulk article order ──────────────────────────────────────────────── */}
+      <section className="rounded-[18px] border border-brand/30 bg-brand-bg p-5 shadow-xs" aria-labelledby="bulk-order-title">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-brand">Order lebih cepat</p>
+            <h2 id="bulk-order-title" className="mt-1 text-[20px] font-extrabold tracking-tight text-ink">Order Bulk Artikel</h2>
+            <p className="mt-1 text-[13px] text-ink-2">Masukkan total pcs sekali saja. Sistem membagi order secara merata ke semua tailor pada line aktif.</p>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="min-w-[220px] text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+              Artikel
+              <input value={bulkArticle} onChange={e => setBulkArticle(e.target.value)} placeholder="Contoh: Kemeja Oxford" className="mt-1 min-h-[48px] w-full rounded-[12px] border border-brand/40 bg-white px-3 text-[13px] font-semibold normal-case tracking-normal text-ink placeholder:font-normal placeholder:text-ink-faint focus:border-brand focus:outline-none" />
+            </label>
+            <label className="w-[140px] text-[11px] font-bold uppercase tracking-wider text-ink-muted">
+              Total pcs
+              <input type="number" min="1" step="1" value={bulkQuantity} onChange={e => setBulkQuantity(e.target.value)} placeholder="100" className="mt-1 min-h-[48px] w-full rounded-[12px] border border-brand/40 bg-white px-3 text-[13px] font-semibold normal-case tracking-normal text-ink placeholder:font-normal placeholder:text-ink-faint focus:border-brand focus:outline-none" />
+            </label>
+            <button type="button" onClick={handleBulkOrder} disabled={busy || lineCards.length === 0} className="min-h-[48px] rounded-[12px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white shadow-sm transition-all hover:bg-blue-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+              Terapkan ke Semua Tailor
+            </button>
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] font-medium text-brand">Pembagian otomatis: sisa pcs dialokasikan mulai dari tailor dengan nomor stasiun terkecil.</p>
+      </section>
+
       {/* ── Context & Interval Header Bar ──────────────────────────────────── */}
       <section className="rounded-[18px] border border-hair bg-white p-5 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -400,6 +463,7 @@ const FloorTerminalView: React.FC = () => {
                   setCounts({});
                   setResults({});
                 }}
+
                 className="min-h-[48px] rounded-[12px] border border-hair-4 bg-panel px-3 text-[14px] font-bold text-ink transition-colors hover:border-brand focus:border-brand"
               >
                 {lines.map(l => (

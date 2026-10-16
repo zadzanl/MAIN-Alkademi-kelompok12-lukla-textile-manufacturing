@@ -27,12 +27,26 @@ interface SidebarProps {
   onNavigate: (view: string) => void;
   isDark: boolean;
   onToggleDark: () => void;
+  isClient?: boolean;
+  isQcInspector?: boolean;
+  isFinancePayroll?: boolean;
+  brandLabel?: string;
 }
 
 const findChapterId = (chapters: NavChapter[], view: string): string | null =>
   chapters.find(c => c.items.some(i => i.view === view))?.id ?? null;
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, isDark, onToggleDark }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  currentView,
+  chapters,
+  onNavigate,
+  isDark,
+  onToggleDark,
+  isClient = false,
+  isQcInspector = false,
+  isFinancePayroll = false,
+  brandLabel,
+}) => {
   const [openChapter, setOpenChapter] = useState<string | null>(() => findChapterId(chapters, currentView));
 
   // Keep the chapter of the active view open when navigation changes it.
@@ -63,13 +77,20 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
         </svg>
       </div>
       <p className="text-[10px] tracking-[.16em] font-semibold" style={{ color: 'var(--c-ink-muted)' }}>
-        LuklaAgile
+        {brandLabel || (isClient
+          ? 'Lukla B2B Client Portal'
+          : isQcInspector
+          ? 'Lukla Quality Control'
+          : isFinancePayroll
+          ? 'Lukla Finance & Payroll'
+          : 'Lukla Ops Engine')}
       </p>
     </div>
 
     {/* Nav — chapter accordion; scrollable so every item stays reachable */}
     <nav className="flex-1 overflow-y-auto px-3 pb-3" aria-label="Navigasi utama">
       {/* Dominant AI Assistant Navigation Entry */}
+      {/* TODO (Future): Currently sharing identical AI Copilot assistant between internal staff and external client for demo purposes. In the future, client assistant prompt and read tools should be scoped strictly to client-owned data (client_id isolation). */}
       <div className="mb-3">
         <button
           type="button"

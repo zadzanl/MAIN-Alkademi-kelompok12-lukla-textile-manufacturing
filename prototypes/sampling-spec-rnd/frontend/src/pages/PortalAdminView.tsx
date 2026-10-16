@@ -6,7 +6,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as authApi from '../services/authApi';
 import type { RegistrationView } from '../services/authApi';
-import { getToken } from '../services/authSession';
+import { clearSession, getToken } from '../services/authSession';
 import { toast } from '../services/toast';
 
 const PortalAdminView: React.FC = () => {
@@ -21,7 +21,9 @@ const PortalAdminView: React.FC = () => {
     const res = await authApi.listRegistrations(token);
     setLoading(false);
     if (res.success && res.data) setItems(res.data);
-    else toast.error(res.error ?? 'Gagal memuat pengajuan.');
+    else if (res.status === 401) {
+      clearSession();
+    } else toast.error(res.error ?? 'Gagal memuat pengajuan.');
   }, []);
 
   useEffect(() => { void load(); }, [load]);
@@ -35,6 +37,8 @@ const PortalAdminView: React.FC = () => {
     if (res.success) {
       toast.success(decision === 'approve' ? 'Pengajuan disetujui.' : 'Pengajuan ditolak.');
       void load();
+    } else if (res.status === 401) {
+      clearSession();
     } else {
       toast.error(res.error ?? 'Gagal memproses pengajuan.');
     }

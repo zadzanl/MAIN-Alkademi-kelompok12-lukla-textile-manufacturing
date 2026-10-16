@@ -1296,6 +1296,7 @@ const SampleVersionView: React.FC<Props> = ({ onExportCSV }) => {
       {/* ── MODAL: COMPONENT SPECIFICATION EDITOR ─────────────────────── */}
       <Modal
         isOpen={showCompModal}
+        wide
         title={`Spesifikasi Komponen Jahitan — ${selected?.article_name} (${selected?.version_label})`}
         onClose={() => setShowCompModal(false)}
         footer={

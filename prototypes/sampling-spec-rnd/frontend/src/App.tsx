@@ -107,6 +107,230 @@ const chapters: NavChapter[] = [
   },
 ];
 
+// Client-scoped navigation chapters for B2B Maklon clients.
+// Restricts access to approval workflows, production tracking, and consigned inventory only.
+const clientChapters: NavChapter[] = [
+  {
+    id: 'klien-portal',
+    label: 'Portal Klien (B2B)',
+    icon: 'layers',
+    items: [
+      { id: 'sample-versions', label: 'Persetujuan Sample & Spec', icon: 'layers', view: 'sample-versions' },
+      { id: 'production', label: 'Monitoring Produksi Order', icon: 'factory', view: 'production' },
+      { id: 'warehouse', label: 'Bahan Baku Titipan (Maklon)', icon: 'warehouse', view: 'warehouse' },
+    ],
+  },
+  {
+    id: 'klien-sistem',
+    label: 'Akun Klien',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// QC Inspector navigation chapters (Slide 04: Periksa barang jadi, Set status lolos/reject/repair, Catat jenis cacat)
+// Prohibited: "Tidak dapat mengubah harga borongan atau data order klien"
+const qcInspectorChapters: NavChapter[] = [
+  {
+    id: 'qc-mutu',
+    label: 'Penjaminan Mutu (QC)',
+    icon: 'check-circle',
+    items: [
+      { id: 'quality', label: 'Quality Control', icon: 'check-circle', view: 'quality' },
+      { id: 'production', label: 'Inspeksi & Tally Hasil', icon: 'factory', view: 'production' },
+    ],
+  },
+  {
+    id: 'qc-referensi',
+    label: 'Standar & Spesifikasi',
+    icon: 'badge-check',
+    items: [
+      { id: 'spec-list', label: 'Daftar Standar Toleransi', icon: 'bar-chart-3', view: 'spec-list' },
+    ],
+  },
+  {
+    id: 'qc-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Finance & Payroll navigation chapters (Slide 04: Buat/setujui PO bahan, Terbitkan invoice, Hitung gaji mingguan & bulanan)
+// Prohibited: "Tidak dapat mengubah fisik stok di gudang"
+const financePayrollChapters: NavChapter[] = [
+  {
+    id: 'fin-ringkasan',
+    label: 'Ringkasan Eksekutif',
+    icon: 'layout-dashboard',
+    items: [
+      { id: 'overview', label: 'Executive Dashboard', icon: 'layout-dashboard', view: 'overview' },
+    ],
+  },
+  {
+    id: 'fin-operasional',
+    label: 'Keuangan & Penggajian',
+    icon: 'factory',
+    items: [
+      { id: 'payroll', label: 'Payroll & Costing Borongan', icon: 'factory', view: 'payroll' },
+      { id: 'ledger', label: 'Buku Besar & Jurnal Finansial', icon: 'book-open', view: 'ledger' },
+      { id: 'reports', label: 'Laporan Keuangan & PO', icon: 'bar-chart-3', view: 'reports' },
+    ],
+  },
+  {
+    id: 'fin-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Owner/Eksekutif navigation chapters (Slide 04: Analitik tinggi & konfigurasi sistem, Ubah rate card)
+// Prohibited: "Tidak dapat mengubah histori transaksi yang dikunci"
+const ownerChapters: NavChapter[] = [
+  {
+    id: 'owner-ringkasan',
+    label: 'Ringkasan Eksekutif',
+    icon: 'layout-dashboard',
+    items: [
+      { id: 'overview', label: 'Executive Dashboard', icon: 'layout-dashboard', view: 'overview' },
+    ],
+  },
+  {
+    id: 'owner-keuangan',
+    label: 'Finansial & Rate Card',
+    icon: 'factory',
+    items: [
+      { id: 'payroll', label: 'Payroll & Costing Borongan', icon: 'factory', view: 'payroll' },
+      { id: 'ledger', label: 'Buku Besar & Jurnal Finansial', icon: 'book-open', view: 'ledger' },
+      { id: 'reports', label: 'Laporan Keuangan & PO', icon: 'bar-chart-3', view: 'reports' },
+    ],
+  },
+  {
+    id: 'owner-operasional',
+    label: 'Operasional & Gudang',
+    icon: 'warehouse',
+    items: [
+      { id: 'warehouse', label: 'Inventaris Gudang', icon: 'warehouse', view: 'warehouse' },
+      { id: 'spec-versions', label: 'Versi Spec & BOM', icon: 'badge-check', view: 'spec-versions' },
+    ],
+  },
+  {
+    id: 'owner-sistem',
+    label: 'Sistem & Konfigurasi',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Konfigurasi Sistem', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Tim Sample/Adis navigation chapters (Slide 04: Catat pemakaian bahan sample, Input time study, Setujui versi sample)
+// Prohibited: "Tidak dapat menyetujui pesanan massal tanpa konfirmasi"
+const sampleChapters: NavChapter[] = [
+  {
+    id: 'sample-persetujuan',
+    label: 'Sample & Spesifikasi',
+    icon: 'layers',
+    items: [
+      { id: 'sample-versions', label: 'Versi Sample & Persetujuan', icon: 'layers', view: 'sample-versions' },
+      { id: 'spec-versions', label: 'Versi Spec', icon: 'badge-check', view: 'spec-versions' },
+      { id: 'spec-list', label: 'Daftar Standar Toleransi', icon: 'bar-chart-3', view: 'spec-list' },
+      { id: 'drift-analysis', label: 'Analisis Drift Desain', icon: 'activity', view: 'drift-analysis' },
+    ],
+  },
+  {
+    id: 'sample-studi',
+    label: 'Studi Waktu & Stopwatch',
+    icon: 'clock',
+    items: [
+      { id: 'stopwatch', label: 'Digital Stopwatch', icon: 'clock', view: 'stopwatch' },
+      { id: 'active-studies', label: 'Studi Waktu Aktif', icon: 'activity', view: 'active-studies' },
+      { id: 'time-studies', label: 'Kelola Time Studies', icon: 'clipboard-list', view: 'time-studies' },
+      { id: 'study-list', label: 'Daftar Studi', icon: 'boxes', view: 'study-list' },
+    ],
+  },
+  {
+    id: 'sample-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Gudang/Warehouse navigation chapters (Slide 04: Terima bahan + titipan klien, Keluarkan bahan ke cutting, Stok opname)
+// Prohibited: "Dilarang mengeluarkan bahan jika ID Klien/Pesanan tidak cocok"
+const warehouseChapters: NavChapter[] = [
+  {
+    id: 'gudang-stok',
+    label: 'Inventaris & Titipan',
+    icon: 'warehouse',
+    items: [
+      { id: 'warehouse', label: 'Inventaris Gudang & Titipan', icon: 'warehouse', view: 'warehouse' },
+    ],
+  },
+  {
+    id: 'gudang-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Kepala Produksi/Mandor navigation chapters (Slide 04: Atur line + alokasi penjahit, Tentukan rate card komponen, Catat output 30 menit)
+// Prohibited: "Tidak dapat mengubah formula penggajian atau hasil QC final"
+const mandorChapters: NavChapter[] = [
+  {
+    id: 'mandor-line',
+    label: 'Supervisi Line Produksi',
+    icon: 'factory',
+    items: [
+      { id: 'production', label: 'Produksi & Tally Output', icon: 'factory', view: 'production' },
+      { id: 'active-studies', label: 'Studi Line Aktif', icon: 'activity', view: 'active-studies' },
+      { id: 'spec-list', label: 'Toleransi Komponen', icon: 'bar-chart-3', view: 'spec-list' },
+    ],
+  },
+  {
+    id: 'mandor-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Penjahit/Tailor navigation chapters (Slide 04: Lihat tugas komponen, Laporkan hasil kerja)
+// Prohibited: "Tidak dapat mengedit catatan output yang sudah diverifikasi"
+const tailorChapters: NavChapter[] = [
+  {
+    id: 'tailor-stasiun',
+    label: 'Stasiun Operator Jahit',
+    icon: 'factory',
+    items: [
+      { id: 'production', label: 'Tugas & Lapor Kerja', icon: 'factory', view: 'production' },
+    ],
+  },
+  {
+    id: 'tailor-sistem',
+    label: 'Akun & Profil',
+    icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan Akun', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -125,19 +349,77 @@ function App() {
     clearSession();
   }, []);
 
-  // Admin IT sees an extra "Administrasi" chapter for access approvals.
+  const role = session?.actor.role;
+  const isClient = role === 'client';
+  const isAdmin = role === 'admin';
+  const isQcInspector = role === 'QCInspector' || role === 'qc' || role === 'qc_inspector';
+  const isFinancePayroll = role === 'FinancePayroll' || role === 'finance' || role === 'finance_payroll';
+  const isOwner = role === 'Owner' || role === 'owner';
+  const isSample = role === 'Sample' || role === 'sample' || role === 'tim_sample';
+  const isWarehouse = role === 'Warehouse' || role === 'warehouse' || role === 'gudang';
+  const isMandor = role === 'Mandor' || role === 'mandor' || role === 'kepala_produksi';
+  const isTailor = role === 'Tailor' || role === 'tailor' || role === 'penjahit';
+
+  // Role default landing view
+  const defaultLandingView = useMemo(() => {
+    if (isClient) return 'sample-versions';
+    if (isQcInspector) return 'quality';
+    if (isFinancePayroll) return 'payroll';
+    if (isOwner) return 'overview';
+    if (isSample) return 'sample-versions';
+    if (isWarehouse) return 'warehouse';
+    if (isMandor) return 'production';
+    if (isTailor) return 'production';
+    return 'overview';
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
+  // Explicit view authorization matrix based strictly on Slide 04 IZIN & PEMBATASAN
+  const isViewAuthorized = useMemo(() => {
+    if (isAdmin) return true;
+    if (currentView === 'copilot' || currentView === 'settings') return true;
+    if (isClient) return ['sample-versions', 'production', 'warehouse'].includes(currentView);
+    if (isQcInspector) return ['quality', 'production', 'spec-list'].includes(currentView);
+    if (isFinancePayroll) return ['payroll', 'reports', 'ledger', 'overview'].includes(currentView);
+    if (isOwner) return ['overview', 'reports', 'ledger', 'payroll', 'warehouse', 'spec-versions'].includes(currentView);
+    if (isSample) return ['sample-versions', 'stopwatch', 'active-studies', 'time-studies', 'study-list', 'spec-versions', 'spec-list', 'drift-analysis'].includes(currentView);
+    if (isWarehouse) return ['warehouse'].includes(currentView);
+    if (isMandor) return ['production', 'spec-list', 'active-studies'].includes(currentView);
+    if (isTailor) return ['production'].includes(currentView);
+    return true;
+  }, [isAdmin, currentView, isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
+  // Automatically switch away from unauthorized views upon login
+  // Note: 'copilot' and 'settings' are allowed across all roles for demo purposes.
+  // TODO (Future): Dedicated role-scoped AI copilot experience with role-specific prompt and data filters.
+  useEffect(() => {
+    if (!isViewAuthorized) {
+      setCurrentView(defaultLandingView);
+    }
+  }, [isViewAuthorized, defaultLandingView]);
+
+  // Role-based navigation chapters:
   const navChapters = useMemo<NavChapter[]>(() => {
-    if (session?.actor.role !== 'admin') return chapters;
-    return [
-      ...chapters,
-      {
-        id: 'administrasi', label: 'Administrasi', icon: 'badge-check',
-        items: [
-          { id: 'access-approvals', label: 'Persetujuan Akses', icon: 'check-circle', view: 'access-approvals' },
-        ],
-      },
-    ];
-  }, [session]);
+    if (isClient) return clientChapters;
+    if (isQcInspector) return qcInspectorChapters;
+    if (isFinancePayroll) return financePayrollChapters;
+    if (isOwner) return ownerChapters;
+    if (isSample) return sampleChapters;
+    if (isWarehouse) return warehouseChapters;
+    if (isMandor) return mandorChapters;
+    if (isTailor) return tailorChapters;
+    if (isAdmin) {
+      return [
+        ...chapters,
+        {
+          id: 'administrasi', label: 'Administrasi', icon: 'badge-check',
+          items: [
+            { id: 'access-approvals', label: 'Persetujuan Akses', icon: 'check-circle', view: 'access-approvals' },
+          ],
+        },
+      ];
+    }
+    return chapters;
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor, isAdmin]);
 
   // ── dark mode ────────────────────────────────────────────────────────────────
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -379,6 +661,69 @@ function App() {
     .join('')
     .toUpperCase();
 
+  const brandLabel = useMemo(() => {
+    if (isClient) return 'Lukla B2B Client Portal';
+    if (isQcInspector) return 'Lukla Quality Control';
+    if (isFinancePayroll) return 'Lukla Finance & Payroll';
+    if (isOwner) return 'Lukla Executive Suite';
+    if (isSample) return 'Lukla Sampling & R&D';
+    if (isWarehouse) return 'Lukla Gudang & Logistik';
+    if (isMandor) return 'Lukla Supervisi Produksi';
+    if (isTailor) return 'Lukla Stasiun Penjahit';
+    if (isAdmin) return 'Lukla IT Operations';
+    return 'Lukla Ops Engine';
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor, isAdmin]);
+
+  const portalBadge = useMemo(() => {
+    if (isClient) return { label: 'Portal Klien (B2B)', style: { borderColor: 'var(--c-brand)', color: 'var(--c-brand)', background: 'var(--c-brand-bg)' } };
+    if (isQcInspector) return { label: 'QC Inspector · Quality', style: { borderColor: 'var(--c-ok-2)', color: 'var(--c-ok-2)', background: 'var(--c-ok-bg)' } };
+    if (isFinancePayroll) return { label: 'Finance & Payroll · Finance', style: { borderColor: 'var(--blue)', color: 'var(--blue)', background: 'var(--blue-light)' } };
+    if (isOwner) return { label: 'Owner · Eksekutif', style: { borderColor: '#d97706', color: '#d97706', background: 'rgba(217, 119, 6, 0.1)' } };
+    if (isSample) return { label: 'Tim Sample · Sample', style: { borderColor: '#0284c7', color: '#0284c7', background: 'rgba(2, 132, 199, 0.1)' } };
+    if (isWarehouse) return { label: 'Gudang · Stok', style: { borderColor: '#ea580c', color: '#ea580c', background: 'rgba(234, 88, 12, 0.1)' } };
+    if (isMandor) return { label: 'Mandor · Line', style: { borderColor: '#7c3aed', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.1)' } };
+    if (isTailor) return { label: 'Penjahit · Operator', style: { borderColor: 'var(--c-hair)', color: 'var(--c-ink-muted)', background: 'var(--c-hair)' } };
+    return { label: 'Portal Internal · Staf', style: { borderColor: 'var(--c-hair)', color: 'var(--c-ink-muted)', background: 'transparent' } };
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
+  const headerSubtitle = useMemo(() => {
+    if (isClient) return 'PORTAL KLIEN / B2B MAKLON';
+    if (isQcInspector) return 'PENJAMINAN MUTU / QC INSPECTION';
+    if (isFinancePayroll) return 'KEUANGAN, INVOICE & PENGGAJIAN';
+    if (isOwner) return 'EKSEKUTIF / OWNER PORTAL';
+    if (isSample) return 'R&D / TIM SAMPLE & ADIS';
+    if (isWarehouse) return 'LOGISTIK / GUDANG & BAHAN TITIPAN';
+    if (isMandor) return 'SUPERVISI LINE / KEPALA PRODUKSI';
+    if (isTailor) return 'OPERATOR / PENJAHIT BORONGAN';
+    return 'DASHBOARD / OPERASIONAL PABRIK';
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
+  const headerCaption = useMemo(() => {
+    if (isClient) return `Login aktif sebagai ${profileName} · Akses Klien B2B Terverifikasi`;
+    if (isQcInspector) return `Login aktif sebagai ${profileName} · Otorisasi Inspeksi, Lolos/Reject & Cacat (Slide 04)`;
+    if (isFinancePayroll) return `Login aktif sebagai ${profileName} · Otorisasi PO Bahan, Invoice & Hitung Gaji (Slide 04)`;
+    if (isOwner) return `Login aktif sebagai ${profileName} · Otorisasi Analitik Tinggi & Konfigurasi Rate Card (Slide 04)`;
+    if (isSample) return `Login aktif sebagai ${profileName} · Otorisasi Pemakaian Bahan & Time Study Sample (Slide 04)`;
+    if (isWarehouse) return `Login aktif sebagai ${profileName} · Otorisasi Terima Titipan & Pengeluaran Cutting (Slide 04)`;
+    if (isMandor) return `Login aktif sebagai ${profileName} · Otorisasi Line, Alokasi & Output 30 Menit (Slide 04)`;
+    if (isTailor) return `Login aktif sebagai ${profileName} · Stasiun Operator & Pelaporan Hasil Kerja (Slide 04)`;
+    return isConnected
+      ? `Backend terhubung · ${timeStudies.length} studi · ${specVersions.length} spec`
+      : 'Backend tidak terhubung — pastikan server berjalan di port 8009';
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor, isConnected, profileName, timeStudies.length, specVersions.length]);
+
+  const roleRestrictionReason = useMemo(() => {
+    if (isClient) return 'Akun klien B2B Anda hanya diizinkan untuk melihat Persetujuan Sample, Monitoring Order Produksi, dan Inventaris Bahan Titipan sendiri.';
+    if (isQcInspector) return 'Sesuai Slide 04, peran QC Inspector memiliki izin untuk inspeksi barang jadi, penetapan status lolos/reject/repair, dan jenis cacat. Peran ini dibatasi untuk tidak dapat mengubah harga borongan, data payroll/buku besar, atau data order klien.';
+    if (isFinancePayroll) return 'Sesuai Slide 04, peran Finance & Payroll memiliki izin untuk membuat/menyetujui PO bahan, menerbitkan invoice, dan menghitung gaji mingguan/bulanan. Peran ini dibatasi untuk tidak dapat mengubah fisik stok gudang secara langsung atau mengakses instrumen studi waktu lantai produksi.';
+    if (isOwner) return 'Sesuai Slide 04, peran Owner/Eksekutif memiliki akses analitik tinggi, konfigurasi sistem, dan rate card. Dibatasi untuk tidak dapat mengubah histori transaksi atau jurnal yang telah dikunci.';
+    if (isSample) return 'Sesuai Slide 04, peran Tim Sample/Adis memiliki izin untuk mencatat pemakaian bahan sample, input time study komponen, dan persetujuan sample. Dibatasi tidak dapat menyetujui pesanan massal tanpa konfirmasi atau memodifikasi modul keuangan/payroll.';
+    if (isWarehouse) return 'Sesuai Slide 04, peran Gudang/Warehouse berwenang atas stok fisik gudang, terima titipan klien, dan pengeluaran ke cutting. Dilarang mengeluarkan bahan jika ID Klien/Pesanan tidak cocok dan tidak memiliki akses ke modul finansial, time study, atau penetapan rate card.';
+    if (isMandor) return 'Sesuai Slide 04, peran Kepala Produksi/Mandor berwenang mengatur line, alokasi penjahit, rate card komponen, dan pencatatan output 30 menit. Dibatasi tidak dapat mengubah formula penggajian, hasil QC final, atau inventaris gudang.';
+    if (isTailor) return 'Sesuai Slide 04, peran Penjahit/Tailor hanya berwenang melihat tugas komponen dan lapor hasil kerja borongan. Dibatasi tidak dapat mengedit catatan output yang sudah diverifikasi mandor dan tidak memiliki akses manajerial/finansial.';
+    return 'Modul ini dibatasi untuk staf dengan otorisasi khusus.';
+  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
   return (
     <div
       className="flex h-screen overflow-hidden font-sf-pro"
@@ -402,27 +747,32 @@ function App() {
           onNavigate={(view) => { setCurrentView(view); setMobileNavOpen(false); }}
           isDark={isDark}
           onToggleDark={toggleDark}
+          isClient={isClient}
+          isQcInspector={isQcInspector}
+          isFinancePayroll={isFinancePayroll}
+          brandLabel={brandLabel}
         />
       </div>
 
-      <main className="flex-1 overflow-y-auto page-stage">
+      <main className="flex-1 overflow-y-auto page-stage flex flex-col">
         <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
           <div className="max-w-[1440px] mx-auto px-6 lg:px-8 flex items-center justify-between gap-4 py-3">
             <LuklaLogo size={26} />
-            <span className="rounded-full border px-3 py-1.5 text-[12px]" style={{ borderColor: 'var(--c-hair)', color: 'var(--c-ink-muted)' }}>
-              Portal Internal
+            <span
+              className="rounded-full border px-3 py-1 text-[12px] font-semibold"
+              style={portalBadge.style}
+            >
+              {portalBadge.label}
             </span>
           </div>
         </header>
 
-        <div className="max-w-[1440px] mx-auto p-6 lg:p-8">
+        <div className="max-w-[1440px] mx-auto p-6 lg:p-8 flex-1 w-full">
 
           <Header
             title={currentLabel}
-            subtitle="DASHBOARD / LUKLA AGILE"
-            caption={isConnected
-              ? `Backend terhubung · ${timeStudies.length} studi · ${specVersions.length} spec`
-              : 'Backend tidak terhubung — pastikan server berjalan di port 8009'}
+            subtitle={headerSubtitle}
+            caption={headerCaption}
             globalSearch={globalSearch}
             onGlobalSearchChange={setGlobalSearch}
             onMenuClick={() => setMobileNavOpen(true)}
@@ -439,8 +789,31 @@ function App() {
           >
             <ErrorBoundary>
 
+          {/* ── ROLE ACCESS RESTRICTION BARRIER (Slide 04) ──────────────────── */}
+          {!isViewAuthorized && (
+            <div className="surface p-8 max-w-[640px] mx-auto text-center rounded-[14px]">
+              <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--c-bad-bg)', color: 'var(--c-bad-4)' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <h2 className="text-[20px] font-bold mb-2 text-ink">Akses Dibatasi ({portalBadge.label})</h2>
+              <p className="text-[14px] text-ink-muted mb-6 leading-relaxed">
+                {roleRestrictionReason}
+              </p>
+              <button
+                type="button"
+                onClick={() => setCurrentView(defaultLandingView)}
+                className="btn-primary justify-center text-[14px]"
+              >
+                Kembali ke Modul Utama
+              </button>
+            </div>
+          )}
+
           {/* ── OVERVIEW (VIEW-01: Executive Operations & Financial Dashboard) ── */}
-          {currentView === 'overview' && (
+          {isViewAuthorized && currentView === 'overview' && (
             <ExecutiveDashboardView
               onNavigate={(view) => setCurrentView(view)}
               workflowSummary={workflowSummary}
@@ -452,21 +825,21 @@ function App() {
           )}
 
           {/* ── SAMPLE VERSIONS ───────────────────────────────────────────────── */}
-          {currentView === 'sample-versions' && (
+          {isViewAuthorized && currentView === 'sample-versions' && (
             <SampleVersionView onExportCSV={exportToCSV} />
           )}
 
           {/* ── STOPWATCH ─────────────────────────────────────────────────────── */}
-          {currentView === 'stopwatch' && <DigitalStopwatchView />}
+          {isViewAuthorized && currentView === 'stopwatch' && <DigitalStopwatchView />}
 
           {/* ── ACTIVE STUDIES ────────────────────────────────────────────────── */}
-          {currentView === 'active-studies' && <ActiveStudiesView />}
+          {isViewAuthorized && currentView === 'active-studies' && <ActiveStudiesView />}
 
           {/* ── PRODUCTION & TALLY (VIEW-04 floor terminal + admin) ───────────── */}
-          {currentView === 'production' && <ProductionView />}
+          {isViewAuthorized && currentView === 'production' && <ProductionView />}
 
           {/* ── TIME STUDIES (create + manage) ────────────────────────────────── */}
-          {currentView === 'time-studies' && (
+          {isViewAuthorized && currentView === 'time-studies' && (
             <TimeStudiesView
               studies={filteredStudies}
               tab={studyTab} onTabChange={setStudyTab}
@@ -477,10 +850,10 @@ function App() {
           )}
 
           {/* ── STUDY LIST ────────────────────────────────────────────────────── */}
-          {currentView === 'study-list' && <StudyListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
+          {isViewAuthorized && currentView === 'study-list' && <StudyListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
 
           {/* ── SPEC VERSIONS (create + manage) ───────────────────────────────── */}
-          {currentView === 'spec-versions' && (
+          {isViewAuthorized && currentView === 'spec-versions' && (
             <SpecVersionsView
               specs={filteredSpecs}
               tab={specTab} onTabChange={setSpecTab}
@@ -491,36 +864,34 @@ function App() {
           )}
 
           {/* ── SPEC LIST ─────────────────────────────────────────────────────── */}
-          {currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
+          {isViewAuthorized && currentView === 'spec-list' && <SpecListView onExportCSV={exportToCSV} globalSearch={globalSearch} />}
 
           {/* ── DRIFT ANALYSIS ────────────────────────────────────────────────── */}
-          {currentView === 'drift-analysis' && <DriftAnalysisView />}
+          {isViewAuthorized && currentView === 'drift-analysis' && <DriftAnalysisView />}
 
           {/* ── REPORTS ───────────────────────────────────────────────────────── */}
-          {currentView === 'reports' && <ReportsView onExportCSV={exportToCSV} />}
+          {isViewAuthorized && currentView === 'reports' && <ReportsView onExportCSV={exportToCSV} />}
 
           {/* ── QUALITY CONTROL ───────────────────────────────────────────────── */}
-          {currentView === 'quality' && <QualityView />}
+          {isViewAuthorized && currentView === 'quality' && <QualityView />}
 
           {/* ── LEDGER ────────────────────────────────────────────────────────── */}
-          {currentView === 'ledger' && <LedgerView />}
+          {isViewAuthorized && currentView === 'ledger' && <LedgerView />}
 
           {/* ── PAYROLL & COSTING ─────────────────────────────────────────────── */}
-          {currentView === 'payroll' && <PayrollView />}
+          {isViewAuthorized && currentView === 'payroll' && <PayrollView />}
 
           {/* ── COPILOT ───────────────────────────────────────────────────────── */}
           {currentView === 'copilot' && <CopilotView isDark={isDark} onNavigate={setCurrentView} />}
 
           {/* ── WAREHOUSE INVENTORY (VIEW-03) ─────────────────────────────────── */}
-          {(currentView === 'warehouse' || currentView === 'view-03') && <WarehouseInventoryView />}
+          {isViewAuthorized && (currentView === 'warehouse' || currentView === 'view-03') && <WarehouseInventoryView />}
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (
             <SettingsView
               isDark={isDark}
               onToggleDark={toggleDark}
-              font={uiFont}
-              onFontChange={setUiFont}
               onCheckHealth={checkHealth}
               onLoggedOut={handleLogout}
             />

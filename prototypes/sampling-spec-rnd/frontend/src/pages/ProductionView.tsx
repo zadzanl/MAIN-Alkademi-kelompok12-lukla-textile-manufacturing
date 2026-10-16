@@ -30,6 +30,7 @@ import {
   type AssemblyStatus, type TallyResult, type TallyInput,
 } from '../services/opsApi';
 import { toast } from '../services/toast';
+import { getActor } from '../services/authSession';
 import { buildStacked } from '../utils/chartData';
 import StackedBarChart, { type StackedKey } from '../components/StackedBarChart';
 import FloorTerminalView from './FloorTerminalView';
@@ -78,6 +79,8 @@ function defaultInterval(): { start: string; end: string; label: string } {
 
 const ProductionView: React.FC = () => {
   const [mode, setMode] = useState<'terminal' | 'admin'>('terminal');
+  const actor = getActor();
+  const isTailor = actor?.role === 'Tailor' || actor?.role === 'tailor' || actor?.role === 'penjahit';
   const [tab, setTab] = useState<TabId>('floor');
   const [error, setError] = useState<string | null>(null);
 
@@ -148,6 +151,10 @@ const ProductionView: React.FC = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (isTailor && mode === 'admin') setMode('terminal');
+  }, [isTailor, mode]);
 
   useEffect(() => {
     if (!selectedMatrixLine && lines.length > 0) {
@@ -244,7 +251,7 @@ const ProductionView: React.FC = () => {
     <div className="space-y-5">
       {/* View Switcher: Terminal Lantai vs Admin Mode */}
       <div className="inline-flex gap-1 rounded-[14px] bg-panel-2 p-1.5 shadow-xs">
-        {([['terminal', 'Terminal Lantai (Mandor)'], ['admin', 'Admin Produksi']] as const).map(([id, label]) => (
+        {([['terminal', 'Terminal Lantai (Mandor)'], ...(isTailor ? [] : [['admin', 'Admin Produksi'] as const])] as const).map(([id, label]) => (
           <button
             key={id}
             type="button"
