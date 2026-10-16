@@ -16,10 +16,10 @@
 const env: Partial<ImportMetaEnv> = (import.meta as { env?: ImportMetaEnv }).env ?? {};
 
 export const SAMPLING_BASE =
-  env.VITE_API_URL || 'http://localhost:8009/api/sampling-spec-rnd';
+  env.VITE_API_URL || '/api/sampling-spec-rnd';
 
 export const AUTH_BASE =
-  env.VITE_AUTH_URL || 'http://localhost:8009/api/auth';
+  env.VITE_AUTH_URL || '/api/auth';
 
 export const LEDGER_BASE = env.VITE_LEDGER_API_URL || '/api/v1';
 
