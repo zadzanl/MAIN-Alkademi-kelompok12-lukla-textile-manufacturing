@@ -21,6 +21,7 @@ from fastapi import APIRouter, Body, HTTPException, Query
 
 from ..models.spec_version_tracker import ChangeType
 from ..services.sampling_rnd_workflow import SamplingRnDWorkflow
+from ..services.seed import save_state, seed_sampling_rnd
 from ..utils.spec_version_patterns import calculate_drift_risk_score, identify_drift_trends
 
 
@@ -29,10 +30,13 @@ def _status_val(s: Any) -> str:
     return s.value if hasattr(s, "value") else str(s)
 
 
-def create_api_router() -> APIRouter:
+def create_api_router(seed: bool = True) -> APIRouter:
     router = APIRouter(prefix="/api/sampling-spec-rnd", tags=["sampling-spec-rnd"])
     workflow = SamplingRnDWorkflow()
     sample_versions: dict[str, dict[str, Any]] = {}
+
+    if seed:
+        seed_sampling_rnd(workflow, sample_versions)
 
     # ════════════════════════════════════════════════════════════════════
     # HEALTH + WORKFLOW

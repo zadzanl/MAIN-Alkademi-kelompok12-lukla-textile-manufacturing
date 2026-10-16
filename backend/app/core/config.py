@@ -18,4 +18,12 @@ class Settings:
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
+    # Telegram Copilot Bot Configuration (disabled by default in local development)
+    TELEGRAM_BOT_ENABLED: bool = os.getenv("TELEGRAM_BOT_ENABLED", "false").lower() in ("1", "true", "yes")
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_WEBHOOK_SECRET: str = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+    TELEGRAM_PUBLIC_WEBHOOK_URL: str = os.getenv("TELEGRAM_PUBLIC_WEBHOOK_URL", "")
+    TELEGRAM_MAX_MESSAGE_LENGTH: int = int(os.getenv("TELEGRAM_MAX_MESSAGE_LENGTH", "2000"))
+    TELEGRAM_ENROLLMENT_DEFAULT_TTL_SECONDS: int = int(os.getenv("TELEGRAM_ENROLLMENT_DEFAULT_TTL_SECONDS", "900"))
+
 settings = Settings()

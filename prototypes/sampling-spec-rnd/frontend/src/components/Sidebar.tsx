@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
             name="sparkles"
             className={`w-[16px] h-[16px] shrink-0 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}
           />
-          <span className="truncate flex-1 font-semibold">Lukla Copilot</span>
+          <span className="truncate flex-1 font-semibold">Lukla Assistant</span>
           <span
             className={`text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded-full ${
               isDark

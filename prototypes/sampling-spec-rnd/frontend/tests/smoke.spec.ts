@@ -53,7 +53,7 @@ test('sidebar renders dominant AI copilot entry and navigates to copilot view', 
   await page.goto('/');
 
   // Verify the dominant AI assistant entry exists on sidebar
-  const copilotBtn = page.getByRole('button', { name: /Lukla Copilot/i });
+  const copilotBtn = page.getByRole('button', { name: /Lukla Assistant/i });
   await expect(copilotBtn).toBeVisible();
   await expect(copilotBtn.getByText('AI')).toBeVisible();
 
