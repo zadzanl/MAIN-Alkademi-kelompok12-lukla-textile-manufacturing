@@ -23,6 +23,7 @@
  * identical to the contract so switching modes needs no UI change.
  */
 import { DATA_MODE as MODE, LEDGER_BASE as LIVE_BASE, LEDGER_TOKEN as LIVE_TOKEN } from './config';
+import { getActor } from './authSession';
 
 export type AssemblyStatus = 'MENUNGGU_QC' | 'REWORK' | 'QC_PASS' | 'REJECT_SCRAP';
 export type QcDisposition = 'PASS' | 'REPAIR' | 'REJECT';
@@ -57,6 +58,24 @@ export interface Page<T> { items: T[]; nextCursor?: string | null; }
 export interface OpsResult<T> { ok: boolean; data?: T; error?: string; }
 
 export const isMockOps = MODE === 'mock';
+
+const DEMO_TAILOR_ROLE = new Set(['Tailor', 'tailor', 'penjahit']);
+const TAILOR_OPERATOR_ID = '44444444-4444-4444-8444-44444444444e';
+
+function currentTailorOperatorId(): string | null {
+  const actor = getActor();
+  if (!actor || !DEMO_TAILOR_ROLE.has(actor.role)) return null;
+  return actor.operatorId && actor.operatorId === TAILOR_OPERATOR_ID ? actor.operatorId : null;
+}
+
+function isTailor(): boolean {
+  const actor = getActor();
+  return !!actor && DEMO_TAILOR_ROLE.has(actor.role);
+}
+
+function tailorDenied(): OpsResult<never> {
+  return { ok: false, error: 'Akun penjahit tidak memiliki identitas operator yang terhubung.' };
+}
 
 function uuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
@@ -172,7 +191,7 @@ export function seedSeventyStations(targetLineId?: string): Assignment[] {
     let op = mock.operators.find(o => o.employeeCode === empCode);
     if (!op) {
       op = {
-        id: stationNumber === 1 ? '44444444-4444-4444-8444-444444444444' : (stationNumber === 2 ? '44444444-4444-4444-8444-444444444445' : uuid()),
+        id: stationNumber === 1 ? '44444444-4444-4444-8444-444444444444' : (stationNumber === 2 ? '44444444-4444-4444-8444-444444444445' : (stationNumber === 10 ? TAILOR_OPERATOR_ID : uuid())),
         displayName: entry.name,
         employeeCode: empCode,
         active: true,
@@ -290,12 +309,16 @@ export async function createLine(lineCode: string): Promise<OpsResult<Line>> {
 
 export async function listOperators(): Promise<OpsResult<Page<Operator>>> {
   if (MODE === 'live') return liveGet<Page<Operator>>('/operators');
-  return { ok: true, data: { items: mock.operators } };
+  if (!isTailor()) return { ok: true, data: { items: mock.operators } };
+  const operatorId = currentTailorOperatorId();
+  if (!operatorId) return tailorDenied();
+  return { ok: true, data: { items: mock.operators.filter(o => o.id === operatorId) } };
 }
 
 export async function createOperator(displayName: string, employeeCode: string): Promise<OpsResult<Operator>> {
   if (!displayName.trim() || !employeeCode.trim()) return { ok: false, error: 'Nama dan kode karyawan wajib diisi.' };
   if (MODE === 'live') return liveWrite<Operator>('POST', '/operators', { displayName, employeeCode });
+  if (isTailor()) return tailorDenied();
   const operator: Operator = { id: uuid(), displayName: displayName.trim(), employeeCode: employeeCode.trim(), active: true };
   mock.operators = [...mock.operators, operator];
   return { ok: true, data: operator };
@@ -304,7 +327,10 @@ export async function createOperator(displayName: string, employeeCode: string):
 // ─── VIEW-04: assignments ───────────────────────────────────────────────────────
 export async function listAssignments(): Promise<OpsResult<Page<Assignment>>> {
   if (MODE === 'live') return liveGet<Page<Assignment>>('/assignments');
-  return { ok: true, data: { items: mock.assignments } };
+  if (!isTailor()) return { ok: true, data: { items: mock.assignments } };
+  const operatorId = currentTailorOperatorId();
+  if (!operatorId) return tailorDenied();
+  return { ok: true, data: { items: mock.assignments.filter(a => a.operatorId === operatorId) } };
 }
 
 export async function assignOperator(lineId: string, req: {
@@ -314,6 +340,7 @@ export async function assignOperator(lineId: string, req: {
   if (!lineId || !req.operatorId) return { ok: false, error: 'Line dan operator wajib dipilih.' };
   if (!req.componentCode.trim()) return { ok: false, error: 'Kode komponen wajib diisi.' };
   if (MODE === 'live') return liveWrite<Assignment>('PUT', `/lines/${lineId}/operators`, req);
+  if (isTailor()) return tailorDenied();
   const assignment: Assignment = { id: uuid(), lineId, ...req, componentCode: req.componentCode.trim() };
   mock.assignments = [...mock.assignments, assignment];
   return { ok: true, data: assignment };
@@ -324,6 +351,14 @@ export async function recordSewingTally(input: TallyInput): Promise<OpsResult<Ta
   if (!input.pieces || input.pieces < 1) return { ok: false, error: 'Jumlah pieces harus lebih dari 0.' };
   if (!input.componentCode.trim()) return { ok: false, error: 'Kode komponen wajib diisi.' };
   if (MODE === 'live') return liveWrite<TallyResult>('POST', '/sewing-tallies', input, input.idempotencyKey);
+
+  if (isTailor()) {
+    const operatorId = currentTailorOperatorId();
+    const ownsAssignment = operatorId && mock.assignments.some(a =>
+      a.operatorId === operatorId && a.lineId === input.lineId && a.componentCode === input.componentCode,
+    );
+    if (!ownsAssignment || input.operatorId !== operatorId) return tailorDenied();
+  }
 
   // Replay-safety: return existing recorded result if same idempotency key is submitted
   if (input.idempotencyKey && mockIdempotency.has(input.idempotencyKey)) {
@@ -356,6 +391,7 @@ export async function verifySewingTally(
   tallyId: string, decision: 'APPROVE' | 'REJECT', reason?: string,
 ): Promise<OpsResult<TallyResult>> {
   if (MODE === 'live') return liveWrite<TallyResult>('POST', `/sewing-tallies/${tallyId}/verification`, { decision, reason });
+  if (isTailor()) return { ok: false, error: 'Penjahit tidak berwenang memverifikasi tally.' };
   const stored = mock.tallies.get(tallyId);
   if (!stored) return { ok: false, error: 'Tally tidak ditemukan.' };
   const verified: TallyResult = { ...stored, status: 'VERIFIED' };

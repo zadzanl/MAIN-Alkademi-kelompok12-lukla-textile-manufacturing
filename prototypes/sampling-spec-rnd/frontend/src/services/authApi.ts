@@ -42,6 +42,8 @@ function fail(error: unknown): ApiResult<never> {
 
 export interface ActorContext {
   actorId: string;
+  /** Prototype-only stable link to the sewing operator record, when assigned. */
+  operatorId?: string;
   displayName: string;
   email: string;
   role: string;
