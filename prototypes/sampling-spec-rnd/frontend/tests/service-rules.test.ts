@@ -80,6 +80,23 @@ test('ops QC REPAIR/REJECT requires at least one defect; PASS does not', async (
   assert.equal(reject.ok, false);
 });
 
+test('ops recordSewingTally returns identical result on duplicate idempotency key (replay-safe)', async () => {
+  const base = {
+    orderId: 'o1', cutBatchId: 'b1', lineId: 'l1', componentCode: 'SLEEVE',
+    operatorId: 'op1', intervalStart: '2026-10-13T13:30:00+07:00',
+    intervalEnd: '2026-10-13T14:00:00+07:00', pieces: 14,
+    idempotencyKey: 'idemp-test-replay-key-001',
+  };
+  const first = await recordSewingTally(base);
+  assert.equal(first.ok, true);
+  assert.ok(first.data);
+
+  const second = await recordSewingTally(base);
+  assert.equal(second.ok, true);
+  assert.equal(second.data?.tallyId, first.data?.tallyId);
+  assert.deepEqual(second.data?.createdUnitIds, first.data?.createdUnitIds);
+});
+
 // ─── LEDGER invariants ─────────────────────────────────────────────────────────
 
 test('ledger rejects fewer than two lines', async () => {
