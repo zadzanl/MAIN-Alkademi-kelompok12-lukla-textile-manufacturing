@@ -3,7 +3,7 @@
  * Every number comes from the client-scoped `/summary` and `/orders` endpoints.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import MetricCard from '../components/MetricCard';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -41,20 +41,24 @@ const PortalDashboardView: React.FC<PortalDashboardViewProps> = ({ globalSearch 
 
   useEffect(() => { void load(); }, [load]);
 
-  const filtered = orders.filter(
-    (o) =>
-      (tab === 'all' || o.status === tab) &&
-      matchesQuery(search, o.article_name, o.order_id) &&
-      matchesQuery(globalSearch, o.article_name, o.order_id),
+  const filtered = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          (tab === 'all' || o.status === tab) &&
+          matchesQuery(search, o.article_name, o.order_id) &&
+          matchesQuery(globalSearch, o.article_name, o.order_id),
+      ),
+    [orders, tab, search, globalSearch],
   );
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Order Aktif" value={summary?.active_orders ?? 0} note="Pesanan sedang berjalan" loading={loading} accent="blue" />
-        <MetricCard label="Order Selesai" value={summary?.completed_orders ?? 0} note="Pesanan yang telah selesai" loading={loading} accent="green" />
-        <MetricCard label="Pengajuan Menunggu" value={summary?.pending_requests ?? 0} note="Menunggu peninjauan tim internal" loading={loading} accent="orange" />
-        <MetricCard label="Lot Stok Titipan" value={summary?.consigned_lots ?? 0} note="Jenis bahan titipan Anda" loading={loading} accent="red" />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <MetricCard label="Order Aktif" value={summary?.active_orders ?? 0} note="Pesanan sedang berjalan" loading={loading} />
+        <MetricCard label="Order Selesai" value={summary?.completed_orders ?? 0} note="Pesanan yang telah selesai" loading={loading} />
+        <MetricCard label="Pengajuan Menunggu" value={summary?.pending_requests ?? 0} note="Menunggu peninjauan tim internal" loading={loading} />
+        <MetricCard label="Lot Stok Titipan" value={summary?.consigned_lots ?? 0} note="Jenis bahan titipan Anda" loading={loading} />
       </div>
 
       <DataTable<Order>

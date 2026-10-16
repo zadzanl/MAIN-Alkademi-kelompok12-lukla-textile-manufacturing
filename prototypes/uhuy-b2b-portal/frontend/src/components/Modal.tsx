@@ -51,12 +51,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, footer 
       <div
         ref={dialogRef} tabIndex={-1}
         role="dialog" aria-modal="true" aria-labelledby="modal-title"
-        className="bg-white border border-hair rounded-[20px] w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto shadow-2xl outline-none"
+        className="bg-white border border-hair rounded-[20px] w-full max-w-lg p-4 max-h-[90vh] overflow-y-auto shadow-2xl outline-none"
         onClick={e => e.stopPropagation()}
       >
         {/* Title row */}
         <div className="flex justify-between items-center mb-5">
-          <h2 id="modal-title" className="text-[17px] font-bold text-ink tracking-tight">
+          <h2 id="modal-title" className="text-[18px] font-bold text-ink tracking-tight">
             {title}
           </h2>
           <button

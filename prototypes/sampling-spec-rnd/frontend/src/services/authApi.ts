@@ -9,7 +9,7 @@
  * backend/src/api/auth_routes.py.
  */
 
-import { http, errorMessage } from './http';
+import { http, errorMessage, ApiError } from './http';
 import { AUTH_BASE } from './config';
 
 // ─── Response shape ──────────────────────────────────────────────────────────
@@ -19,6 +19,25 @@ export interface ApiResult<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** RFC-7807 stable error code (e.g. AUTH_REQUIRED, VALIDATION_ERROR). */
+  code?: string;
+  status?: number;
+  /** Server correlation id for support, when supplied. */
+  requestId?: string;
+}
+
+/** Normalise a thrown transport error into the ApiResult error envelope. */
+function fail(error: unknown): ApiResult<never> {
+  if (error instanceof ApiError) {
+    return {
+      success: false,
+      error: error.detail,
+      code: error.code,
+      status: error.status,
+      requestId: error.requestId,
+    };
+  }
+  return { success: false, error: errorMessage(error) };
 }
 
 export interface ActorContext {
@@ -70,7 +89,7 @@ async function postJson<T>(path: string, body: unknown, token?: string): Promise
     const raw = await http.post<RawEnvelope>(path, { base: AUTH_BASE, body, token });
     return { success: raw?.success ?? true, data: raw as T, message: raw?.message };
   } catch (error) {
-    return { success: false, error: errorMessage(error) };
+    return fail(error);
   }
 }
 
@@ -79,7 +98,7 @@ async function getJson<T>(path: string, token?: string): Promise<ApiResult<T>> {
     const raw = await http.get<RawEnvelope>(path, { base: AUTH_BASE, token });
     return { success: raw?.success ?? true, data: raw as T };
   } catch (error) {
-    return { success: false, error: errorMessage(error) };
+    return fail(error);
   }
 }
 

@@ -28,15 +28,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render(): React.ReactNode {
     if (this.state.error) {
       return (
-        <div className="rounded-[18px] border border-bad-bg-2 bg-bad-bg px-6 py-10 text-center">
-          <h2 className="text-[16px] font-semibold text-bad-4">Terjadi kesalahan saat menampilkan halaman</h2>
-          <p className="mt-2 text-[13px] text-bad-4">
+        <div className="rounded-[18px] border border-bad-bg-2 bg-bad-bg px-6 py-8 text-center">
+          <h2 className="text-[17px] font-semibold text-bad-4">Terjadi kesalahan saat menampilkan halaman</h2>
+          <p className="mt-2 text-[15px] text-bad-4">
             Coba pindah ke menu lain, atau muat ulang aplikasi.
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-[10px] bg-bad-4 px-4 py-2 text-[13px] font-semibold text-white"
+            className="mt-4 rounded-[10px] bg-bad-4 px-4 py-2 text-[15px] font-semibold text-white"
           >
             Muat Ulang
           </button>
