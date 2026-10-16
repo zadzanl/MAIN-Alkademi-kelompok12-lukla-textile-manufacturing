@@ -1,6 +1,8 @@
 @echo off
 REM Frontend startup script untuk Sampling & Spec R&D
 
+cd /d "%~dp0"
+
 echo Installing dependencies...
 call npm install
 
