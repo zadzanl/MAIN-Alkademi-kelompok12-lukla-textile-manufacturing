@@ -5,8 +5,11 @@
  * (e.g. an assembly status). No charting dependency.
  *
  * KNOWN CEILING (deliberate): static render, per-segment value via `title`
- * tooltip only, no dark-mode variant (mirrors components/Chart.tsx). Renders an
- * empty state instead of throwing on bad data.
+ * tooltip only. Renders an empty state instead of throwing on bad data.
+ *
+ * Dark mode: each key carries a light `color` and optional `darkColor`. Both are
+ * exposed as CSS variables and selected via Tailwind's `.dark` class, so no
+ * theme prop-drilling is required (mirrors the CSS-variable layer in index.css).
  */
 
 import React from 'react';
@@ -16,7 +19,15 @@ export interface StackedKey {
   key: string;
   label: string;
   color: string;
+  darkColor?: string;
 }
+
+const SEGMENT_CLASS = '[background-color:var(--seg-light)] dark:[background-color:var(--seg-dark)]';
+
+const segmentVars = (k: StackedKey): React.CSSProperties => ({
+  '--seg-light': k.color,
+  '--seg-dark': k.darkColor ?? k.color,
+} as React.CSSProperties);
 
 interface StackedBarChartProps {
   data: StackedRow[];
@@ -77,7 +88,8 @@ const StackedBarChart: React.FC<StackedBarChartProps> = ({
                     return (
                       <div
                         key={k.key}
-                        style={{ height: h, backgroundColor: k.color }}
+                        className={SEGMENT_CLASS}
+                        style={{ height: h, ...segmentVars(k) }}
                         title={`${row.label} · ${k.label}: ${v.toLocaleString('id-ID')}`}
                       />
                     );
@@ -102,7 +114,7 @@ const StackedBarChart: React.FC<StackedBarChartProps> = ({
           <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-panel">
             {safeKeys.map(k => (
               <div key={k.key} className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: k.color }} />
+                <div className={`w-3 h-3 rounded-sm ${SEGMENT_CLASS}`} style={segmentVars(k)} />
                 <span className="text-[11px] text-ink-muted">{k.label}</span>
               </div>
             ))}
