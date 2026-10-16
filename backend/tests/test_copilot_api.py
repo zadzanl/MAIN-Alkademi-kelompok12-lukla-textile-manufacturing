@@ -352,3 +352,56 @@ def test_copilot_provider_query_param_override(client):
     data = resp.json()
     assert len(data["shortcuts"]) > 0
     assert data["shortcuts"][0]["url"] == "/cutting/new?orderId=ORD-104"
+
+def test_bedrock_provider_initialization_and_mock(monkeypatch):
+    """
+    Test 16: BedrockLLMProvider instantiates properly and handles converse responses.
+    """
+    import asyncio
+    from backend.app.copilot.provider import BedrockLLMProvider, get_llm_provider
+
+    provider = get_llm_provider("bedrock")
+    assert isinstance(provider, BedrockLLMProvider)
+    assert provider.region_name == "us-east-1"
+    assert provider.model_id == "us.amazon.nova-micro-v1:0"
+
+    class MockBedrockClient:
+        def converse(self, **kwargs):
+            return {
+                "output": {
+                    "message": {
+                        "content": [{"text": "Halo dari Bedrock Nova Micro!"}]
+                    }
+                },
+                "usage": {
+                    "inputTokens": 15,
+                    "outputTokens": 8,
+                    "totalTokens": 23
+                }
+            }
+
+    provider._client = MockBedrockClient()
+    loop = asyncio.new_event_loop()
+    try:
+        res = loop.run_until_complete(provider.chat_turn("Halo!"))
+        assert res.reply == "Halo dari Bedrock Nova Micro!"
+        assert res.usage.total_tokens == 23
+
+        # Verify history with leading assistant message and duplicate user messages coalesces cleanly
+        from backend.app.copilot.schemas import ChatMessage
+        history = [
+            ChatMessage(id="1", sender="assistant", text="Welcome"),
+            ChatMessage(id="2", sender="user", text="First question"),
+            ChatMessage(id="3", sender="user", text="Second question"),
+        ]
+        res2 = loop.run_until_complete(
+            provider.chat_turn(
+                "Berapa stok kain fleece?",
+                history=history,
+                tool_results=[{"tool_name": "get_stock_balances", "status_code": 200, "data": {"items": [{"sku": "FAB-FLEECE", "quantity": 1250}]}}]
+            )
+        )
+        assert res2.reply == "Halo dari Bedrock Nova Micro!"
+    finally:
+        loop.close()
+

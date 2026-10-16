@@ -375,9 +375,177 @@ class OpenRouterLLMProvider(OpenAILLMProvider):
             tool_results=tool_results
         )
 
+class BedrockLLMProvider(BaseLLMProvider):
+    """
+    Production provider connecting to Amazon Bedrock Runtime.
+    Leverages IAM Role / Instance Profile auto-detected credentials on AWS EC2.
+    """
+    def __init__(self, settings: Optional[CopilotSettings] = None):
+        self.settings = settings or copilot_settings
+        self.region_name = self.settings.AWS_REGION or "us-east-1"
+        self.model_id = self.settings.BEDROCK_MODEL_ID or "us.amazon.nova-micro-v1:0"
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            try:
+                import boto3
+                self._client = boto3.client("bedrock-runtime", region_name=self.region_name)
+            except ImportError:
+                from ..schemas.problem import ProblemException
+                raise ProblemException(
+                    status=500,
+                    code="SERVICE_SCOPE_REQUIRED",
+                    detail="boto3 library is required for Bedrock provider. Run 'pip install boto3'."
+                )
+        return self._client
+
+    async def chat_turn(
+        self,
+        message: str,
+        history: Optional[List[ChatMessage]] = None,
+        tools: Optional[List[dict]] = None,
+        system_prompt: Optional[str] = None,
+        tool_results: Optional[List[Dict[str, Any]]] = None
+    ) -> LLMResponse:
+        import asyncio
+        client = self._get_client()
+
+        sys_prompt = system_prompt or (
+            "You are Lukla Intelligence for apparel manufacturing operations (PT Lukla Textile Manufacturing).\n"
+            "Your role is to assist operators, supervisors, and owners by providing verified, real-time factory data in Indonesian.\n\n"
+            "=== READ-ONLY ACCESS & TOOL USAGE GUIDELINES ===\n"
+            "1. You have strictly read-only access to factory data. You can never mutate, insert, or delete state.\n"
+            "2. Whenever a user inquires about factory metrics, inventory, orders, or progress, always invoke the appropriate read tool first rather than guessing or fabricating numbers.\n"
+            "3. If a tool returns data, answer directly and concisely in Indonesian referencing the verified live numbers (e.g., SKU, quantity in meters/pcs, lot tag, line efficiency).\n"
+            "4. If a tool fails or returns an error (such as 404, 500, or problem payload), DO NOT invent figures. Honestly notify the user that live operational data is currently unavailable.\n"
+            "5. If the user asks to modify data (cutting fabric, logging tallies, posting journal entries), politely inform them that you are read-only and direct them to the action shortcut link."
+        )
+
+        bedrock_messages: List[Dict[str, Any]] = []
+        if history:
+            for h in history:
+                role = "user" if h.sender == "user" else "assistant"
+                text_val = (h.text or "").strip()
+                if not text_val:
+                    continue
+                if bedrock_messages and bedrock_messages[-1]["role"] == role:
+                    bedrock_messages[-1]["content"].append({"text": text_val})
+                else:
+                    bedrock_messages.append({"role": role, "content": [{"text": text_val}]})
+
+        # Ensure conversation starts with a user message as required by Bedrock Converse API
+        while bedrock_messages and bedrock_messages[0]["role"] != "user":
+            bedrock_messages.pop(0)
+
+        # Append tool results if returned from first turn
+        if tool_results:
+            results_str = "\n".join([
+                f"- Tool '{tr.get('tool_name')}': {json.dumps(tr.get('data')) if isinstance(tr.get('data'), (dict, list)) else tr.get('data')}"
+                for tr in tool_results
+            ])
+            user_msg = f"{message}\n\n[Live Factory Data from Read Tools:\n{results_str}\nPlease answer concisely in Indonesian using this verified data.]"
+        else:
+            user_msg = message
+
+        if bedrock_messages and bedrock_messages[-1]["role"] == "user":
+            bedrock_messages[-1]["content"].append({"text": user_msg})
+        else:
+            bedrock_messages.append({"role": "user", "content": [{"text": user_msg}]})
+
+        converse_kwargs: Dict[str, Any] = {
+            "modelId": self.model_id,
+            "messages": bedrock_messages,
+            "system": [{"text": sys_prompt}],
+            "inferenceConfig": {
+                "temperature": self.settings.temperature,
+                "maxTokens": self.settings.max_tokens
+            }
+        }
+
+        # Include tool specs only on the initial turn before tool results are synthesized
+        if tools and not tool_results:
+            bedrock_tools = []
+            for t in tools:
+                schema = t.get("parameters", {"type": "object", "properties": {}})
+                bedrock_tools.append({
+                    "toolSpec": {
+                        "name": t["name"],
+                        "description": t.get("description", t["name"]),
+                        "inputSchema": {
+                            "json": schema
+                        }
+                    }
+                })
+            converse_kwargs["toolConfig"] = {
+                "tools": bedrock_tools,
+                "toolChoice": {"auto": {}}
+            }
+
+        try:
+            response = await asyncio.to_thread(
+                client.converse,
+                **converse_kwargs
+            )
+        except Exception as exc:
+            from ..schemas.problem import ProblemException
+            err_str = str(exc)
+            if "AccessDenied" in err_str:
+                raise ProblemException(
+                    status=403,
+                    code="FORBIDDEN",
+                    detail=f"Bedrock AccessDenied: verify EC2 IAM Role permissions in region {self.region_name} for model {self.model_id}. ({err_str})"
+                )
+            if "ResourceNotFoundException" in err_str or "ValidationException" in err_str:
+                raise ProblemException(
+                    status=400,
+                    code="VALIDATION_ERROR",
+                    detail=f"Bedrock model error ({self.model_id} in {self.region_name}): {err_str}"
+                )
+            raise ProblemException(
+                status=502,
+                code="BAD_GATEWAY",
+                detail=f"Bedrock Runtime error: {err_str}"
+            )
+
+        output = response.get("output", {})
+        msg = output.get("message", {})
+        content_items = msg.get("content", [])
+
+        reply_texts = []
+        tool_calls: List[ToolCallRequest] = []
+
+        for item in content_items:
+            if "text" in item:
+                reply_texts.append(item["text"])
+            if "toolUse" in item:
+                tu = item["toolUse"]
+                tool_calls.append(
+                    ToolCallRequest(
+                        id=tu.get("toolUseId", "call_bedrock"),
+                        tool_name=tu.get("name", ""),
+                        arguments=tu.get("input", {})
+                    )
+                )
+
+        raw_usage = response.get("usage", {})
+        usage = TokenUsage(
+            prompt_tokens=raw_usage.get("inputTokens", 0),
+            completion_tokens=raw_usage.get("outputTokens", 0),
+            total_tokens=raw_usage.get("totalTokens", 0)
+        )
+
+        return LLMResponse(
+            reply="\n".join(reply_texts) if reply_texts else "",
+            tool_calls=tool_calls,
+            usage=usage
+        )
+
 def get_llm_provider(provider_type: Optional[str] = None) -> BaseLLMProvider:
     """Factory creating LLM provider based on configuration."""
     ptype = (provider_type or copilot_settings.COPILOT_DEFAULT_PROVIDER).lower()
+    if ptype == "bedrock":
+        return BedrockLLMProvider()
     if ptype == "ollama":
         return OllamaLLMProvider()
     if ptype == "openrouter":

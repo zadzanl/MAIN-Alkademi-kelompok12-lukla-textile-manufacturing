@@ -8,13 +8,13 @@ load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 class CopilotSettings(BaseModel):
     COPILOT_DEMO_MODE: bool = Field(
-        default_factory=lambda: os.getenv("COPILOT_DEMO_MODE", "false").lower() in ("true", "1", "yes")
+        default_factory=lambda: os.getenv("COPILOT_DEMO_MODE", "true").lower() in ("true", "1", "yes")
     )
     AI_COPILOT_ENABLED: bool = Field(
         default_factory=lambda: os.getenv("AI_COPILOT_ENABLED", "true").lower() in ("true", "1", "yes")
     )
-    COPILOT_DEFAULT_PROVIDER: Literal["mock", "ollama", "openai", "anthropic", "openrouter"] = Field(
-        default_factory=lambda: os.getenv("COPILOT_DEFAULT_PROVIDER", os.getenv("COPILOT_LLM_PROVIDER", "mock"))
+    COPILOT_DEFAULT_PROVIDER: Literal["mock", "ollama", "openai", "anthropic", "openrouter", "bedrock"] = Field(
+        default_factory=lambda: os.getenv("COPILOT_DEFAULT_PROVIDER", os.getenv("COPILOT_LLM_PROVIDER", "openrouter"))
     )
     COPILOT_TIMEOUT_SECONDS: float = Field(
         default_factory=lambda: float(os.getenv("COPILOT_TIMEOUT_SECONDS", "30.0"))
@@ -22,8 +22,14 @@ class CopilotSettings(BaseModel):
     COPILOT_MODEL_NAME: str = Field(
         default_factory=lambda: os.getenv(
             "COPILOT_MODEL_NAME",
-            os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free"),
+            os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free"),
         )
+    )
+    AWS_REGION: str = Field(
+        default_factory=lambda: os.getenv("AWS_REGION", "us-east-1")
+    )
+    BEDROCK_MODEL_ID: str = Field(
+        default_factory=lambda: os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-micro-v1:0")
     )
     COPILOT_API_KEY: str = Field(
         default_factory=lambda: os.getenv("COPILOT_API_KEY", os.getenv("OPENROUTER_API_KEY", "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"))
