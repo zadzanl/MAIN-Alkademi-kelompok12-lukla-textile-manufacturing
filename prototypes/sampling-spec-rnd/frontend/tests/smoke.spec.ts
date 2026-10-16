@@ -29,7 +29,36 @@ test('portal auth loads and authenticated dashboard connects', async ({ page }) 
 
   // The app reads this full health path through Vite's /api proxy; no JSON body is asserted.
   await expect(
-    page.getByRole('heading', { name: 'Sampling & Spec R&D', exact: true }),
+    page.getByRole('heading', { name: 'Overview', exact: true }),
   ).toBeVisible();
-  await expect(page.getByText('Connected', { exact: true })).toBeVisible();
+  await expect(page.getByText(/Backend terhubung|Connected/i)).toBeVisible();
+});
+
+test('sidebar renders dominant AI copilot entry and navigates to copilot view', async ({ page }) => {
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      'portal-auth-session',
+      JSON.stringify({
+        token: 'smoke-test-token',
+        actor: {
+          id: 'smoke-actor-001',
+          displayName: 'Smoke Tester',
+          role: 'rnd_operator',
+          tenantId: 'lukla-textile',
+        },
+      }),
+    );
+  });
+
+  await page.goto('/');
+
+  // Verify the dominant AI assistant entry exists on sidebar
+  const copilotBtn = page.getByRole('button', { name: /Lukla Copilot/i });
+  await expect(copilotBtn).toBeVisible();
+  await expect(copilotBtn.getByText('AI')).toBeVisible();
+
+  // Navigate to Copilot view
+  await copilotBtn.click();
+  await expect(page.getByRole('heading', { name: 'Lukla Intelligence' })).toBeVisible();
+  await expect(page.getByText('Live Gateway')).toBeVisible();
 });

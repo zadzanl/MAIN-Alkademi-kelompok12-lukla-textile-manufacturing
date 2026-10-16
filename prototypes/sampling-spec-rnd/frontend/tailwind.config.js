@@ -34,7 +34,8 @@ export default {
         ],
       },
       colors: {
-        // Apple System Colors
+        // Legacy palette retained for existing page utilities; shared chrome
+        // uses the CSS-variable semantic layer below.
         apple: {
           gray6: '#F2F2F7',      // System Gray 6 (background)
           gray5: '#E5E5EA',      // System Gray 5
@@ -64,11 +65,11 @@ export default {
           200: 'rgba(255, 255, 255, 0.7)',
         },
         accent: {
-          blue: '#007AFF',    // Apple blue
-          green: '#34C759',   // Apple green
-          orange: '#FF9500',  // Apple orange
-          red: '#FF3B30',     // Apple red
-          purple: '#AF52DE',  // Apple purple
+          blue: '#315F86',
+          green: '#287A4B',
+          orange: '#9A6418',
+          red: '#A33A35',
+          purple: '#66627A',
         },
         // ── Semantic token layer (CSS-variable backed, dark-aware) ──────────
         // Light values are defined in index.css :root, dark values in .dark.

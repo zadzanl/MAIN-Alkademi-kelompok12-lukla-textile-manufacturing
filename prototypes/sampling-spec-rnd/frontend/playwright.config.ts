@@ -41,7 +41,7 @@ export default defineConfig({
       cwd: backendDirectory,
       url: 'http://127.0.0.1:8009/api/sampling-spec-rnd/health',
       timeout: 60_000,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
     },
     {
       name: 'frontend',
@@ -50,7 +50,7 @@ export default defineConfig({
       env: { NODE_OPTIONS: '--dns-result-order=ipv4first', VITE_API_URL: '/api/sampling-spec-rnd' },
       url: 'http://127.0.0.1:3009',
       timeout: 60_000,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
     },
   ],
 });
