@@ -3,7 +3,7 @@
  * A row opens a read-only detail modal with the phase timeline.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
@@ -36,20 +36,24 @@ const OrderTrackView: React.FC<OrderTrackViewProps> = ({ globalSearch }) => {
 
   useEffect(() => { void load(); }, [load]);
 
-  const filtered = orders.filter(
-    (o) =>
-      (tab === 'all' || o.status === tab) &&
-      matchesQuery(search, o.article_name, o.order_id, o.scheme) &&
-      matchesQuery(globalSearch, o.article_name, o.order_id, o.scheme),
+  const filtered = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          (tab === 'all' || o.status === tab) &&
+          matchesQuery(search, o.article_name, o.order_id, o.scheme) &&
+          matchesQuery(globalSearch, o.article_name, o.order_id, o.scheme),
+      ),
+    [orders, tab, search, globalSearch],
   );
 
   return (
-    <div className="space-y-6">
-      <div className="surface p-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="space-y-4">
+      <div className="surface p-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--c-ink)' }}>Lacak Pesanan</h2>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
+            <h2 className="text-[22px] font-semibold" style={{ color: 'var(--c-ink)' }}>Lacak Pesanan</h2>
+            <p className="text-[15px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
               Status dan progres real-time pesanan produksi Anda.
             </p>
           </div>
@@ -58,7 +62,7 @@ const OrderTrackView: React.FC<OrderTrackViewProps> = ({ globalSearch }) => {
       </div>
 
       {loading ? (
-        <div className="surface p-8 space-y-3">
+        <div className="surface p-4 space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="skeleton h-10 w-full" />)}
         </div>
       ) : (
@@ -106,29 +110,29 @@ const OrderTrackView: React.FC<OrderTrackViewProps> = ({ globalSearch }) => {
         onClose={() => setSelected(null)}
       >
         {selected && (
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <Info label="Artikel" value={selected.article_name} />
               <Info label="Skema Maklon" value={selected.scheme} />
               <Info label="Jumlah" value={String(selected.quantity)} />
               <Info label="Target Selesai" value={selected.target_date || '—'} />
               <Info label="Tahap Sekarang" value={selected.current_phase} />
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Status</p>
+                <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Status</p>
                 <div className="mt-1"><StatusBadge status={selected.status} /></div>
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Progres</p>
-                <span className="text-[13px] font-semibold" style={{ color: 'var(--c-ink)' }}>{selected.progress}%</span>
+                <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Progres</p>
+                <span className="text-[15px] font-semibold" style={{ color: 'var(--c-ink)' }}>{selected.progress}%</span>
               </div>
               <div className="mini-line"><span style={{ width: `${selected.progress}%` }} /></div>
             </div>
 
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--c-ink-muted)' }}>Riwayat Tahap</p>
+              <p className="text-[14px] font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--c-ink-muted)' }}>Riwayat Tahap</p>
               <ol className="space-y-3">
                 {selected.timeline.map((step, i) => (
                   <li key={`${step.phase}-${i}`} className="flex items-start gap-3">
@@ -145,8 +149,8 @@ const OrderTrackView: React.FC<OrderTrackViewProps> = ({ globalSearch }) => {
                       aria-hidden="true"
                     />
                     <div>
-                      <p className="text-[13px] font-semibold" style={{ color: 'var(--c-ink)' }}>{step.phase}</p>
-                      <p className="text-[12px]" style={{ color: 'var(--c-ink-muted)' }}>
+                      <p className="text-[15px] font-semibold" style={{ color: 'var(--c-ink)' }}>{step.phase}</p>
+                      <p className="text-[14px]" style={{ color: 'var(--c-ink-muted)' }}>
                         {step.status === 'active' ? 'Sedang berjalan' : step.status === 'done' ? 'Selesai' : 'Menunggu'}
                         {step.at ? ` · ${step.at}` : ''}
                       </p>
@@ -164,8 +168,8 @@ const OrderTrackView: React.FC<OrderTrackViewProps> = ({ globalSearch }) => {
 
 const Info: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
-    <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>{label}</p>
-    <p className="text-[14px] font-semibold mt-0.5" style={{ color: 'var(--c-ink)' }}>{value}</p>
+    <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>{label}</p>
+    <p className="text-[15px] font-semibold mt-0.5" style={{ color: 'var(--c-ink)' }}>{value}</p>
   </div>
 );
 
