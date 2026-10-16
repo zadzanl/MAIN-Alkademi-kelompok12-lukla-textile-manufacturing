@@ -34,3 +34,23 @@ class PayrollResult(ContractModel):
     status: PayrollResultStatus
     eligible_units: int
     total_wages: Money
+
+
+class PayrollItem(ContractModel):
+    """One recipient line in a persisted payroll statement."""
+
+    recipient_id: UUID
+    base: Money
+    meal: Money
+    bonus: Money
+
+
+class PayrollStatement(ContractModel):
+    """A versioned statement read from a calculated payroll run."""
+
+    period_id: UUID
+    version: int
+    input_hash: str
+    status: str
+    items: list[PayrollItem]
+    reserve: Money

@@ -137,7 +137,7 @@ def approve_financial_rule(
     role: str,
     rule_id: UUID,
     approval: FinancialRuleApproval,
-    request_id: UUID,
+    request_id: UUID | None = None,
 ) -> FinancialRule:
     """Use the existing Owner-only SQL transition, then checked-read in the same session."""
     assert_may_approve(role)
@@ -153,7 +153,7 @@ def approve_financial_rule(
             "evidence_file_id": approval.evidence_file_id,
             "approval_reference": approval.approval_reference,
             "note": approval.note,
-            "request_id": request_id,
+            "request_id": request_id or uuid4(),
         },
     )
     return _get_rule(db, rule_id)
