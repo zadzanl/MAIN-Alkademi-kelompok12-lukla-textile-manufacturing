@@ -97,6 +97,21 @@ AI_COPILOT_ENABLED=true
 SECRET_KEY=lukla-secret-super-secure-key-for-jwt-signing-hs256
 EOF
 
+# Optional Telegram Copilot Bot Configuration
+if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+    echo "--> Appending Telegram Bot configuration to .env..."
+    cat << EOF >> .env
+
+# Telegram Copilot Bot (Injected from deployment environment)
+TELEGRAM_BOT_ENABLED=${TELEGRAM_BOT_ENABLED:-true}
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_WEBHOOK_SECRET=${TELEGRAM_WEBHOOK_SECRET}
+TELEGRAM_PUBLIC_WEBHOOK_URL=${TELEGRAM_PUBLIC_WEBHOOK_URL}
+TELEGRAM_MAX_MESSAGE_LENGTH=${TELEGRAM_MAX_MESSAGE_LENGTH:-2000}
+TELEGRAM_ENROLLMENT_DEFAULT_TTL_SECONDS=${TELEGRAM_ENROLLMENT_DEFAULT_TTL_SECONDS:-900}
+EOF
+fi
+
 # 5. Run Database Migrations
 echo "--> Running schema migrations on PostgreSQL..."
 python3 scripts/init_ec2_db.py
@@ -162,6 +177,16 @@ echo " AI Copilot   : http://${PUBLIC_IP}/copilot"
 echo " Sampling App : http://${PUBLIC_IP}/sampling/"
 echo " ERP UI Mock  : http://${PUBLIC_IP}/ui"
 echo " API Docs     : http://${PUBLIC_IP}/docs"
+if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+    echo " Telegram Bot : ENABLED"
+    if [ -n "$TELEGRAM_PUBLIC_WEBHOOK_URL" ]; then
+        echo " Telegram Hook: $TELEGRAM_PUBLIC_WEBHOOK_URL"
+    else
+        echo " Telegram Hook: (PENDING - set TELEGRAM_PUBLIC_WEBHOOK_URL and run scripts/register_telegram_webhook.py)"
+    fi
+else
+    echo " Telegram Bot : DISABLED (export TELEGRAM_BOT_TOKEN to enable)"
+fi
 echo "----------------------------------------------------------"
 echo "Form Pelaporan: https://forms.gle/v6wZutpAhr8r9v4B7"
 echo "=========================================================="
