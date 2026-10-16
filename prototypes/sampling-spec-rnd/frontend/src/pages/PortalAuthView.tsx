@@ -1,5 +1,5 @@
 /**
- * PortalAuthView — PT Luka internal portal entry (login / registration /
+ * PortalAuthView — PT Lukla internal portal entry (login / registration /
  * forgot-password). Rendered by App as an auth gate in front of the dashboard.
  *
  * Visuals follow the supplied portal design but reuse this app's design tokens
@@ -263,7 +263,7 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
       <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
         <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-4 py-5">
           <span className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
-            PT Luka
+            PT Lukla
           </span>
           <span className="rounded-full border px-3 py-1.5 text-[12px]" style={{ borderColor: 'var(--c-hair)', color: 'var(--c-ink-muted)' }}>
             Portal Internal
@@ -275,10 +275,10 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
         <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
           {/* Hero */}
           <p className="text-[12px] font-semibold uppercase tracking-[.16em] mb-5" style={{ color: 'var(--c-brand)' }}>
-            Backoffice · PT Luka
+            Backoffice · PT Lukla
           </p>
           <h1 className="text-[32px] font-semibold tracking-tight leading-tight mb-5" style={{ color: 'var(--c-ink)' }}>
-            Selamat Datang di Portal PT Luka
+            Selamat Datang di Portal PT Lukla
           </h1>
           <p className="max-w-[660px] text-[18px] leading-relaxed mb-10" style={{ color: 'var(--c-ink-muted)' }}>
             Akses informasi operasional garment, produksi, order, inventori, dan laporan internal dalam satu portal.
@@ -544,7 +544,7 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
 
       <footer className="border-t" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
         <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 py-6">
-          <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>© PT Luka · Portal Internal</p>
+          <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>© PT Lukla · Portal Internal</p>
         </div>
       </footer>
     </div>

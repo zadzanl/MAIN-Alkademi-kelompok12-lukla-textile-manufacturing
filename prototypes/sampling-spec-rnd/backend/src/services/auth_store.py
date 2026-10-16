@@ -1,4 +1,4 @@
-"""auth_store.py — In-memory identity store for the PT Luka portal (prototype).
+"""auth_store.py — In-memory identity store for the PT Lukla portal (prototype).
 
 Holds users, sessions, and one-time-password (OTP) challenges. Passwords are
 hashed with stdlib ``hashlib.scrypt``; session tokens and OTPs are stored
