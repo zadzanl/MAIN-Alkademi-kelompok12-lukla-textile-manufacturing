@@ -69,6 +69,45 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
 
     {/* Nav — chapter accordion; scrollable so every item stays reachable */}
     <nav className="flex-1 overflow-y-auto px-3 pb-3" aria-label="Navigasi utama">
+      {/* Dominant AI Assistant Navigation Entry */}
+      <div className="mb-3">
+        <button
+          type="button"
+          onClick={() => onNavigate('copilot')}
+          aria-current={currentView === 'copilot' ? 'page' : undefined}
+          style={currentView === 'copilot'
+            ? {
+                background: 'var(--blue-light)',
+                color: 'var(--blue)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-xs)',
+              }
+            : {
+                background: 'var(--bg-page)',
+                color: 'var(--blue)',
+                border: '1px solid var(--border)',
+              }
+          }
+          className={`w-full flex items-center gap-2.5 text-left rounded-[4px] px-3 py-2.5 text-[13px] font-semibold transition-all shadow-sm ${
+            currentView === 'copilot' ? 'font-bold' : isDark ? 'hover:bg-[#1f1b3a] hover:text-[#e0e7ff]' : 'hover:bg-[#e0e7ff] hover:text-[#312e81]'
+          }`}
+        >
+          <LucideIcon
+            name="sparkles"
+            className={`w-[16px] h-[16px] shrink-0 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}
+          />
+          <span className="truncate flex-1 font-semibold">Lukla Copilot</span>
+          <span
+            className={`text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded-full ${
+              isDark
+                ? 'bg-indigo-900/80 text-indigo-200 border border-indigo-700/50'
+                : 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+            }`}
+          >
+            AI
+          </span>
+        </button>
+      </div>
       {chapters.map((chapter) => {
         const isOpen = openChapter === chapter.id;
         const hasActive = chapter.items.some(i => i.view === currentView);
@@ -311,6 +350,28 @@ const icons: Record<string, React.FC<IconProps>> = {
       <line x1="4" x2="20" y1="6" y2="6"/>
       <line x1="4" x2="20" y1="12" y2="12"/>
       <line x1="4" x2="20" y1="18" y2="18"/>
+    </svg>
+  ),
+  sparkles: ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+      <path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+    </svg>
+  ),
+  bot: ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/>
+      <path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+    </svg>
+  ),
+  warehouse: ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/>
+      <path d="M6 18h12"/><path d="M6 14h12"/>
+      <rect width="12" height="12" x="6" y="10"/>
     </svg>
   ),
 };

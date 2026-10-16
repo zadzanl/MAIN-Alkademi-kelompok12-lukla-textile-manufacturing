@@ -31,7 +31,15 @@ export type QuantityUnit = 'PIECE' | 'METER' | 'KILOGRAM' | 'ROLL';
 export interface Quantity { value: string; unit: QuantityUnit; }
 export interface Line { id: string; lineCode: string; active: boolean; }
 export interface Operator { id: string; displayName: string; employeeCode: string; actorId?: string; active: boolean; }
-export interface Assignment { id: string; lineId: string; operatorId: string; componentCode: string; validFrom: string; validThrough: string; }
+export interface Assignment {
+  id: string;
+  lineId: string;
+  operatorId: string;
+  componentCode: string;
+  validFrom: string;
+  validThrough: string;
+  stationNumber?: number;
+}
 export interface ProgressItem { orderId: string; componentCode: string; quantity: Quantity; status: AssemblyStatus; }
 export interface Assembly { id: string; orderId: string; serialCode: string; componentUnitIds: string[]; status: AssemblyStatus; }
 export interface TallyResult { tallyId: string; status: 'RECORDED' | 'VERIFIED'; createdUnitIds: string[]; }
@@ -63,6 +71,8 @@ function newIdempotencyKey(): string {
 }
 
 // ─── Mock store ────────────────────────────────────────────────────────────────
+const mockIdempotency = new Map<string, TallyResult>();
+
 const mock = {
   lines: [] as Line[],
   operators: [] as Operator[],
@@ -73,20 +83,148 @@ const mock = {
   inspections: [] as QcInspection[],
 };
 
+const SEED_NAMES: { name: string; comp: string }[] = [
+  { name: 'Siti', comp: 'SLEEVE' },
+  { name: 'Budi', comp: 'COLLAR' },
+  { name: 'Rudi S.', comp: 'SLEEVE' },
+  { name: 'Mira K.', comp: 'COLLAR' },
+  { name: 'Sari P.', comp: 'HEM' },
+  { name: 'Dedi A.', comp: 'FRONT_PANEL' },
+  { name: 'Hendra G.', comp: 'BACK_PANEL' },
+  { name: 'Lina M.', comp: 'POCKET' },
+  { name: 'Agus S.', comp: 'ZIPPER' },
+  { name: 'Dewi L.', comp: 'CUFF' },
+  { name: 'Eko P.', comp: 'PLACKET' },
+  { name: 'Wati S.', comp: 'HOOD' },
+  { name: 'Bambang T.', comp: 'LINING' },
+  { name: 'Rina H.', comp: 'SLEEVE' },
+  { name: 'Fajar N.', comp: 'COLLAR' },
+  { name: 'Maya A.', comp: 'HEM' },
+  { name: 'Tono W.', comp: 'FRONT_PANEL' },
+  { name: 'Sri W.', comp: 'BACK_PANEL' },
+  { name: 'Joko S.', comp: 'POCKET' },
+  { name: 'Novi I.', comp: 'ZIPPER' },
+  { name: 'Andi P.', comp: 'CUFF' },
+  { name: 'Yuni A.', comp: 'PLACKET' },
+  { name: 'Bagas R.', comp: 'HOOD' },
+  { name: 'Tari M.', comp: 'LINING' },
+  { name: 'Surya K.', comp: 'SLEEVE' },
+  { name: 'Putri N.', comp: 'COLLAR' },
+  { name: 'Wahyu H.', comp: 'HEM' },
+  { name: 'Mega S.', comp: 'FRONT_PANEL' },
+  { name: 'Rizky P.', comp: 'BACK_PANEL' },
+  { name: 'Dian K.', comp: 'POCKET' },
+  { name: 'Arif B.', comp: 'ZIPPER' },
+  { name: 'Intan P.', comp: 'CUFF' },
+  { name: 'Dimas A.', comp: 'PLACKET' },
+  { name: 'Fitri H.', comp: 'HOOD' },
+  { name: 'Yusuf M.', comp: 'LINING' },
+  { name: 'Anisa R.', comp: 'SLEEVE' },
+  { name: 'Ilham F.', comp: 'COLLAR' },
+  { name: 'Nurul A.', comp: 'HEM' },
+  { name: 'Bayu S.', comp: 'FRONT_PANEL' },
+  { name: 'Tri W.', comp: 'BACK_PANEL' },
+  { name: 'Ahmad F.', comp: 'POCKET' },
+  { name: 'Lestari D.', comp: 'ZIPPER' },
+  { name: 'Doni K.', comp: 'CUFF' },
+  { name: 'Kartika S.', comp: 'PLACKET' },
+  { name: 'Rian P.', comp: 'HOOD' },
+  { name: 'Siska M.', comp: 'LINING' },
+  { name: 'Farhan A.', comp: 'SLEEVE' },
+  { name: 'Ratna D.', comp: 'COLLAR' },
+  { name: 'Guruh P.', comp: 'HEM' },
+  { name: 'Bella S.', comp: 'FRONT_PANEL' },
+  { name: 'Gilang R.', comp: 'BACK_PANEL' },
+  { name: 'Tiara K.', comp: 'POCKET' },
+  { name: 'Lukman H.', comp: 'ZIPPER' },
+  { name: 'Melati P.', comp: 'CUFF' },
+  { name: 'Iqbal M.', comp: 'PLACKET' },
+  { name: 'Cahya W.', comp: 'HOOD' },
+  { name: 'Dani S.', comp: 'LINING' },
+  { name: 'Gita R.', comp: 'SLEEVE' },
+  { name: 'Haris T.', comp: 'COLLAR' },
+  { name: 'Dina M.', comp: 'HEM' },
+  { name: 'Reza A.', comp: 'FRONT_PANEL' },
+  { name: 'Ayu P.', comp: 'BACK_PANEL' },
+  { name: 'Teguh W.', comp: 'POCKET' },
+  { name: 'Lia S.', comp: 'ZIPPER' },
+  { name: 'Zul F.', comp: 'CUFF' },
+  { name: 'Nita R.', comp: 'PLACKET' },
+  { name: 'Adit P.', comp: 'HOOD' },
+  { name: 'Vina M.', comp: 'LINING' },
+  { name: 'Yoga S.', comp: 'SLEEVE' },
+  { name: 'Restu K.', comp: 'HEM' },
+];
+
+export function seedSeventyStations(targetLineId?: string): Assignment[] {
+  const lineId = targetLineId ?? (mock.lines[0]?.id ?? '11111111-1111-4111-8111-111111111111');
+  const now = new Date();
+  const validFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 0, 0).toISOString();
+  const validThrough = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0).toISOString();
+
+  // Remove existing assignments for this line to prevent duplicates
+  mock.assignments = mock.assignments.filter(a => a.lineId !== lineId);
+
+  const created: Assignment[] = [];
+  SEED_NAMES.forEach((entry, idx) => {
+    const stationNumber = idx + 1;
+    const empCode = `OPR-${String(stationNumber).padStart(3, '0')}`;
+    let op = mock.operators.find(o => o.employeeCode === empCode);
+    if (!op) {
+      op = {
+        id: stationNumber === 1 ? '44444444-4444-4444-8444-444444444444' : (stationNumber === 2 ? '44444444-4444-4444-8444-444444444445' : uuid()),
+        displayName: entry.name,
+        employeeCode: empCode,
+        active: true,
+      };
+      mock.operators.push(op);
+    }
+    const asgn: Assignment = {
+      id: uuid(),
+      lineId,
+      operatorId: op.id,
+      componentCode: entry.comp,
+      validFrom,
+      validThrough,
+      stationNumber,
+    };
+    created.push(asgn);
+  });
+
+  mock.assignments = [...mock.assignments, ...created];
+  return created;
+}
+
 function seed() {
-  const line: Line = { id: '11111111-1111-4111-8111-111111111111', lineCode: 'LINE-A', active: true };
-  const op1: Operator = { id: '44444444-4444-4444-8444-444444444444', displayName: 'Siti', employeeCode: 'OPR-001', active: true };
-  const op2: Operator = { id: '44444444-4444-4444-8444-444444444445', displayName: 'Budi', employeeCode: 'OPR-002', active: true };
-  mock.lines = [line];
-  mock.operators = [op1, op2];
-  mock.assignments = [
-    { id: uuid(), lineId: line.id, operatorId: op1.id, componentCode: 'SLEEVE', validFrom: '2026-10-13T08:00:00+07:00', validThrough: '2026-10-13T17:00:00+07:00' },
-  ];
+  const lineA: Line = { id: '11111111-1111-4111-8111-111111111111', lineCode: 'LINE-A', active: true };
+  const lineB: Line = { id: '11111111-1111-4111-8111-111111111112', lineCode: 'LINE-B', active: true };
+  mock.lines = [lineA, lineB];
+
+  // Seed up to 70 sewing stations for LINE-A
+  seedSeventyStations(lineA.id);
+
   mock.assemblies = [
-    { id: '55555555-5555-4555-8555-555555555555', orderId: '33333333-3333-4333-8333-333333333333', serialCode: 'ASM-0001', componentUnitIds: [uuid(), uuid()], status: 'MENUNGGU_QC' },
+    { id: '55555555-5555-4555-8555-555555555555', orderId: 'ORD-401', serialCode: 'SN-401-0891', componentUnitIds: [uuid(), uuid()], status: 'MENUNGGU_QC' },
+    { id: '55555555-5555-4555-8555-555555555556', orderId: 'ORD-401', serialCode: 'SN-401-0892', componentUnitIds: [uuid(), uuid()], status: 'MENUNGGU_QC' },
+    { id: '55555555-5555-4555-8555-555555555557', orderId: 'ORD-401', serialCode: 'SN-401-0893', componentUnitIds: [uuid(), uuid()], status: 'MENUNGGU_QC' },
+    { id: '55555555-5555-4555-8555-555555555558', orderId: 'ORD-402', serialCode: 'SN-402-0104', componentUnitIds: [uuid(), uuid()], status: 'MENUNGGU_QC' },
   ];
   mock.progress = [
     { orderId: '33333333-3333-4333-8333-333333333333', componentCode: 'SLEEVE', quantity: { value: '18', unit: 'PIECE' }, status: 'MENUNGGU_QC' },
+  ];
+  mock.inspections = [
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Broken Stitch' }, { componentUnitId: uuid(), code: 'Puckering' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Broken Stitch' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REJECT', defects: [{ componentUnitId: uuid(), code: 'Broken Stitch' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Broken Stitch' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Broken Stitch' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Puckering' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Puckering' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REJECT', defects: [{ componentUnitId: uuid(), code: 'Puckering' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Uneven Seam' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REPAIR', defects: [{ componentUnitId: uuid(), code: 'Uneven Seam' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REJECT', defects: [{ componentUnitId: uuid(), code: 'Open Seam' }] },
+    { id: uuid(), assemblyId: uuid(), disposition: 'REJECT', defects: [{ componentUnitId: uuid(), code: 'Needle Hole' }] },
   ];
 }
 seed();
@@ -171,6 +309,7 @@ export async function listAssignments(): Promise<OpsResult<Page<Assignment>>> {
 
 export async function assignOperator(lineId: string, req: {
   operatorId: string; componentCode: string; validFrom: string; validThrough: string;
+  stationNumber?: number;
 }): Promise<OpsResult<Assignment>> {
   if (!lineId || !req.operatorId) return { ok: false, error: 'Line dan operator wajib dipilih.' };
   if (!req.componentCode.trim()) return { ok: false, error: 'Kode komponen wajib diisi.' };
@@ -186,12 +325,21 @@ export async function recordSewingTally(input: TallyInput): Promise<OpsResult<Ta
   if (!input.componentCode.trim()) return { ok: false, error: 'Kode komponen wajib diisi.' };
   if (MODE === 'live') return liveWrite<TallyResult>('POST', '/sewing-tallies', input, input.idempotencyKey);
 
+  // Replay-safety: return existing recorded result if same idempotency key is submitted
+  if (input.idempotencyKey && mockIdempotency.has(input.idempotencyKey)) {
+    return { ok: true, data: mockIdempotency.get(input.idempotencyKey)! };
+  }
+
   const result: TallyResult = {
     tallyId: uuid(),
     status: 'RECORDED',
     createdUnitIds: Array.from({ length: input.pieces }, () => uuid()),
   };
   mock.tallies.set(result.tallyId, result);
+  if (input.idempotencyKey) {
+    mockIdempotency.set(input.idempotencyKey, result);
+  }
+
   const existing = mock.progress.find(p => p.orderId === input.orderId && p.componentCode === input.componentCode);
   if (existing) {
     existing.quantity = { value: String(Number(existing.quantity.value) + input.pieces), unit: 'PIECE' };
