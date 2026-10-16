@@ -101,8 +101,21 @@ EOF
 echo "--> Running schema migrations on PostgreSQL..."
 python3 scripts/init_ec2_db.py
 
-# 6. Stop previous instance if running
-echo "--> Restarting application process on port 3000..."
+APP_PORT="${APP_PORT:-80}"
+
+# 6. Configure port binding for unprivileged user and enable port 3000 redirection
+echo "--> Configuring network ports (Port ${APP_PORT} default, Port 3000 redirect)..."
+sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80 >/dev/null 2>&1 || true
+echo "net.ipv4.ip_unprivileged_port_start=80" | sudo tee /etc/sysctl.d/99-unprivileged-ports.conf >/dev/null 2>&1 || true
+
+# Redirect port 3000 to port 80 so requests to both ports are handled
+if [ "$APP_PORT" = "80" ]; then
+    sudo iptables -t nat -C PREROUTING -p tcp --dport 3000 -j REDIRECT --to-port 80 2>/dev/null || \
+    sudo iptables -t nat -A PREROUTING -p tcp --dport 3000 -j REDIRECT --to-port 80 2>/dev/null || true
+fi
+
+# 7. Stop previous instance if running
+echo "--> Restarting application process on port ${APP_PORT}..."
 if [ -f "$HOME/app.pid" ]; then
     OLD_PID=$(cat "$HOME/app.pid" 2>/dev/null || true)
     if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
@@ -113,18 +126,18 @@ if [ -f "$HOME/app.pid" ]; then
 fi
 pkill -f "uvicorn main:app" 2>/dev/null || true
 
-# 7. Start unified application on 0.0.0.0:3000
-nohup .venv/bin/uvicorn main:app --host 0.0.0.0 --port 3000 > "$HOME/app.log" 2>&1 &
+# 8. Start unified application on 0.0.0.0:${APP_PORT}
+nohup .venv/bin/uvicorn main:app --host 0.0.0.0 --port "$APP_PORT" > "$HOME/app.log" 2>&1 &
 APP_PID=$!
 echo $APP_PID > "$HOME/app.pid"
-echo "    Started main:app with PID $APP_PID (logs in ~/app.log)"
+echo "    Started main:app with PID $APP_PID on port $APP_PORT (logs in ~/app.log)"
 
-# 8. Verification probe
-echo "--> Probing localhost:3000..."
+# 9. Verification probe
+echo "--> Probing localhost:${APP_PORT}..."
 sleep 3
-if curl -s -I http://localhost:3000 | grep -q "200 OK"; then
+if curl -s -I "http://localhost:${APP_PORT}" | grep -q "200 OK"; then
     echo "=========================================================="
-    echo " SUCCESS: Application is running on 0.0.0.0:3000!"
+    echo " SUCCESS: Application is running on 0.0.0.0:${APP_PORT}!"
     echo "=========================================================="
 else
     echo "    Warning: Check ~/app.log for details:"
@@ -143,12 +156,12 @@ echo ""
 echo "Deployment Details:"
 echo "----------------------------------------------------------"
 echo " Public IPv4  : $PUBLIC_IP"
-echo " Port         : 3000"
-echo " Portal URL   : http://${PUBLIC_IP}:3000/"
-echo " AI Copilot   : http://${PUBLIC_IP}:3000/copilot"
-echo " Sampling App : http://${PUBLIC_IP}:3000/sampling/"
-echo " ERP UI Mock  : http://${PUBLIC_IP}:3000/ui"
-echo " API Docs     : http://${PUBLIC_IP}:3000/docs"
+echo " Port         : $APP_PORT (and redirected from 3000)"
+echo " Portal URL   : http://${PUBLIC_IP}/"
+echo " AI Copilot   : http://${PUBLIC_IP}/copilot"
+echo " Sampling App : http://${PUBLIC_IP}/sampling/"
+echo " ERP UI Mock  : http://${PUBLIC_IP}/ui"
+echo " API Docs     : http://${PUBLIC_IP}/docs"
 echo "----------------------------------------------------------"
 echo "Form Pelaporan: https://forms.gle/v6wZutpAhr8r9v4B7"
 echo "=========================================================="
