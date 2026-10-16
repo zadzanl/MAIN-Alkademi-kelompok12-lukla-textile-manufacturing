@@ -78,13 +78,12 @@ const Header: React.FC<HeaderProps> = ({
     </div>
 
     {/* Right tools */}
-    <div className="flex items-center gap-3 w-full lg:w-auto flex-wrap">
+    <div className="flex items-center gap-4 w-full lg:w-auto flex-wrap">
       {/* Search */}
       <div className="relative flex-1 lg:flex-initial">
         <LucideIcon
           name="search"
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-          style={{ color: 'var(--c-ink-faint)' } as React.CSSProperties}
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-ink-faint"
         />
         <label htmlFor="global-search" className="sr-only">Pencarian global</label>
         <input
@@ -93,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
           placeholder="Cari studi atau spec..."
           value={globalSearch}
           onChange={e => onGlobalSearchChange(e.target.value)}
-          className="pl-9 w-full lg:w-72 rounded-[10px] text-[15px] min-h-[40px]"
+          className="!pl-9 w-full lg:w-72 rounded-[10px] text-[15px] min-h-[40px]"
         />
       </div>
 
@@ -109,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({
         </button>
       )}
 
-      {/* Avatar */}
+      {/* Profile */}
       <div className="flex items-center gap-2">
         <span
           className="w-9 h-9 rounded-full grid place-items-center text-[14px] font-bold ring-2"
@@ -128,23 +127,25 @@ const Header: React.FC<HeaderProps> = ({
         >
           {profileName}
         </span>
-        {onLogout && (
-          <button
-            type="button"
-            aria-label="Keluar dari portal"
-            onClick={onLogout}
-            className="btn-secondary w-10 h-10 !p-0 justify-center rounded-[10px]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                 className="w-[17px] h-[17px]">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" x2="9" y1="12" y2="12"/>
-            </svg>
-          </button>
-        )}
       </div>
+
+      {/* Logout */}
+      {onLogout && (
+        <button
+          type="button"
+          aria-label="Keluar dari portal"
+          onClick={onLogout}
+          className="btn-secondary w-10 h-10 !p-0 justify-center rounded-[10px]"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+               className="w-[17px] h-[17px]">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" x2="9" y1="12" y2="12"/>
+          </svg>
+        </button>
+      )}
     </div>
   </header>
 );

@@ -20,7 +20,6 @@ import {
   passwordsMatch,
   validatePassword,
 } from '../services/authRules';
-import PortalBadge from '../components/PortalBadge';
 
 type Mode = 'login' | 'register' | 'forgot';
 type ForgotStep = 'request' | 'reset';
@@ -254,15 +253,6 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
         <span>Portal Klien Eksternal</span>
       </div>
 
-      <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-3 py-5">
-          <span className="text-[24px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
-            UHUY B2B
-          </span>
-          <PortalBadge />
-        </div>
-      </header>
-
       <main className="flex-1">
         <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
           <p className="text-[14px] font-semibold uppercase tracking-[.16em] mb-5" style={{ color: 'var(--c-brand)' }}>
@@ -276,46 +266,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
             semua dalam satu portal mandiri.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7 max-w-[980px]">
-            {([
-              { key: 'login' as Mode, title: 'Login', copy: 'Masuk untuk memantau order dan pengajuan Anda.', glyph: '↗' },
-              { key: 'register' as Mode, title: 'Registrasi', copy: 'Ajukan akses portal klien baru.', glyph: '＋' },
-            ]).map((card) => {
-              const selected = mode === card.key || (mode === 'forgot' && card.key === 'login');
-              return (
-                <button
-                  key={card.key}
-                  type="button"
-                  onClick={() => selectMode(card.key)}
-                  aria-pressed={selected}
-                  className="text-left p-4 sm:p-5 rounded-[20px] border transition-transform"
-                  style={{
-                    background: 'var(--bg-card)',
-                    borderColor: selected ? 'var(--c-brand-soft)' : 'var(--c-hair)',
-                    boxShadow: selected
-                      ? '0 0 0 3px var(--c-brand-bg), 0 10px 30px rgba(29,29,31,.06)'
-                      : '0 10px 30px rgba(29,29,31,.03)',
-                  }}
-                >
-                  <span
-                    className="w-[46px] h-[46px] rounded-[13px] grid place-items-center text-[24px] font-semibold mb-4"
-                    style={{ background: 'var(--c-brand-bg)', color: 'var(--c-brand)' }}
-                    aria-hidden="true"
-                  >
-                    {card.glyph}
-                  </span>
-                  <span className="block text-[24px] font-semibold mb-2" style={{ color: 'var(--c-ink)' }}>
-                    {card.title}
-                  </span>
-                  <span className="block text-[15px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
-                    {card.copy}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <section aria-label="Akses portal klien" className="surface max-w-[760px] p-4 sm:p-7">
+          <section aria-label="Akses portal klien" className="surface max-w-[760px] mx-auto p-4 sm:p-7">
             <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
               <div>
                 <h2 className="text-[26px] font-semibold mb-1" style={{ color: 'var(--c-ink)' }}>
@@ -518,14 +469,6 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
           </section>
         </div>
       </main>
-
-      <footer className="border-t" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 py-6">
-          <p className="text-[15px]" style={{ color: 'var(--c-ink-muted)' }}>
-            © Lukla Manufacturing · Portal Klien Eksternal UHUY B2B
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };

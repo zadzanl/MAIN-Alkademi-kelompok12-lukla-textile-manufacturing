@@ -53,7 +53,7 @@ const PortalSettingsView: React.FC<PortalSettingsViewProps> = ({ onLoggedOut }) 
   };
 
   return (
-    <div className="max-w-[760px] space-y-3">
+    <div className="max-w-[760px] mx-auto space-y-3">
       <div className="surface p-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>

@@ -62,8 +62,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
           <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
         </svg>
       </div>
-      <p className="text-[10px] uppercase tracking-[.16em] font-semibold" style={{ color: 'var(--c-ink-muted)' }}>
-        LUKLA · R&amp;D
+      <p className="text-[10px] tracking-[.16em] font-semibold" style={{ color: 'var(--c-ink-muted)' }}>
+        LuklaAgile
       </p>
     </div>
 
