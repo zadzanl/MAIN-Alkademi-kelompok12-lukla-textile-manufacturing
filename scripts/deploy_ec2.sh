@@ -27,15 +27,18 @@ elif [ ! -f "/usr/share/pgsql/extension/btree_gist.control" ]; then
     sudo dnf install -y postgresql15-contrib || true
 fi
 
-# Initialize DB if not initialized
-if [ ! -d "/var/lib/pgsql/data/base" ]; then
+# Initialize DB if not initialized (use sudo test because /var/lib/pgsql is mode 700)
+if ! sudo test -d "/var/lib/pgsql/data/base"; then
     echo "    Initializing PostgreSQL data directory..."
     sudo postgresql-setup --initdb || true
 fi
 
-# Enable and start service
+# Configure pg_hba.conf to allow password (scram-sha-256 / md5) authentication over 127.0.0.1 and ::1 instead of ident
+sudo sed -i -E 's/(127\.0\.0\.1\/32\s+)ident/\1scram-sha-256/g; s/(::1\/128\s+)ident/\1scram-sha-256/g' /var/lib/pgsql/data/pg_hba.conf
+
+# Enable and restart service to apply pg_hba.conf
 sudo systemctl enable postgresql
-sudo systemctl start postgresql
+sudo systemctl restart postgresql
 
 # Create Database, Application User, Runtime Role, and Extensions
 echo "    Configuring myappdb, myappuser, lukla_app, and extensions..."
