@@ -1,3 +1,18 @@
+# Python < 3.11 compatibility polyfills (e.g. Amazon Linux 2023 Python 3.9)
+import enum
+if not hasattr(enum, "StrEnum"):
+    class StrEnum(str, enum.Enum):
+        pass
+    enum.StrEnum = StrEnum
+
+import typing
+if not hasattr(typing, "Self"):
+    try:
+        from typing_extensions import Self
+        typing.Self = Self
+    except ImportError:
+        pass
+
 import logging
 import uuid
 from typing import List
@@ -319,7 +334,7 @@ def get_portal_html() -> str:
         <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
           Lukla Operations Engine
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-            🟢 Online · Port 3000
+            🟢 Online · Port 80 (HTTP)
           </span>
         </h1>
         <p class="text-sm text-neutral-400 mt-1">Enterprise Garment Manufacturing ERP & Intelligence Platform</p>

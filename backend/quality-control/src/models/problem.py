@@ -1,6 +1,11 @@
 """Contract ``Problem`` response model and its error code enumeration."""
 
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 from uuid import UUID
 
 from pydantic import Field

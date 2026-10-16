@@ -1,8 +1,13 @@
 """Financial rule schemas: the versioned parameter set that gates every calculation."""
 
 from datetime import date
-from enum import StrEnum
 from uuid import UUID
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 
 from pydantic import Field, field_validator
 
