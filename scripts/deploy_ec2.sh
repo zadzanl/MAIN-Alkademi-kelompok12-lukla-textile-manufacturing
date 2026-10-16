@@ -21,7 +21,10 @@ echo "--> Verifying PostgreSQL 15..."
 if ! command -v psql >/dev/null 2>&1; then
     echo "    Installing postgresql15-server..."
     sudo dnf update -y
-    sudo dnf install -y postgresql15-server postgresql15
+    sudo dnf install -y postgresql15-server postgresql15 postgresql15-contrib
+elif [ ! -f "/usr/share/pgsql/extension/btree_gist.control" ]; then
+    echo "    Installing postgresql15-contrib..."
+    sudo dnf install -y postgresql15-contrib || true
 fi
 
 # Initialize DB if not initialized
@@ -36,7 +39,9 @@ sudo systemctl start postgresql
 
 # Create Database, Application User, Runtime Role, and Extensions
 echo "    Configuring myappdb, myappuser, lukla_app, and extensions..."
-sudo -u postgres psql -c "
+(
+    cd /tmp
+    sudo -u postgres psql -c "
 DO \$\$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'myappuser') THEN
@@ -50,15 +55,14 @@ BEGIN
 END
 \$\$;
 "
+    sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'myappdb'" | grep -q 1 || \
+    sudo -u postgres psql -c "CREATE DATABASE myappdb OWNER myappuser;"
 
-sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'myappdb'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE DATABASE myappdb OWNER myappuser;"
-
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE myappdb TO myappuser;"
-sudo -u postgres psql -c "ALTER DATABASE myappdb OWNER TO myappuser;"
-sudo -u postgres psql -d myappdb -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
-sudo -u postgres psql -d myappdb -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
-sudo -u postgres psql -d myappdb -c "GRANT ALL ON SCHEMA public TO myappuser;"
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE myappdb TO myappuser;"
+    sudo -u postgres psql -c "ALTER DATABASE myappdb OWNER TO myappuser;"
+    sudo -u postgres psql -d myappdb -c "CREATE EXTENSION IF NOT EXISTS btree_gist;" || true
+    sudo -u postgres psql -d myappdb -c "GRANT ALL ON SCHEMA public TO myappuser;"
+)
 
 # 3. Setup Python Virtual Environment and Dependencies
 echo "--> Setting up Python environment..."
