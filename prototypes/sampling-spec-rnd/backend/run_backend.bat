@@ -1,8 +1,14 @@
 @echo off
 REM Backend startup script untuk Sampling & Spec R&D
 
+cd /d "%~dp0"
+
 echo Activating virtual environment...
-call venv\Scripts\activate.bat
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+) else if exist "venv\Scripts\activate.bat" (
+    call venv\Scripts\activate.bat
+)
 
 echo Starting backend server on port 8009...
 echo.
@@ -12,6 +18,6 @@ echo.
 echo Press Ctrl+C to stop the server
 echo.
 
-uvicorn src.main:app --reload --port 8009
+python -m uvicorn src.main:app --reload --port 8009
 
 pause
