@@ -227,7 +227,7 @@ npm run dev
 ### Test 7.1: Test tanpa backend
 **Langkah:**
 1. Stop backend (Ctrl+C di terminal backend)
-2. Refresh frontend http://localhost:3009
+2. Refresh frontend http://localhost:3007
 3. Tunggu 5 detik
 
 **Expected:**
@@ -411,7 +411,7 @@ GET  /api/sampling-spec-rnd/studies/{id}/data    → 200 ✅
 
 | Gejala | Kemungkinan Penyebab | Fix |
 |--------|---------------------|-----|
-| 🟡 Local Storage Mode padahal backend running | Backend di port berbeda | Cek port 8009 |
+| 🟡 Local Storage Mode padahal backend running | Backend di port berbeda | Cek port 8007 |
 | Create Study tidak muncul | API error | Cek Network tab |
 | Add Sample tidak update stats | Data fetch gagal | Cek console error |
 | Blur tidak terlihat | Browser tidak support | Coba Chrome/Edge |

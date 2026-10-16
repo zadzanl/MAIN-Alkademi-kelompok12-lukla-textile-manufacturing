@@ -146,7 +146,7 @@ h2 { font-size: 22px; }
 h3 { font-size: 18px; }
 
 p   { color: var(--text-secondary); }
-small { color: var(--text-muted); font-size: 12px; }
+small { color: var(--text-muted); font-size: 14px; }
 
 /* utility text classes — used throughout TSX */
 .text-primary   { color: var(--text-primary)   !important; }
@@ -211,7 +211,7 @@ button:not(:disabled):active,
   border-radius: var(--radius-md);
   padding: 10px 18px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: 0 1px 3px rgba(0,113,227,.35);
   border: none;
   position: relative;
@@ -259,7 +259,7 @@ button:not(:disabled):active,
   border-radius: var(--radius-md);
   padding: 9px 16px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: var(--shadow-xs);
 }
 .btn-secondary:not(:disabled):hover,
@@ -285,7 +285,7 @@ button:not(:disabled):active,
   border-radius: var(--radius-md);
   padding: 10px 18px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: 0 1px 3px rgba(220,38,38,.30);
   border: none;
 }
@@ -307,7 +307,7 @@ button:not(:disabled):active,
   border-radius: var(--radius-md);
   padding: 10px 18px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: 0 1px 3px rgba(22,163,74,.30);
   border: none;
 }
@@ -326,7 +326,7 @@ button:not(:disabled):active,
   color: var(--text-muted);
   border-radius: var(--radius-sm);
   padding: 8px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .btn-ghost:not(:disabled):hover {
   background: var(--bg-page);
@@ -338,7 +338,7 @@ button:not(:disabled):active,
 .btn-pill {
   display: inline-flex;
   align-items: center;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 600;
   border-radius: 20px;
   padding: 4px 12px;
@@ -363,7 +363,7 @@ button:not(:disabled):active,
 .tab {
   padding: 7px 14px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
@@ -394,7 +394,7 @@ select {
   border: 1.5px solid var(--border-strong);
   border-radius: var(--radius-md);
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   color: var(--text-primary);
 }
@@ -425,7 +425,7 @@ select {
 label {
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 /* ── Pills / Status Badges ──────────────────────────────────────────────────── */
@@ -434,7 +434,7 @@ label {
   align-items: center;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: .02em;
@@ -474,7 +474,7 @@ table { width: 100%; border-collapse: collapse; }
 
 thead th {
   text-align: left;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .05em;
@@ -486,7 +486,7 @@ thead th {
 
 tbody td {
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
