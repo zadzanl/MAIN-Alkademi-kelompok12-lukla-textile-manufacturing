@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({
   profileInitials = 'AD',
   onLogout,
 }) => (
-  <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 mb-8">
+  <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 mb-5">
     {/* Title block */}
     <div className="flex items-start gap-3">
       {onMenuClick && (
@@ -45,13 +45,13 @@ const Header: React.FC<HeaderProps> = ({
       )}
       <div>
       <p
-        className="text-[11px] font-bold uppercase tracking-[.14em] mb-1"
+        className="text-[13px] font-bold uppercase tracking-[.14em] mb-1"
         style={{ color: 'var(--c-ink-muted)' }}
       >
         {subtitle}
       </p>
       <h1
-        className="text-[30px] font-bold tracking-tight leading-tight"
+        className="text-[32px] font-bold tracking-tight leading-tight"
         style={{ color: 'var(--c-ink)' }}
       >
         {title}
@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({
             <span className="pulse-dot" aria-hidden="true" />
           )}
           <p
-            className="text-[13px] font-medium"
+            className="text-[15px] font-medium"
             style={{
               color: caption.startsWith('Backend terhubung')
                 ? 'var(--c-ok-2)'
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
           placeholder="Cari studi atau spec..."
           value={globalSearch}
           onChange={e => onGlobalSearchChange(e.target.value)}
-          className="pl-9 w-full lg:w-56 rounded-[10px] text-[13px] min-h-[40px]"
+          className="pl-9 w-full lg:w-72 rounded-[10px] text-[15px] min-h-[40px]"
         />
       </div>
 
@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({
       {/* Avatar */}
       <div className="flex items-center gap-2">
         <span
-          className="w-9 h-9 rounded-full grid place-items-center text-[12px] font-bold ring-2"
+          className="w-9 h-9 rounded-full grid place-items-center text-[14px] font-bold ring-2"
           style={{
             background: 'var(--c-brand-bg-5)',
             color: 'var(--c-brand)',
@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({
           {profileInitials}
         </span>
         <span
-          className="text-[13px] font-semibold hidden lg:block"
+          className="text-[15px] font-semibold hidden lg:block"
           style={{ color: 'var(--c-ink)' }}
         >
           {profileName}
@@ -149,4 +149,4 @@ const Header: React.FC<HeaderProps> = ({
   </header>
 );
 
-export default Header;
+export default React.memo(Header);

@@ -9,7 +9,7 @@
  * (`/api/portal/auth`), served by the dedicated external-portal backend (8010).
  */
 
-import { http, errorMessage } from './http';
+import { http, errorMessage, ApiError } from './http';
 import { PORTAL_BASE, PORTAL_AUTH_BASE } from './config';
 import type {
   ActorContext,
@@ -30,6 +30,11 @@ export interface ApiResult<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** RFC-7807 stable error code (e.g. AUTH_REQUIRED, VALIDATION_ERROR). */
+  code?: string;
+  status?: number;
+  /** Server correlation id for support, when supplied. */
+  requestId?: string;
 }
 
 interface RawEnvelope {
@@ -38,12 +43,26 @@ interface RawEnvelope {
   [key: string]: unknown;
 }
 
+/** Normalise a thrown transport error into the ApiResult error envelope. */
+function fail(error: unknown): ApiResult<never> {
+  if (error instanceof ApiError) {
+    return {
+      success: false,
+      error: error.detail,
+      code: error.code,
+      status: error.status,
+      requestId: error.requestId,
+    };
+  }
+  return { success: false, error: errorMessage(error) };
+}
+
 async function getJson<T>(path: string, token: string): Promise<ApiResult<T>> {
   try {
     const raw = await http.get<RawEnvelope>(path, { base: PORTAL_BASE, token });
     return { success: raw?.success ?? true, data: raw as T, message: raw?.message };
   } catch (error) {
-    return { success: false, error: errorMessage(error) };
+    return fail(error);
   }
 }
 
@@ -57,7 +76,7 @@ async function postJson<T>(
     const raw = await http.post<RawEnvelope>(path, { base, body, token });
     return { success: raw?.success ?? true, data: raw as T, message: raw?.message };
   } catch (error) {
-    return { success: false, error: errorMessage(error) };
+    return fail(error);
   }
 }
 

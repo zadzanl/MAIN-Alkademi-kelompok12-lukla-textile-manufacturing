@@ -90,30 +90,30 @@ const RequestForm: React.FC<RequestFormProps> = ({ kind, onSubmitted }) => {
 
   return (
     <div className="max-w-[760px]">
-      <div className="surface p-6 mb-5">
-        <h2 className="text-[20px] font-semibold" style={{ color: 'var(--c-ink)' }}>{copy.title}</h2>
-        <p className="text-[13px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>{copy.blurb}</p>
+      <div className="surface p-4 mb-5">
+        <h2 className="text-[22px] font-semibold" style={{ color: 'var(--c-ink)' }}>{copy.title}</h2>
+        <p className="text-[15px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>{copy.blurb}</p>
       </div>
 
-      <form onSubmit={submit} noValidate className="surface p-6 space-y-5">
+      <form onSubmit={submit} noValidate className="surface p-4 space-y-3">
         <div>
-          <label htmlFor="req-article" className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+          <label htmlFor="req-article" className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
             Nama artikel / produk
           </label>
           <input id="req-article" className="field" type="text" maxLength={120}
             value={form.article_name} onChange={(e) => setForm({ ...form, article_name: e.target.value })} />
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-3 gap-3">
           <div>
-            <label htmlFor="req-qty" className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+            <label htmlFor="req-qty" className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
               {copy.qtyLabel}
             </label>
             <input id="req-qty" className="field" type="number" min={1} inputMode="numeric"
               value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
           </div>
           <div>
-            <label htmlFor="req-scheme" className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+            <label htmlFor="req-scheme" className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
               Skema maklon
             </label>
             <select id="req-scheme" className="field" value={form.scheme}
@@ -122,7 +122,7 @@ const RequestForm: React.FC<RequestFormProps> = ({ kind, onSubmitted }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="req-target" className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+            <label htmlFor="req-target" className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
               Target selesai
             </label>
             <input id="req-target" className="field" type="date"
@@ -131,7 +131,7 @@ const RequestForm: React.FC<RequestFormProps> = ({ kind, onSubmitted }) => {
         </div>
 
         <div>
-          <label htmlFor="req-notes" className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+          <label htmlFor="req-notes" className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
             Catatan
           </label>
           <textarea id="req-notes" className="field" rows={4} maxLength={1000}
