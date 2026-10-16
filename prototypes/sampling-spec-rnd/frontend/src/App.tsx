@@ -45,7 +45,7 @@ import PortalAdminView     from './pages/PortalAdminView';
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
 import * as api from './services/api';
 import { logout as authLogout } from './services/authApi';
-import { clearSession, getSession, subscribe as subscribeAuth, DEV_ADMIN_SESSION, type AuthSession } from './services/authSession';
+import { clearSession, getSession, subscribe as subscribeAuth, type AuthSession } from './services/authSession';
 import { toast } from './services/toast';
 import { TENANT_ID, actor } from './services/identity';
 import { matchesQuery } from './utils/filter';
@@ -114,9 +114,9 @@ function App() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  // ── portal session (auth gate: bypasses to DEV_ADMIN_SESSION if no active session) ───
-  const [session, setSession] = useState<AuthSession | null>(() => getSession() ?? DEV_ADMIN_SESSION);
-  useEffect(() => subscribeAuth(s => setSession(s ?? DEV_ADMIN_SESSION)), []);
+  // ── portal session (auth gate: unauthenticated users see the login page) ───
+  const [session, setSession] = useState<AuthSession | null>(() => getSession());
+  useEffect(() => subscribeAuth(setSession), []);
 
   const handleLogout = useCallback(async () => {
     const token = getSession()?.token;
@@ -409,7 +409,7 @@ function App() {
 
           <Header
             title={currentLabel}
-            subtitle="DASHBOARD / SAMPLING & SPEC R&D"
+            subtitle="DASHBOARD / LUKLA AGILE"
             caption={isConnected
               ? `Backend terhubung · ${timeStudies.length} studi · ${specVersions.length} spec`
               : 'Backend tidak terhubung — pastikan server berjalan di port 8009'}

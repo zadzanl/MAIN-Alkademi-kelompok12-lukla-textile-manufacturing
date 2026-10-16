@@ -89,7 +89,7 @@ const RequestForm: React.FC<RequestFormProps> = ({ kind, onSubmitted }) => {
   };
 
   return (
-    <div className="max-w-[760px]">
+    <div className="max-w-[760px] mx-auto">
       <div className="surface p-6 mb-5">
         <h2 className="text-[20px] font-semibold" style={{ color: 'var(--c-ink)' }}>{copy.title}</h2>
         <p className="text-[13px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>{copy.blurb}</p>
