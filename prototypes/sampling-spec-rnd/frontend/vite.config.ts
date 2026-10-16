@@ -24,12 +24,16 @@ export default defineConfig({
     strictPort: true,
     open: false,
     proxy: {
+      '/api/v1/copilot': {
+        target: 'http://127.0.0.1:8009',
+        changeOrigin: true,
+      },
       '/api/v1': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8009',
+        target: 'http://127.0.0.1:8009',
         changeOrigin: true,
       },
     },
