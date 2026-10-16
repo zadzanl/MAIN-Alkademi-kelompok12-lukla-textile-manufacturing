@@ -76,7 +76,7 @@ class EnrollmentCodeCreateRequest(BaseModel):
     def validate_role(cls, value: str) -> str:
         cleaned = value.strip()
         if cleaned not in CANONICAL_COPILOT_ROLES:
-            raise ValueError(f"Role '{cleaned}' is not a valid Lukla Copilot role")
+            raise ValueError(f"Role '{cleaned}' is not a valid Lukla Assistant role")
         return cleaned
 
 
