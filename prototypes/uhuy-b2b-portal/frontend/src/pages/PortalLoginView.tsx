@@ -20,7 +20,6 @@ import {
   passwordsMatch,
   validatePassword,
 } from '../services/authRules';
-import PortalBadge from '../components/PortalBadge';
 
 type Mode = 'login' | 'register' | 'forgot';
 type ForgotStep = 'request' | 'reset';
@@ -254,15 +253,6 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
         <span>Portal Klien Eksternal</span>
       </div>
 
-      <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-3 py-5">
-          <span className="text-[24px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
-            UHUY B2B
-          </span>
-          <PortalBadge />
-        </div>
-      </header>
-
       <main className="flex-1">
         <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
           <p className="text-[14px] font-semibold uppercase tracking-[.16em] mb-5" style={{ color: 'var(--c-brand)' }}>
@@ -479,14 +469,6 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
           </section>
         </div>
       </main>
-
-      <footer className="border-t" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 py-6">
-          <p className="text-[15px]" style={{ color: 'var(--c-ink-muted)' }}>
-            © Lukla Manufacturing · Portal Klien Eksternal UHUY B2B
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };

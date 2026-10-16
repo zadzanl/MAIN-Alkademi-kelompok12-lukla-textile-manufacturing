@@ -18,6 +18,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Sidebar, { type NavItem } from './components/Sidebar';
 import Header from './components/Header';
+import LuklaLogo from './components/LuklaLogo';
 import Toaster from './components/Toaster';
 import ErrorBoundary from './components/ErrorBoundary';
 import PortalBadge from './components/PortalBadge';
@@ -159,11 +160,14 @@ function App() {
         </div>
 
       <main className="flex-1 overflow-y-auto page-stage">
-        <div className="w-full max-w-[1760px] mx-auto p-4 lg:p-6">
-          <div className="mb-3">
+        <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
+          <div className="w-full max-w-[1760px] mx-auto px-4 lg:px-6 flex items-center justify-between gap-3 py-3">
+            <LuklaLogo size={26} />
             <PortalBadge />
           </div>
+        </header>
 
+        <div className="w-full max-w-[1760px] mx-auto p-4 lg:p-6">
           <Header
             title={currentLabel}
             subtitle="PORTAL KLIEN EKSTERNAL / UHUY B2B"
@@ -196,6 +200,55 @@ function App() {
             </ErrorBoundary>
           </div>
         </div>
+
+        <footer className="border-t mt-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
+          <div className="w-full max-w-[1760px] mx-auto px-4 lg:px-6 py-8">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
+              <LuklaLogo size={30} />
+
+              <span className="hidden lg:block w-px h-11 shrink-0" style={{ background: 'var(--c-hair)' }} aria-hidden="true" />
+
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold" style={{ color: 'var(--c-ink)' }}>Lukla Operations Engine</p>
+                <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>Operational Garment Management System</p>
+                <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>Multi-client Manufacturing · Dynamic Payroll</p>
+              </div>
+
+              <span className="hidden lg:block w-px h-11 shrink-0" style={{ background: 'var(--c-hair)' }} aria-hidden="true" />
+
+              <div className="flex items-start gap-2.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--c-brand)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4 mt-0.5 shrink-0"
+                  aria-hidden="true"
+                >
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <div>
+                  <p className="text-[12px] font-semibold uppercase tracking-[.12em]" style={{ color: 'var(--c-ink-muted)' }}>
+                    Lukla Manufacturing × Snøhund
+                  </p>
+                  <p className="text-[12px] uppercase tracking-[.12em]" style={{ color: 'var(--c-ink-muted)' }}>
+                    Ciwidey Production Facility
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t flex justify-end" style={{ borderColor: 'var(--c-hair)' }}>
+              <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>
+                © 2026 Lukla Manufacturing · Portal Klien Eksternal UHUY B2B
+              </p>
+            </div>
+          </div>
+        </footer>
       </main>
       </div>
 
