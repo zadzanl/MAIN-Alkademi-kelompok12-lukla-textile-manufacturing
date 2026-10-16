@@ -259,18 +259,6 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
-      {/* Header */}
-      <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-4 py-5">
-          <span className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
-            PT Lukla
-          </span>
-          <span className="rounded-full border px-3 py-1.5 text-[12px]" style={{ borderColor: 'var(--c-hair)', color: 'var(--c-ink-muted)' }}>
-            Portal Internal
-          </span>
-        </div>
-      </header>
-
       <main className="flex-1">
         <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
           {/* Hero */}
@@ -541,12 +529,6 @@ const PortalAuthView: React.FC<PortalAuthViewProps> = ({ onAuthenticated }) => {
           )}
         </div>
       </main>
-
-      <footer className="border-t" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 py-6">
-          <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>© PT Lukla · Portal Internal</p>
-        </div>
-      </footer>
     </div>
   );
 };
