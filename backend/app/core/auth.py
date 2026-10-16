@@ -197,3 +197,18 @@ def get_current_stock_auth_context(
         {"Owner", "Warehouse"},
         "warehouse stock operations",
     )
+
+
+def get_current_admin_auth_context(
+    request: Request,
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    db: Session = Depends(get_db)
+) -> AuthContext:
+    """Authenticate administrative callers strictly restricted to Owner role."""
+    return _get_auth_context(
+        request,
+        authorization,
+        db,
+        {"Owner"},
+        "telegram administrative operations",
+    )

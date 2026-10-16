@@ -137,6 +137,9 @@ Stop condition: if the existing Copilot provider requires a network path or requ
 
 ## Verification commands
 
+0. **Single-Command Automated Gate (Pre- and Post-Implementation):**
+   `python scripts/verify_telegram_copilot_gate.py`
+   *(Executes workspace hygiene, target-file & compilation checks, OpenAPI contract checks, `backend/tests/test_telegram_copilot.py` with in-process `FakeTelegramAPIServer` mocking `api.telegram.org`, and `backend/tests/test_copilot_api.py` regression checks).*
 1. `python -m pytest -q backend/tests/test_telegram_copilot.py`
 2. `python -m compileall -q backend/app/telegram backend/app/api/v1/telegram.py backend/app/api/v1/copilot.py`
 3. `python -c "from backend.app.main import app; paths=app.openapi()['paths']; assert '/api/v1/telegram/webhook' in paths; assert '/api/v1/copilot/chat' in paths; print('telegram contract: PASS')"`
