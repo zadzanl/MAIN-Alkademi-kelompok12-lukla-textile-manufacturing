@@ -46,6 +46,12 @@ def _get_period(db: Session, period_id: UUID) -> Period:
     return _period_from_row(row)
 
 
+def get_payroll_period(db: Session, tenant_id: UUID, period_id: UUID) -> Period:
+    """Read one period through the tenant-checked reader."""
+    _require_tenant(db, tenant_id)
+    return _get_period(db, period_id)
+
+
 def create_payroll_period(db: Session, tenant_id: UUID, request: PeriodRequest) -> Period:
     """Insert an OPEN period and checked-read it without committing."""
     period = create_period(request, uuid4())

@@ -95,16 +95,19 @@ def test_row_mapping_is_contract_shaped_and_rejects_invalid_data() -> None:
 def test_create_uses_caller_session_and_reads_its_insert(
     period_request: PeriodRequest, rule_payload: dict[str, object]
 ) -> None:
-    rule_row = _rule_row({**rule_payload, "effectiveFrom": "2026-10-11"})
-    db, calls = _session([[rule_row], [_row(PERIOD)]])
+    period_request = period_request.model_copy(
+        update={"starts_on": date(2026, 10, 17), "ends_on": date(2026, 10, 24)}
+    )
+    db, calls = _session([[_rule_row(rule_payload)], [_row(PERIOD)]])
     period = create_payroll_period(db, TENANT, period_request)
     assert period.id == PERIOD
     assert "payroll_context_tenant" in calls[0][0]
-    assert any("payroll_read_rows" in c[0] and c[1].get("rule_id") == RULE for c in calls)
-    assert any(
-        "INSERT INTO payroll_periods" in c[0] and c[1].get("tenant_id") == TENANT for c in calls
-    )
-    assert any("payroll_read_rows" in c[0] and c[1].get("period_id") is not None for c in calls)
+    rule_read = next(call for call in calls if "payroll_read_rows" in call[0])
+    insert = next(call for call in calls if "INSERT INTO payroll_periods" in call[0])
+    period_read = [call for call in calls if "payroll_read_rows" in call[0]][-1]
+    assert rule_read[1]["rule_id"] == RULE
+    assert insert[1]["tenant_id"] == TENANT
+    assert period_read[1]["period_id"] is not None
     db.commit.assert_not_called()
     db.rollback.assert_not_called()
 

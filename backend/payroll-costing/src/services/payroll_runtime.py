@@ -8,18 +8,43 @@ from collections.abc import Callable
 from typing import TypeVar
 from uuid import UUID
 
-from backend.app.services.idempotency import (
-    complete_idempotency,
-    compute_canonical_hash,
-    reserve_or_get_idempotency,
-)
 from sqlalchemy.orm import Session
 
 from src.models.base import ContractModel
 from src.models.financial_rule import FinancialRule, FinancialRuleApproval, FinancialRuleRequest
+from src.models.payroll_calculation import PayrollResult
+from src.models.payroll_operations import (
+    JobAccepted,
+    JobRequest,
+    OverheadAllocation,
+    OverheadEvent,
+    OverheadRequest,
+    PayrollApproval,
+    PayrollStatement,
+    PaymentEvidence,
+)
 from src.models.payroll_period import Period, PeriodRequest
+from src.repositories.payroll import calculate_weekly_payroll
+from src.repositories.payroll_records import (
+    approve_run,
+    calculate_overhead,
+    record_overhead,
+    record_payment,
+    execute_job,
+)
 from src.repositories.periods import create_payroll_period
 from src.repositories.rules import approve_financial_rule, propose_financial_rule
+
+try:
+    from backend.app.services import idempotency as _idempotency
+except ModuleNotFoundError as exc:
+    if exc.name != "backend":
+        raise
+    from app.services import idempotency as _idempotency
+
+complete_idempotency = _idempotency.complete_idempotency
+compute_canonical_hash = _idempotency.compute_canonical_hash
+reserve_or_get_idempotency = _idempotency.reserve_or_get_idempotency
 
 _Result = TypeVar("_Result", bound=ContractModel)
 
@@ -48,7 +73,7 @@ def _mutate(
         tenant_id,
         operation_id,
         key,
-        200 if operation_id == "approveFinancialRule" else 201,
+        200 if operation_id in {"approveFinancialRule", "calculateWeeklyPayroll"} else 201,
         result.model_dump(mode="json", by_alias=True),
     )
     return result
@@ -120,3 +145,49 @@ def create_period_once(
         Period,
         lambda: create_payroll_period(db, tenant_id, request),
     )
+
+
+def calculate_weekly_once(
+    db: Session,
+    tenant_id: UUID,
+    actor_id: UUID,
+    role: str,
+    period_id: UUID,
+    rule_version: UUID,
+    key: str,
+) -> PayrollResult:
+    """Calculate and cache one aggregate result under the shared idempotency key."""
+    return _mutate(
+        db,
+        tenant_id,
+        actor_id,
+        "calculateWeeklyPayroll",
+        key,
+        {
+            "role": role,
+            "periodId": str(period_id),
+            "body": {"ruleVersion": str(rule_version)},
+        },
+        PayrollResult,
+        lambda: calculate_weekly_payroll(db, tenant_id, period_id, rule_version),
+    )
+
+
+def approve_payroll_once(db: Session, tenant_id: UUID, actor_id: UUID, approval: PayrollApproval, period_id: UUID, key: str) -> PayrollStatement:
+    return _mutate(db, tenant_id, actor_id, "approvePayroll", key, {"periodId": str(period_id), "body": approval.model_dump(mode="json", by_alias=True)}, PayrollStatement, lambda: approve_run(db, period_id, approval))
+
+
+def record_payment_once(db: Session, tenant_id: UUID, actor_id: UUID, payment: PaymentEvidence, period_id: UUID, key: str) -> PayrollStatement:
+    return _mutate(db, tenant_id, actor_id, "recordPayrollPayment", key, {"periodId": str(period_id), "body": payment.model_dump(mode="json", by_alias=True)}, PayrollStatement, lambda: record_payment(db, tenant_id, actor_id, period_id, payment))
+
+
+def record_overhead_once(db: Session, tenant_id: UUID, actor_id: UUID, request: OverheadRequest, key: str) -> OverheadEvent:
+    return _mutate(db, tenant_id, actor_id, "recordOverhead", key, {"body": request.model_dump(mode="json", by_alias=True)}, OverheadEvent, lambda: record_overhead(db, tenant_id, actor_id, request))
+
+
+def calculate_overhead_once(db: Session, tenant_id: UUID, actor_id: UUID, period_id: UUID, rule_version: UUID, key: str) -> OverheadAllocation:
+    return _mutate(db, tenant_id, actor_id, "calculateOverhead", key, {"periodId": str(period_id), "ruleVersion": str(rule_version)}, OverheadAllocation, lambda: calculate_overhead(db, period_id, rule_version))
+
+
+def start_job_once(db: Session, tenant_id: UUID, actor_id: UUID, kind: str, request: JobRequest, key: str) -> JobAccepted:
+    return _mutate(db, tenant_id, actor_id, kind, key, {"body": request.model_dump(mode="json", by_alias=True)}, JobAccepted, lambda: execute_job(db, tenant_id, "SATURDAY_PAYROLL" if kind == "runSaturdayPayrollJob" else "MONTHLY_OVERHEAD", request))

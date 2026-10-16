@@ -261,6 +261,25 @@ async def get_copilot_page():
     return HTMLResponse(content=get_copilot_html(), status_code=status.HTTP_200_OK)
 
 @app.get(
+    "/copilot/demo",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+@app.get(
+    "/copilot/demo/",
+    response_class=HTMLResponse,
+    include_in_schema=False
+)
+async def get_copilot_demo_page():
+    return HTMLResponse(
+        content=get_copilot_html(
+            endpoint_url="/api/v1/copilot/demo/chat",
+            subtitle="Spare / Redundant Demo Endpoint"
+        ),
+        status_code=status.HTTP_200_OK
+    )
+
+@app.get(
     "/ui",
     response_class=HTMLResponse,
     include_in_schema=False
