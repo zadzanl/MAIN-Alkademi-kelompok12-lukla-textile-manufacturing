@@ -1,7 +1,7 @@
-# Proposal: Portal Internal Authentication (PT Luka)
+# Proposal: Portal Internal Authentication (PT Lukla)
 
 ## Why
-The PT Luka portal homepage (login / registration) is currently a static design with no backend.
+The PT Lukla portal homepage (login / registration) is currently a static design with no backend.
 Internal factory users must be able to register for access, wait for Admin IT verification, log in
 with an employee ID / NIK (KTP) / email / phone, change their password, and recover it via a
 one-time code. Until this exists, every dashboard screen is reachable without identity and the
@@ -22,7 +22,7 @@ design mock cannot be used for real work.
 
 ### New Capabilities
 - `portal-auth`: internal-user registration, Admin IT verification, password login, password
-  change, and OTP-based password recovery for the PT Luka portal.
+  change, and OTP-based password recovery for the PT Lukla portal.
 
 ### Modified Capabilities
 *(None)*
