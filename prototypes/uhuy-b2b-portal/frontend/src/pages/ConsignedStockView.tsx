@@ -3,7 +3,7 @@
  * Server-scoped to the client's client_id.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from '../components/DataTable';
 import { getToken } from '../services/authSession';
 import * as portalApi from '../services/portalApi';
@@ -32,21 +32,25 @@ const ConsignedStockView: React.FC<ConsignedStockViewProps> = ({ globalSearch })
 
   useEffect(() => { void load(); }, [load]);
 
-  const filtered = lots.filter(
-    (l) =>
-      matchesQuery(search, l.material_name, l.material_code) &&
-      matchesQuery(globalSearch, l.material_name, l.material_code),
+  const filtered = useMemo(
+    () =>
+      lots.filter(
+        (l) =>
+          matchesQuery(search, l.material_name, l.material_code) &&
+          matchesQuery(globalSearch, l.material_name, l.material_code),
+      ),
+    [lots, search, globalSearch],
   );
 
   const total = filtered.reduce((sum, l) => sum + l.quantity_available, 0);
 
   return (
-    <div className="space-y-6">
-      <div className="surface p-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="space-y-4">
+      <div className="surface p-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--c-ink)' }}>Stok Bahan Titipan</h2>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
+            <h2 className="text-[22px] font-semibold" style={{ color: 'var(--c-ink)' }}>Stok Bahan Titipan</h2>
+            <p className="text-[15px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
               Bahan milik Anda yang tersimpan di gudang Lukla.
             </p>
           </div>
@@ -55,7 +59,7 @@ const ConsignedStockView: React.FC<ConsignedStockViewProps> = ({ globalSearch })
       </div>
 
       {loading ? (
-        <div className="surface p-8 space-y-3">
+        <div className="surface p-4 space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="skeleton h-10 w-full" />)}
         </div>
       ) : (

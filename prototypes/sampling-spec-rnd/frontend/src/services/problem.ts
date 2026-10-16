@@ -34,3 +34,12 @@ export function extractDetail(raw: unknown, status: number): string {
 
   return `HTTP ${status}`;
 }
+
+/** Extract the RFC-7807 `requestId` (support correlation) when present. */
+export function extractRequestId(raw: unknown): string | undefined {
+  if (raw && typeof raw === 'object') {
+    const value = (raw as { requestId?: unknown }).requestId;
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return undefined;
+}
