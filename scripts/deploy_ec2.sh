@@ -34,13 +34,18 @@ fi
 sudo systemctl enable postgresql
 sudo systemctl start postgresql
 
-# Create Database and Application User if not exists
-echo "    Configuring myappdb and myappuser..."
+# Create Database, Application User, Runtime Role, and Extensions
+echo "    Configuring myappdb, myappuser, lukla_app, and extensions..."
 sudo -u postgres psql -c "
 DO \$\$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'myappuser') THEN
-        CREATE USER myappuser WITH ENCRYPTED PASSWORD 'password_rahasia_kamu';
+        CREATE USER myappuser WITH ENCRYPTED PASSWORD 'password_rahasia_kamu' CREATEDB CREATEROLE;
+    ELSE
+        ALTER USER myappuser WITH CREATEDB CREATEROLE;
+    END IF;
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'lukla_app') THEN
+        CREATE ROLE lukla_app WITH LOGIN PASSWORD 'lukla_secret' NOBYPASSRLS NOSUPERUSER NOCREATEDB NOCREATEROLE;
     END IF;
 END
 \$\$;
@@ -51,6 +56,9 @@ sudo -u postgres psql -c "CREATE DATABASE myappdb OWNER myappuser;"
 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE myappdb TO myappuser;"
 sudo -u postgres psql -c "ALTER DATABASE myappdb OWNER TO myappuser;"
+sudo -u postgres psql -d myappdb -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+sudo -u postgres psql -d myappdb -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
+sudo -u postgres psql -d myappdb -c "GRANT ALL ON SCHEMA public TO myappuser;"
 
 # 3. Setup Python Virtual Environment and Dependencies
 echo "--> Setting up Python environment..."
@@ -74,7 +82,7 @@ COPILOT_DEFAULT_PROVIDER=bedrock
 AWS_REGION=us-east-1
 COPILOT_MODEL_NAME=us.amazon.nova-micro-v1:0
 BEDROCK_MODEL_ID=us.amazon.nova-micro-v1:0
-COPILOT_DEMO_MODE=false
+COPILOT_DEMO_MODE=true
 AI_COPILOT_ENABLED=true
 
 # Security

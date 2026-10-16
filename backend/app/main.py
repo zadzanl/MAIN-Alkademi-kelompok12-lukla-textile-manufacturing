@@ -279,8 +279,9 @@ async def get_copilot_demo_page():
         status_code=status.HTTP_200_OK
     )
 
-@app.get(
+@app.api_route(
     "/health",
+    methods=["GET", "HEAD"],
     include_in_schema=False
 )
 async def health_check():
@@ -398,8 +399,9 @@ def get_portal_html() -> str:
 </body>
 </html>"""
 
-@app.get(
+@app.api_route(
     "/",
+    methods=["GET", "HEAD"],
     response_class=HTMLResponse,
     include_in_schema=False
 )

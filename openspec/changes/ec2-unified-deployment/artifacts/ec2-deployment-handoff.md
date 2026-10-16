@@ -10,7 +10,6 @@
 ## 1. Handoff Baseline & Current State
 
 - **Mainline Branch:** `master`
-- **Mainline Commit:** `d4e56b2` (`feat(ec2): prepare unified deployment with Bedrock provider, root entrypoint, and automated setup`)
 - **Remote Repository:** `https://github.com/zadzanl/MAIN-Alkademi-kelompok12-lukla-textile-manufacturing.git`
 - **Verified AWS CLI Profile:** Authenticated as `arn:aws:iam::820242904049:user/student_12` in region `ap-southeast-1`.
 - **Target Launch Template:** `main-ec2-template` (`lt-00e4f5effa1c630ad`), Version 1.

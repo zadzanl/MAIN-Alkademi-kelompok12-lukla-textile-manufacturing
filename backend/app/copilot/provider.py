@@ -412,16 +412,31 @@ class BedrockLLMProvider(BaseLLMProvider):
         client = self._get_client()
 
         sys_prompt = system_prompt or (
-            "You are Lukla Intelligence for apparel manufacturing operations.\n"
-            "Your role is to assist operators, supervisors, and owners with real-time factory data.\n"
-            "Strictly read-only access. When inquiring about stock or metrics, use tools when available."
+            "You are Lukla Intelligence for apparel manufacturing operations (PT Lukla Textile Manufacturing).\n"
+            "Your role is to assist operators, supervisors, and owners by providing verified, real-time factory data in Indonesian.\n\n"
+            "=== READ-ONLY ACCESS & TOOL USAGE GUIDELINES ===\n"
+            "1. You have strictly read-only access to factory data. You can never mutate, insert, or delete state.\n"
+            "2. Whenever a user inquires about factory metrics, inventory, orders, or progress, always invoke the appropriate read tool first rather than guessing or fabricating numbers.\n"
+            "3. If a tool returns data, answer directly and concisely in Indonesian referencing the verified live numbers (e.g., SKU, quantity in meters/pcs, lot tag, line efficiency).\n"
+            "4. If a tool fails or returns an error (such as 404, 500, or problem payload), DO NOT invent figures. Honestly notify the user that live operational data is currently unavailable.\n"
+            "5. If the user asks to modify data (cutting fabric, logging tallies, posting journal entries), politely inform them that you are read-only and direct them to the action shortcut link."
         )
 
         bedrock_messages: List[Dict[str, Any]] = []
         if history:
             for h in history:
                 role = "user" if h.sender == "user" else "assistant"
-                bedrock_messages.append({"role": role, "content": [{"text": h.text}]})
+                text_val = (h.text or "").strip()
+                if not text_val:
+                    continue
+                if bedrock_messages and bedrock_messages[-1]["role"] == role:
+                    bedrock_messages[-1]["content"].append({"text": text_val})
+                else:
+                    bedrock_messages.append({"role": role, "content": [{"text": text_val}]})
+
+        # Ensure conversation starts with a user message as required by Bedrock Converse API
+        while bedrock_messages and bedrock_messages[0]["role"] != "user":
+            bedrock_messages.pop(0)
 
         # Append tool results if returned from first turn
         if tool_results:
@@ -429,11 +444,14 @@ class BedrockLLMProvider(BaseLLMProvider):
                 f"- Tool '{tr.get('tool_name')}': {json.dumps(tr.get('data')) if isinstance(tr.get('data'), (dict, list)) else tr.get('data')}"
                 for tr in tool_results
             ])
-            user_msg = f"{message}\n\n[Live Factory Data:\n{results_str}\nPlease answer concisely using this data.]"
+            user_msg = f"{message}\n\n[Live Factory Data from Read Tools:\n{results_str}\nPlease answer concisely in Indonesian using this verified data.]"
         else:
             user_msg = message
 
-        bedrock_messages.append({"role": "user", "content": [{"text": user_msg}]})
+        if bedrock_messages and bedrock_messages[-1]["role"] == "user":
+            bedrock_messages[-1]["content"].append({"text": user_msg})
+        else:
+            bedrock_messages.append({"role": "user", "content": [{"text": user_msg}]})
 
         converse_kwargs: Dict[str, Any] = {
             "modelId": self.model_id,
@@ -445,7 +463,7 @@ class BedrockLLMProvider(BaseLLMProvider):
             }
         }
 
-        # Include tool specs if tools available and no results yet
+        # Include tool specs only on the initial turn before tool results are synthesized
         if tools and not tool_results:
             bedrock_tools = []
             for t in tools:

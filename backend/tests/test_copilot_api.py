@@ -386,6 +386,22 @@ def test_bedrock_provider_initialization_and_mock(monkeypatch):
         res = loop.run_until_complete(provider.chat_turn("Halo!"))
         assert res.reply == "Halo dari Bedrock Nova Micro!"
         assert res.usage.total_tokens == 23
+
+        # Verify history with leading assistant message and duplicate user messages coalesces cleanly
+        from backend.app.copilot.schemas import ChatMessage
+        history = [
+            ChatMessage(id="1", sender="assistant", text="Welcome"),
+            ChatMessage(id="2", sender="user", text="First question"),
+            ChatMessage(id="3", sender="user", text="Second question"),
+        ]
+        res2 = loop.run_until_complete(
+            provider.chat_turn(
+                "Berapa stok kain fleece?",
+                history=history,
+                tool_results=[{"tool_name": "get_stock_balances", "status_code": 200, "data": {"items": [{"sku": "FAB-FLEECE", "quantity": 1250}]}}]
+            )
+        )
+        assert res2.reply == "Halo dari Bedrock Nova Micro!"
     finally:
         loop.close()
 
