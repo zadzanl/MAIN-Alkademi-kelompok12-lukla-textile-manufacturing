@@ -1,6 +1,11 @@
 """Garment unit status, mirroring the frozen ``garment_units.status`` values."""
 
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 
 
 class GarmentUnitStatus(StrEnum):

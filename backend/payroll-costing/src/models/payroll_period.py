@@ -1,7 +1,12 @@
 """Payroll period schemas and the frozen period status enumeration."""
 
 from datetime import date
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 from typing import Final, Literal
 from uuid import UUID
 

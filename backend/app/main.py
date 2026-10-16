@@ -1,3 +1,18 @@
+# Python < 3.11 compatibility polyfills (e.g. Amazon Linux 2023 Python 3.9)
+import enum
+if not hasattr(enum, "StrEnum"):
+    class StrEnum(str, enum.Enum):
+        pass
+    enum.StrEnum = StrEnum
+
+import typing
+if not hasattr(typing, "Self"):
+    try:
+        from typing_extensions import Self
+        typing.Self = Self
+    except ImportError:
+        pass
+
 import logging
 import uuid
 from typing import List
