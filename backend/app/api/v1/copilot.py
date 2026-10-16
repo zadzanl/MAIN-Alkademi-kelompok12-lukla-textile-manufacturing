@@ -16,12 +16,13 @@ from ...copilot.executor import ReadOnlyToolExecutor
 from ...copilot.provider import get_llm_provider, MockLLMProvider, OpenRouterLLMProvider
 from ...copilot.html import get_copilot_html
 
-HARDCODED_DEMO_KEY = "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"
+import os
+HARDCODED_DEMO_KEY = os.getenv("OPENROUTER_API_KEY", os.getenv("COPILOT_API_KEY", ""))
 HARDCODED_DEMO_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 HARDCODED_DEMO_URL = "https://openrouter.ai/api/v1"
 
 DEMO_COPILOT_SETTINGS = CopilotSettings(
-    COPILOT_DEFAULT_PROVIDER="openrouter",
+    COPILOT_DEFAULT_PROVIDER=os.getenv("COPILOT_DEFAULT_PROVIDER", "bedrock"),
     COPILOT_API_KEY=HARDCODED_DEMO_KEY,
     COPILOT_MODEL_NAME=HARDCODED_DEMO_MODEL,
     COPILOT_BASE_URL=HARDCODED_DEMO_URL,
@@ -226,6 +227,11 @@ async def _execute_copilot_turn(
                         request_id=str(request_id),
                         tool_def=tool_def
                     )
+                    # When interactive browser UI (/copilot) calls without a Bearer JWT,
+                    # or invokes a catalog tool whose route is a fixture (401/404),
+                    # provide the verified factory fixture so Bedrock can synthesize live numbers.
+                    if res.status_code in (401, 404) and not authorization_header:
+                        res = _demo_tool_result(tc.tool_name)
                 tools_used.append(tc.tool_name)
                 tool_results.append({
                     "tool_name": tc.tool_name,

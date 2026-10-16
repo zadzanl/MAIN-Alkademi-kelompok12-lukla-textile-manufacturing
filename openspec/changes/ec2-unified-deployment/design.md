@@ -147,13 +147,12 @@ The hackathon template provides a `t3.micro` instance with 1 GiB physical RAM. R
 PostgreSQL 15 runs locally on loopback `127.0.0.1:5432`. It is isolated by the EC2 Security Group (port 5432 is not exposed externally).
 
 ### Migration Pipeline
-[`scripts/init_ec2_db.py`](file:///c:/Projects/hackathon-MAIN-alkademi/scripts/init_ec2_db.py) applies the full schema sequence idempotently:
-1. `001_identities.sql`: Tenants, actors, audit events, idempotency records.
-2. `006_payroll_rate_cards.sql`: Operation codes, piece rates, rate cards.
-3. `007_assemblies_and_qc.sql`: QC inspections, defect logs, inspection records.
-4. `007_payroll_qc_inputs.sql`: Weekly QC defect rates and bonus pool inputs.
-5. `008_double_entry_ledger.sql`: Accounts, journal entries, balanced postings.
-6. `009_payroll_core.sql`: Payroll periods, statements, line items.
-7. `011_job_idempotency.sql`: Processing locks and job replay guards.
-8. `012_payroll_routines_rls.sql`: Stored functions, RLS policies, tenant isolation.
-9. `013_telegram_copilot_bindings.sql`: Telegram chat bindings and enrollments.
+[`scripts/init_ec2_db.py`](file:///c:/Projects/hackathon-MAIN-alkademi/scripts/init_ec2_db.py) applies the full schema sequence idempotently and seeds the default factory tenant/actor/accounts:
+1. `001_identities.sql`: Tenants, actors, audit events, idempotency records, and `lukla_app` role.
+2. `006_payroll_rate_cards.sql`: Operation codes, piece rates, rate cards (`btree_gist` pre-enabled by superuser).
+3. `007_payroll_qc_inputs.sql`: Garment assemblies, component allocations, QC inspections, and defect logs.
+4. `008_double_entry_ledger.sql`: Accounts, journal entries, balanced postings.
+5. `009_payroll_core.sql`: Payroll periods, statements, line items.
+6. `011_job_idempotency.sql`: Processing locks and job replay guards.
+7. `012_payroll_routines_rls.sql`: Stored functions, RLS policies, tenant isolation.
+8. `013_telegram_copilot_bindings.sql`: Telegram chat bindings and enrollments.

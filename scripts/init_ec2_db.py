@@ -13,7 +13,6 @@ load_dotenv()
 MIGRATION_FILES = [
     "001_identities.sql",
     "006_payroll_rate_cards.sql",
-    "007_assemblies_and_qc.sql",
     "007_payroll_qc_inputs.sql",
     "008_double_entry_ledger.sql",
     "009_payroll_core.sql",
@@ -21,6 +20,18 @@ MIGRATION_FILES = [
     "012_payroll_routines_rls.sql",
     "013_telegram_copilot_bindings.sql",
 ]
+
+SEED_SQL = """
+INSERT INTO tenants (id, tenant_code, name, kind, active)
+VALUES ('b0000000-0000-4000-8000-000000000001', 'LUKLA-FACTORY', 'PT Lukla Textile Manufacturing', 'FACTORY', true)
+ON CONFLICT (tenant_code) DO NOTHING;
+
+INSERT INTO actors (id, email, display_name, active)
+VALUES ('a0000000-0000-4000-8000-000000000001', 'owner@lukla.id', 'Lukla Owner', true)
+ON CONFLICT (lower(email)) DO NOTHING;
+
+SELECT seed_operational_accounts('b0000000-0000-4000-8000-000000000001'::uuid, 'IDR');
+"""
 
 
 def run_migrations(db_url: str) -> None:
@@ -50,6 +61,12 @@ def run_migrations(db_url: str) -> None:
                     print(f"  [OK] {sql_file}")
                 except Exception as exc:
                     print(f"  [NOTE/WARN] {sql_file}: {exc}")
+
+            try:
+                cur.execute(SEED_SQL)
+                print("  [OK] Default tenant, actor, and operational ledger accounts seeded.")
+            except Exception as exc:
+                print(f"  [NOTE/WARN] Seed data: {exc}")
 
 
 if __name__ == "__main__":
