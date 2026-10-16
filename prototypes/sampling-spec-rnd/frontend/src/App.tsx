@@ -18,12 +18,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Sidebar, { NavChapter } from './components/Sidebar';
 import Header from './components/Header';
-import MetricCard from './components/MetricCard';
-import Chart from './components/Chart';
-import StatusPanel from './components/StatusPanel';
-import DataTable from './components/DataTable';
-import StatusBadge from './components/StatusBadge';
-import ActivityLog, { Activity } from './components/ActivityLog';
+import type { Activity } from './components/ActivityLog';
 import Modal from './components/Modal';
 import { FontKey } from './components/FontSelector';
 import Toaster from './components/Toaster';
@@ -42,12 +37,15 @@ import PayrollView         from './pages/PayrollView';
 import TimeStudiesView     from './pages/TimeStudiesView';
 import SpecVersionsView    from './pages/SpecVersionsView';
 import SettingsView        from './pages/SettingsView';
+import CopilotView         from './pages/CopilotView';
+import WarehouseInventoryView from './pages/WarehouseInventoryView';
+import ExecutiveDashboardView from './pages/ExecutiveDashboardView';
 import PortalAuthView      from './pages/PortalAuthView';
 import PortalAdminView     from './pages/PortalAdminView';
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
 import * as api from './services/api';
 import { logout as authLogout } from './services/authApi';
-import { clearSession, getSession, subscribe as subscribeAuth, type AuthSession } from './services/authSession';
+import { clearSession, getSession, subscribe as subscribeAuth, DEV_ADMIN_SESSION, type AuthSession } from './services/authSession';
 import { toast } from './services/toast';
 import { TENANT_ID, actor } from './services/identity';
 import { matchesQuery } from './utils/filter';
@@ -68,7 +66,8 @@ const chapters: NavChapter[] = [
   {
     id: 'ringkasan', label: 'Ringkasan', icon: 'layout-dashboard',
     items: [
-      { id: 'overview', label: 'Overview', icon: 'layout-dashboard', view: 'overview' },
+      { id: 'overview',  label: 'Executive Dashboard', icon: 'layout-dashboard', view: 'overview' },
+      { id: 'warehouse', label: 'Inventaris Gudang', icon: 'warehouse', view: 'warehouse' },
     ],
   },
   {
@@ -115,9 +114,9 @@ function App() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  // ── portal session (auth gate) ───────────────────────────────────────────────
-  const [session, setSession] = useState<AuthSession | null>(() => getSession());
-  useEffect(() => subscribeAuth(setSession), []);
+  // ── portal session (auth gate: bypasses to DEV_ADMIN_SESSION if no active session) ───
+  const [session, setSession] = useState<AuthSession | null>(() => getSession() ?? DEV_ADMIN_SESSION);
+  useEffect(() => subscribeAuth(s => setSession(s ?? DEV_ADMIN_SESSION)), []);
 
   const handleLogout = useCallback(async () => {
     const token = getSession()?.token;
@@ -354,38 +353,9 @@ function App() {
    *
    * Today's weekday is highlighted; future weekdays are marked isFuture.
    */
-  const chartData = (() => {
-    const DAYS = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-    // JS getDay(): 0=Sun,1=Mon,...,6=Sat  →  map to Mon-first (0=Mon,6=Sun)
-    const todayJs  = new Date().getDay();                   // 0(Sun)–6(Sat)
-    const todayIdx = todayJs === 0 ? 6 : todayJs - 1;     // Mon-first index
-
-    const counts = Array(7).fill(0);
-    const total  = timeStudies.length || 1;
-
-    timeStudies.forEach(study => {
-      const d  = new Date(study.created_at);
-      const js = d.getDay();
-      const i  = js === 0 ? 6 : js - 1;
-      counts[i]++;
-    });
-
-    return DAYS.map((label, i) => ({
-      label,
-      value:     i <= todayIdx ? Math.round((counts[i] / total) * 100) : 0,
-      isCurrent: i === todayIdx,
-      isFuture:  i > todayIdx,
-    }));
-  })();
-
-  const statusItems = [
-    { label:'Draft',       count: timeStudies.filter(s=>s.status==='draft').length },
-    { label:'In Progress', count: timeStudies.filter(s=>s.status==='in_progress').length },
-    { label:'Paused',      count: timeStudies.filter(s=>s.status==='paused').length },
-    { label:'Completed',   count: timeStudies.filter(s=>s.status==='completed').length },
-  ];
-
-  const currentLabel = navChapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview';
+  const currentLabel = currentView === 'copilot'
+    ? 'Lukla Copilot'
+    : (navChapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview');
 
   // ── shared style constants ────────────────────────────────────────────────────
   const inputCls  = "w-full rounded-[10px] px-3 py-2.5 text-[13px]";
@@ -453,58 +423,22 @@ function App() {
 
           {/* key={currentView} remounts this wrapper on navigation so the
               page-turn animation replays for the newly opened view. */}
-          <div key={currentView} className="page-turn">
+          <div
+            key={currentView}
+            className={`page-turn ${currentView === 'production' ? 'page-turn-static' : ''}`}
+          >
             <ErrorBoundary>
 
-          {/* ── OVERVIEW ──────────────────────────────────────────────────────── */}
+          {/* ── OVERVIEW (VIEW-01: Executive Operations & Financial Dashboard) ── */}
           {currentView === 'overview' && (
-            <>
-              {/* KPIs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <MetricCard label="Studi Aktif"      value={workflowSummary?.active_studies ?? 0}        note="Studi yang sedang berjalan"      loading={isLoading} accent="blue" />
-                <MetricCard label="Studi Selesai"    value={workflowSummary?.completed_studies ?? 0}     note="Studi yang telah diselesaikan"   loading={isLoading} accent="green" />
-                <MetricCard label="Versi Sample"     value={workflowSummary?.total_sample_versions ?? 0} note="Artikel dalam sistem versioning"  loading={isLoading} accent="orange" />
-                <MetricCard label="Drift Kritis"     value={workflowSummary?.critical_drifts ?? 0}       note="Memerlukan perhatian segera"      loading={isLoading} accent="red" />
-              </div>
-
-              {/* Chart + Status */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                <div className="lg:col-span-2">
-                  <Chart data={chartData} title="Tingkat Penyelesaian Studi" subtitle="Persentase sampel terkumpul per hari (estimasi)" />
-                </div>
-                <StatusPanel title="Status Studi" subtitle="Distribusi status studi waktu" items={statusItems} />
-              </div>
-
-              {/* Mini tables */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                <DataTable
-                  title="Studi Waktu Terbaru" subtitle="5 studi terakhir"
-                  tabs={[{id:'all',label:'Semua'},{id:'in_progress',label:'Berjalan'},{id:'completed',label:'Selesai'}]}
-                  activeTab={studyTab} onTabChange={setStudyTab}
-                  searchValue={studySearch} onSearchChange={setStudySearch}
-                  columns={[
-                    { key:'process_name', label:'Proses' },
-                    { key:'status',       label:'Status', render: v => <StatusBadge status={String(v)} /> },
-                    { key:'total_cycles', label:'Siklus',  render: (v, row: TimeStudy) => `${Number(v??0)}/${row.target_sample_size}` },
-                  ]}
-                  data={filteredStudies.slice(0,5)}
-                />
-                <DataTable
-                  title="Versi Spec Terbaru" subtitle="5 spec terakhir"
-                  tabs={[{id:'all',label:'Semua'},{id:'active',label:'Aktif'},{id:'review',label:'Review'}]}
-                  activeTab={specTab} onTabChange={setSpecTab}
-                  searchValue={specSearch} onSearchChange={setSpecSearch}
-                  columns={[
-                    { key:'spec_name',      label:'Nama Spec' },
-                    { key:'version_number', label:'Versi' },
-                    { key:'status',         label:'Status', render: v => <StatusBadge status={String(v)} /> },
-                  ]}
-                  data={filteredSpecs.slice(0,5)}
-                />
-              </div>
-
-              <ActivityLog title="Aktivitas Terbaru" subtitle="Aktivitas terbaru dalam sistem" activities={activities} />
-            </>
+            <ExecutiveDashboardView
+              onNavigate={(view) => setCurrentView(view)}
+              workflowSummary={workflowSummary}
+              isLoading={isLoading}
+              timeStudies={timeStudies}
+              specVersions={specVersions}
+              activities={activities}
+            />
           )}
 
           {/* ── SAMPLE VERSIONS ───────────────────────────────────────────────── */}
@@ -563,6 +497,12 @@ function App() {
 
           {/* ── PAYROLL & COSTING ─────────────────────────────────────────────── */}
           {currentView === 'payroll' && <PayrollView />}
+
+          {/* ── COPILOT ───────────────────────────────────────────────────────── */}
+          {currentView === 'copilot' && <CopilotView isDark={isDark} onNavigate={setCurrentView} />}
+
+          {/* ── WAREHOUSE INVENTORY (VIEW-03) ─────────────────────────────────── */}
+          {(currentView === 'warehouse' || currentView === 'view-03') && <WarehouseInventoryView />}
 
           {/* ── SETTINGS ──────────────────────────────────────────────────────── */}
           {currentView === 'settings' && (

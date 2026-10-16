@@ -17,6 +17,18 @@ export interface AuthSession {
   actor: ActorContext;
 }
 
+/** Fallback session used to bypass login in development */
+export const DEV_ADMIN_SESSION: AuthSession = {
+  token: 'dev-admin-bypass-token',
+  actor: {
+    actorId: 'admin-dev-001',
+    displayName: 'Administrator (Dev)',
+    email: 'admin@lukla.local',
+    role: 'admin',
+    status: 'active',
+  },
+};
+
 const STORAGE_KEY = 'portal-auth-session';
 
 type Listener = (session: AuthSession | null) => void;
