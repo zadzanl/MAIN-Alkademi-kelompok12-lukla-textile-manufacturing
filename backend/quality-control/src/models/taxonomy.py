@@ -9,7 +9,10 @@ invented code cannot be counted or reviewed later.
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Self
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 
 
 @dataclass(frozen=True, slots=True)

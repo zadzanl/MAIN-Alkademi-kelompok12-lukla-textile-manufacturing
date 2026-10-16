@@ -8,8 +8,18 @@ combination is refused at construction instead of at the point of payment.
 """
 
 from dataclasses import dataclass
-from enum import StrEnum
-from typing import Self
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 from uuid import UUID
 
 from src.models.money import Money
