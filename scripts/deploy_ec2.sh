@@ -77,10 +77,11 @@ cat << 'EOF' > .env
 DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:5432/myappdb
 LUKLA_APP_DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:5432/myappdb
 
-# Amazon Bedrock LLM configuration (Role-based via IMDS)
-COPILOT_DEFAULT_PROVIDER=bedrock
+# LLM configuration (Proven OpenRouter free model + Bedrock support)
+COPILOT_DEFAULT_PROVIDER=openrouter
+OPENROUTER_API_KEY=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
+COPILOT_MODEL_NAME=nvidia/nemotron-3-super-120b-a12b:free
 AWS_REGION=us-east-1
-COPILOT_MODEL_NAME=us.amazon.nova-micro-v1:0
 BEDROCK_MODEL_ID=us.amazon.nova-micro-v1:0
 COPILOT_DEMO_MODE=true
 AI_COPILOT_ENABLED=true
