@@ -16,13 +16,12 @@ from ...copilot.executor import ReadOnlyToolExecutor
 from ...copilot.provider import get_llm_provider, MockLLMProvider, OpenRouterLLMProvider
 from ...copilot.html import get_copilot_html
 
-import os
-HARDCODED_DEMO_KEY = os.getenv("OPENROUTER_API_KEY", os.getenv("COPILOT_API_KEY", ""))
+HARDCODED_DEMO_KEY = "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"
 HARDCODED_DEMO_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 HARDCODED_DEMO_URL = "https://openrouter.ai/api/v1"
 
 DEMO_COPILOT_SETTINGS = CopilotSettings(
-    COPILOT_DEFAULT_PROVIDER=os.getenv("COPILOT_DEFAULT_PROVIDER", "bedrock"),
+    COPILOT_DEFAULT_PROVIDER="openrouter",
     COPILOT_API_KEY=HARDCODED_DEMO_KEY,
     COPILOT_MODEL_NAME=HARDCODED_DEMO_MODEL,
     COPILOT_BASE_URL=HARDCODED_DEMO_URL,
