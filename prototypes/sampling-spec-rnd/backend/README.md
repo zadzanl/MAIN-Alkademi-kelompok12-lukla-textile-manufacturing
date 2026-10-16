@@ -29,7 +29,7 @@ The API will be available at `http://localhost:8000`
 
 ## Portal Authentication (Prototype)
 
-Internal-user auth for the PT Luka portal: registration with Admin IT verification, password login
+Internal-user auth for the PT Lukla portal: registration with Admin IT verification, password login
 by employee ID / NIK / email / phone, password change, and OTP-based recovery.
 
 - **Storage**: in-memory (`src/services/auth_store.py`); resets on restart. Passwords use stdlib

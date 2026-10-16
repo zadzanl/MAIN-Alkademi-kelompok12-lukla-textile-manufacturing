@@ -1,4 +1,4 @@
-"""auth_routes.py — Portal authentication API for PT Luka (prototype).
+"""auth_routes.py — Portal authentication API for PT Lukla (prototype).
 
 Endpoints (prefix ``/api/auth``):
   POST /register            ajukan akun (status pending, verifikasi Admin IT)
@@ -281,7 +281,7 @@ def create_auth_router() -> APIRouter:
         otp, user = result
         send_email(
             to=user.email,
-            subject="Kode Verifikasi Reset Password — Portal PT Luka",
+            subject="Kode Verifikasi Reset Password — Portal PT Lukla",
             body=(
                 f"Halo {user.full_name},\n\n"
                 f"Kode verifikasi Anda: {otp}\n"
