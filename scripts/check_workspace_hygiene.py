@@ -14,6 +14,8 @@ from pathlib import Path
 ALLOWED_ROOT_FILES = {
     "README.md",
     "AGENTS.md",
+    "main.py",
+    "requirements.txt",
     ".gitignore",
     ".gitattributes",
     ".gitmodules",
@@ -46,6 +48,7 @@ IGNORED_ROOT_NAMES = {
     ".ruff_cache",
     ".mypy_cache",
     "node_modules",
+    "__pycache__",
 }
 
 
