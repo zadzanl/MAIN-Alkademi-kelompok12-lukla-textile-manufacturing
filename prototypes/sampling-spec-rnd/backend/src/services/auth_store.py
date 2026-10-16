@@ -251,6 +251,44 @@ class AuthStore:
             self._index[f"emp:{user.employee_id}"] = user.user_id
             return user
 
+    def seed_user(
+        self,
+        *,
+        email: str,
+        password: str,
+        employee_id: str,
+        full_name: str,
+        role: str = "employee",
+        department: str = "Production",
+    ) -> PortalUser:
+        """Create (or return) an active employee user account."""
+        with self._lock:
+            normalized = normalize_email(email)
+            emp = normalize_employee_id(employee_id)
+            existing = self._index.get(f"email:{normalized}") or self._index.get(f"emp:{emp}")
+            if existing:
+                return self._users[existing]
+            now = time.time()
+            user = PortalUser(
+                user_id=str(uuid.uuid4()),
+                full_name=full_name,
+                email=normalized,
+                employee_id=emp,
+                ktp_hash=hash_identifier(emp),
+                ktp_last4="0000",
+                phone="",
+                department=department,
+                password_hash=hash_password(password),
+                role=role,
+                status="active",
+                created_at=now,
+                updated_at=now,
+            )
+            self._users[user.user_id] = user
+            self._index[f"email:{normalized}"] = user.user_id
+            self._index[f"emp:{emp}"] = user.user_id
+            return user
+
     def register(
         self,
         *,

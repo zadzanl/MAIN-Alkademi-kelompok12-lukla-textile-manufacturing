@@ -267,3 +267,28 @@ def test_admin_lists_and_rejects_registration(client: TestClient) -> None:
         json={"identifier": identity["email"], "password": identity["password"]},
     )
     assert blocked.status_code == 403
+
+
+def test_all_slide_04_demo_logins(client: TestClient) -> None:
+    cases = [
+        ("qc1", "qc12345", "QCInspector", "Budi Santoso (QC Inspector)"),
+        ("finance1", "finance12345", "FinancePayroll", "Siti Rahma (Finance & Payroll)"),
+        ("owner1", "owner12345", "Owner", "Bambang Wijaya (Owner/Eksekutif)"),
+        ("sample1", "sample12345", "Sample", "Adis Pratama (Tim Sample)"),
+        ("gudang1", "gudang12345", "Warehouse", "Joko Susilo (Gudang/Warehouse)"),
+        ("mandor1", "mandor12345", "Mandor", "Asep Suryana (Kepala Produksi/Mandor)"),
+        ("penjahit1", "penjahit12345", "Tailor", "Dewi Lestari (Penjahit/Tailor)"),
+        ("klien1", "klien12345", "client", "Klien 1 (Nusantara Apparel)"),
+        ("klien5", "klien54321", "client", "Klien 5 (Bumi Tekstil)"),
+    ]
+    for username, pwd, expected_role, expected_name in cases:
+        res = client.post(
+            f"{PREFIX}/login",
+            json={"identifier": username, "password": pwd},
+        )
+        assert res.status_code == 200, f"Failed login for {username}"
+        body = res.json()
+        assert body["actor"]["role"] == expected_role, f"Role mismatch for {username}"
+        assert body["actor"]["displayName"] == expected_name, f"Name mismatch for {username}"
+
+

@@ -151,13 +151,18 @@ def _current_user(authorization: str | None) -> PortalUser:
 
 
 def _actor_context(user: PortalUser) -> dict[str, object]:
-    return {
+    context: dict[str, object] = {
         "actorId": user.user_id,
         "displayName": user.full_name,
         "email": mask_email(user.email),
         "role": user.role,
         "status": user.status,
     }
+    # Prototype-only bridge to the in-memory sewing operator fixture. Production
+    # must resolve this relation server-side from the authenticated actor.
+    if user.employee_id == "PENJAHIT1":
+        context["operatorId"] = "44444444-4444-4444-8444-44444444444e"
+    return context
 
 
 def _registration_view(user: PortalUser) -> dict[str, object]:
@@ -179,10 +184,81 @@ def _registration_view(user: PortalUser) -> dict[str, object]:
 def create_auth_router() -> APIRouter:
     router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-    # Seed the admin account once, after .env is loaded.
+    # Seed the admin and demo accounts once, after .env is loaded.
     admin_email = os.getenv("SEED_ADMIN_EMAIL", "admin@luka.local")
     admin_password = os.getenv("SEED_ADMIN_PASSWORD", "Admin#12345")
-    get_store().seed_admin(admin_email, admin_password)
+    store = get_store()
+    store.seed_admin(admin_email, admin_password)
+    store.seed_user(
+        email="klien1@luka.local",
+        password="klien12345",
+        employee_id="klien1",
+        full_name="Klien 1 (Nusantara Apparel)",
+        role="client",
+    )
+    store.seed_user(
+        email="klien5@luka.local",
+        password="klien54321",
+        employee_id="klien5",
+        full_name="Klien 5 (Bumi Tekstil)",
+        role="client",
+    )
+    store.seed_user(
+        email="qc1@luka.local",
+        password="qc12345",
+        employee_id="qc1",
+        full_name="Budi Santoso (QC Inspector)",
+        role="QCInspector",
+        department="Quality Control",
+    )
+    store.seed_user(
+        email="finance1@luka.local",
+        password="finance12345",
+        employee_id="finance1",
+        full_name="Siti Rahma (Finance & Payroll)",
+        role="FinancePayroll",
+        department="Finance & Payroll",
+    )
+    store.seed_user(
+        email="owner1@luka.local",
+        password="owner12345",
+        employee_id="owner1",
+        full_name="Bambang Wijaya (Owner/Eksekutif)",
+        role="Owner",
+        department="Executive",
+    )
+    store.seed_user(
+        email="sample1@luka.local",
+        password="sample12345",
+        employee_id="sample1",
+        full_name="Adis Pratama (Tim Sample)",
+        role="Sample",
+        department="Sampling & R&D",
+    )
+    store.seed_user(
+        email="gudang1@luka.local",
+        password="gudang12345",
+        employee_id="gudang1",
+        full_name="Joko Susilo (Gudang/Warehouse)",
+        role="Warehouse",
+        department="Gudang & Logistik",
+    )
+    store.seed_user(
+        email="mandor1@luka.local",
+        password="mandor12345",
+        employee_id="mandor1",
+        full_name="Asep Suryana (Kepala Produksi/Mandor)",
+        role="Mandor",
+        department="Produksi Garment",
+    )
+    store.seed_user(
+        email="penjahit1@luka.local",
+        password="penjahit12345",
+        employee_id="penjahit1",
+        full_name="Dewi Lestari (Penjahit/Tailor)",
+        role="Tailor",
+        department="Operator Line",
+    )
 
     @router.get("/health")
     def auth_health() -> dict[str, object]:
