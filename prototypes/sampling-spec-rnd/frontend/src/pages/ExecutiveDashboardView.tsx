@@ -516,7 +516,7 @@ const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {(activeTab === 'all' || activeTab === 'operations') && (
         <section className="bg-white dark:bg-[#1c1c1e] border border-hair rounded-sm p-6 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-brand">
@@ -534,8 +534,8 @@ const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
               </p>
             </div>
 
-            {/* Line Filter with >= 48px touch targets */}
-            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-panel-2 rounded-sm">
+            {/* Line Filter Pills - Modern pill tabs design */}
+            <div className="flex flex-wrap items-center gap-2 p-1 bg-panel-2 rounded-full">
               {(
                 [
                   { id: 'ALL', label: 'Semua Lini' },
@@ -549,10 +549,10 @@ const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
                   key={line.id}
                   type="button"
                   onClick={() => setSelectedLine(line.id)}
-                    className={`min-h-[48px] px-3.5 py-2 rounded-sm text-[12px] font-bold transition-all flex items-center justify-center ${
+                  className={`min-h-[40px] px-5 py-2 rounded-full text-[12px] font-semibold transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                     selectedLine === line.id
-                      ? 'bg-white dark:bg-[#2c2c2e] text-ink shadow-xs'
-                      : 'text-ink-muted hover:text-ink'
+                      ? 'bg-brand text-white shadow-sm'
+                      : 'bg-white dark:bg-[#2c2c2e] text-ink hover:bg-gray-50 dark:hover:bg-[#3a3a3c]'
                   }`}
                 >
                   {line.label}
