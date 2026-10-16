@@ -354,7 +354,7 @@ function App() {
    * Today's weekday is highlighted; future weekdays are marked isFuture.
    */
   const currentLabel = currentView === 'copilot'
-    ? 'Lukla Copilot'
+    ? 'Lukla Assistant'
     : (navChapters.flatMap(c => c.items).find(n => n.view === currentView)?.label ?? 'Overview');
 
   // ── shared style constants ────────────────────────────────────────────────────
