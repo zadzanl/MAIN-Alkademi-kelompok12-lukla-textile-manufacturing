@@ -16,7 +16,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Sidebar, { NavChapter } from './components/Sidebar';
+import Sidebar, { type NavItem } from './components/Sidebar';
 import Header from './components/Header';
 import Toaster from './components/Toaster';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -37,42 +37,14 @@ import {
   type AuthSession,
 } from './services/authSession';
 
-const chapters: NavChapter[] = [
-  {
-    id: 'ringkasan', label: 'Ringkasan', icon: 'layout-dashboard',
-    items: [{ id: 'overview', label: 'Dashboard', icon: 'layout-dashboard', view: 'overview' }],
-  },
-  {
-    id: 'pesanan', label: 'Pesanan', icon: 'boxes',
-    items: [
-      { id: 'orders', label: 'Lacak Pesanan', icon: 'boxes', view: 'orders' },
-      { id: 'order-request', label: 'Ajukan Order', icon: 'plus', view: 'order-request' },
-    ],
-  },
-  {
-    id: 'desain', label: 'Desain & Sample', icon: 'layers',
-    items: [
-      { id: 'sample-request', label: 'Ajukan Sample', icon: 'layers', view: 'sample-request' },
-    ],
-  },
-  {
-    id: 'riwayat', label: 'Riwayat', icon: 'clipboard-list',
-    items: [
-      { id: 'requests', label: 'Pengajuan Saya', icon: 'clipboard-list', view: 'requests' },
-    ],
-  },
-  {
-    id: 'stok', label: 'Stok Titipan', icon: 'factory',
-    items: [
-      { id: 'stock', label: 'Bahan Saya', icon: 'factory', view: 'stock' },
-    ],
-  },
-  {
-    id: 'sistem', label: 'Sistem', icon: 'settings',
-    items: [
-      { id: 'settings', label: 'Pengaturan', icon: 'settings', view: 'settings' },
-    ],
-  },
+const navItems: NavItem[] = [
+  { id: 'overview',       label: 'Dashboard',       icon: 'layout-dashboard', view: 'overview' },
+  { id: 'orders',         label: 'Lacak Pesanan',   icon: 'boxes',            view: 'orders' },
+  { id: 'order-request',  label: 'Ajukan Order',    icon: 'plus',             view: 'order-request' },
+  { id: 'sample-request', label: 'Ajukan Sample',   icon: 'layers',           view: 'sample-request' },
+  { id: 'requests',       label: 'Pengajuan Saya',  icon: 'clipboard-list',   view: 'requests' },
+  { id: 'stock',          label: 'Bahan Saya',      icon: 'factory',          view: 'stock' },
+  { id: 'settings',       label: 'Pengaturan',      icon: 'settings',         view: 'settings' },
 ];
 
 function App() {
@@ -90,6 +62,11 @@ function App() {
     const token = getSession()?.token;
     if (token) await portalLogout(token);
     clearSession();
+  }, []);
+
+  const handleNavigate = useCallback((view: string) => {
+    setCurrentView(view);
+    setMobileNavOpen(false);
   }, []);
 
   // ── dark mode ────────────────────────────────────────────────────────────────
@@ -134,7 +111,7 @@ function App() {
   }, []);
 
   const currentLabel =
-    chapters.flatMap((c) => c.items).find((n) => n.view === currentView)?.label ?? 'Dashboard';
+    navItems.find((n) => n.view === currentView)?.label ?? 'Dashboard';
 
   // Auth gate: unauthenticated users see the external portal entry page only.
   if (!session) {
@@ -174,15 +151,15 @@ function App() {
         >
           <Sidebar
             currentView={currentView}
-            chapters={chapters}
-            onNavigate={(view) => { setCurrentView(view); setMobileNavOpen(false); }}
+            items={navItems}
+            onNavigate={handleNavigate}
             isDark={isDark}
             onToggleDark={toggleDark}
           />
         </div>
 
       <main className="flex-1 overflow-y-auto page-stage">
-        <div className="max-w-[1440px] mx-auto p-6 lg:p-8">
+        <div className="w-full max-w-[1760px] mx-auto p-4 lg:p-6">
           <div className="mb-3">
             <PortalBadge />
           </div>

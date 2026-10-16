@@ -13,19 +13,21 @@
  */
 import { SAMPLING_BASE } from './config';
 import { buildQuery } from './query';
-import { extractDetail } from './problem';
+import { extractDetail, extractRequestId } from './problem';
 
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
   readonly detail: string;
+  readonly requestId?: string;
 
-  constructor(status: number, detail: string, code?: string) {
+  constructor(status: number, detail: string, code?: string, requestId?: string) {
     super(detail);
     this.name = 'ApiError';
     this.status = status;
     this.detail = detail;
     this.code = code;
+    this.requestId = requestId;
   }
 }
 
@@ -87,7 +89,7 @@ async function request<T>(
         raw && typeof raw === 'object' && typeof (raw as { code?: unknown }).code === 'string'
           ? (raw as { code: string }).code
           : undefined;
-      throw new ApiError(response.status, extractDetail(raw, response.status), code);
+      throw new ApiError(response.status, extractDetail(raw, response.status), code, extractRequestId(raw));
     }
 
     return raw as T;

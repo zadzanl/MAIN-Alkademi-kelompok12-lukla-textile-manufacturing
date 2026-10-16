@@ -25,7 +25,7 @@ const Toaster: React.FC = () => {
         <div
           key={t.id}
           role="status"
-          className={`flex items-start gap-3 rounded-[14px] border px-4 py-3 text-[13px] font-medium shadow-sm ${KIND_STYLE[t.kind]}`}
+          className={`flex items-start gap-3 rounded-[14px] border px-3 py-2 text-[15px] font-medium shadow-sm ${KIND_STYLE[t.kind]}`}
         >
           <span className="flex-1">{t.message}</span>
           <button

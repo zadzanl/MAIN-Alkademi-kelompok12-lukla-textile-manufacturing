@@ -2,7 +2,7 @@
  * RequestsView — the signed-in client's own request history (orders + samples).
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
@@ -37,20 +37,24 @@ const RequestsView: React.FC<RequestsViewProps> = ({ globalSearch }) => {
 
   useEffect(() => { void load(); }, [load]);
 
-  const filtered = requests.filter(
-    (r) =>
-      (tab === 'all' || r.kind === tab) &&
-      matchesQuery(search, r.article_name, r.scheme) &&
-      matchesQuery(globalSearch, r.article_name, r.scheme),
+  const filtered = useMemo(
+    () =>
+      requests.filter(
+        (r) =>
+          (tab === 'all' || r.kind === tab) &&
+          matchesQuery(search, r.article_name, r.scheme) &&
+          matchesQuery(globalSearch, r.article_name, r.scheme),
+      ),
+    [requests, tab, search, globalSearch],
   );
 
   return (
-    <div className="space-y-6">
-      <div className="surface p-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="space-y-4">
+      <div className="surface p-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--c-ink)' }}>Pengajuan Saya</h2>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
+            <h2 className="text-[22px] font-semibold" style={{ color: 'var(--c-ink)' }}>Pengajuan Saya</h2>
+            <p className="text-[15px] mt-1" style={{ color: 'var(--c-ink-muted)' }}>
               Riwayat pengajuan order dan permintaan sample Anda.
             </p>
           </div>
@@ -59,7 +63,7 @@ const RequestsView: React.FC<RequestsViewProps> = ({ globalSearch }) => {
       </div>
 
       {loading ? (
-        <div className="surface p-8 space-y-3">
+        <div className="surface p-4 space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="skeleton h-10 w-full" />)}
         </div>
       ) : (
@@ -103,19 +107,19 @@ const RequestsView: React.FC<RequestsViewProps> = ({ globalSearch }) => {
         onClose={() => setSelected(null)}
       >
         {selected && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Info label="Jenis" value={KIND_LABEL[selected.kind] ?? selected.kind} />
             <Info label="Artikel" value={selected.article_name} />
             <Info label="Skema" value={selected.scheme} />
             <Info label="Jumlah" value={String(selected.quantity)} />
             <Info label="Target" value={selected.target_date || '—'} />
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Status</p>
+              <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Status</p>
               <div className="mt-1"><StatusBadge status={selected.status} /></div>
             </div>
             <div className="col-span-2">
-              <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Catatan</p>
-              <p className="text-[14px] mt-1" style={{ color: 'var(--c-ink)' }}>{selected.notes || '—'}</p>
+              <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>Catatan</p>
+              <p className="text-[15px] mt-1" style={{ color: 'var(--c-ink)' }}>{selected.notes || '—'}</p>
             </div>
           </div>
         )}
@@ -126,8 +130,8 @@ const RequestsView: React.FC<RequestsViewProps> = ({ globalSearch }) => {
 
 const Info: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
-    <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>{label}</p>
-    <p className="text-[14px] font-semibold mt-0.5" style={{ color: 'var(--c-ink)' }}>{value}</p>
+    <p className="text-[14px] font-semibold uppercase tracking-wide" style={{ color: 'var(--c-ink-muted)' }}>{label}</p>
+    <p className="text-[15px] font-semibold mt-0.5" style={{ color: 'var(--c-ink)' }}>{value}</p>
   </div>
 );
 

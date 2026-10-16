@@ -380,6 +380,7 @@ button:not(:disabled):active,
 
 /* ── Input / Form Fields ─────────────────────────────────────────────────────── */
 .field,
+input:not([type]),
 input[type='text'],
 input[type='email'],
 input[type='password'],
@@ -387,6 +388,7 @@ input[type='search'],
 input[type='number'],
 input[type='date'],
 input[type='time'],
+input[type='datetime-local'],
 textarea,
 select {
   width: 100%;
@@ -859,6 +861,7 @@ article.surface:hover {
 
 /* ── Dark: Inputs ────────────────────────────────────────────────────────── */
 .dark .field,
+.dark input:not([type]),
 .dark input[type='text'],
 .dark input[type='email'],
 .dark input[type='password'],
@@ -866,6 +869,7 @@ article.surface:hover {
 .dark input[type='number'],
 .dark input[type='date'],
 .dark input[type='time'],
+.dark input[type='datetime-local'],
 .dark textarea,
 .dark select {
   background: #161616;
