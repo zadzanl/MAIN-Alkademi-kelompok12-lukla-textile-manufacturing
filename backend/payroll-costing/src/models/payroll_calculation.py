@@ -1,6 +1,11 @@
 """Schemas for the weekly payroll calculation."""
 
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+    class StrEnum(str, Enum):
+        pass
 from uuid import UUID
 
 from src.models.base import ContractModel
