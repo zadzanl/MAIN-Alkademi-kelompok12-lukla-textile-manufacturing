@@ -210,7 +210,7 @@ const SEED_WIP_SCHEMES: WipSchemeData[] = [
 
 const STACKED_WIP_KEYS: StackedKey[] = [
   { key: 'cutting', label: 'Potong (Cutting)', color: '#d1d5db' },
-  { key: 'sewing', label: 'Jahit (Sewing)', color: '#111111' },
+  { key: 'sewing', label: 'Jahit (Sewing)', color: '#111111', darkColor: '#0a84ff' },
   { key: 'qcFinishing', label: 'QC & Finishing', color: '#6b7280' },
 ];
 
