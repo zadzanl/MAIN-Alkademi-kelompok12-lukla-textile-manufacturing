@@ -262,7 +262,7 @@ class PortalStore:
     @staticmethod
     def _candidate_keys(identifier: str) -> list[str]:
         raw = identifier.strip()
-        keys: list[str] = []
+        keys: list[str] = [f"user:{raw.lower()}"]
         if "@" in raw:
             keys.append(f"email:{normalize_email(raw)}")
         if re.search(r"\d", raw):
@@ -295,6 +295,7 @@ class PortalStore:
         password: str,
         role: str,
         status: str,
+        username: str | None = None,
     ) -> ClientUser:
         now = time.time()
         user = ClientUser(
@@ -314,6 +315,10 @@ class PortalStore:
         self._index[f"email:{user.email}"] = user.user_id
         if user.phone:
             self._index[f"phone:{user.phone}"] = user.user_id
+        if username:
+            self._index[f"user:{username.strip().lower()}"] = user.user_id
+        email_prefix = user.email.split("@")[0].lower()
+        self._index[f"user:{email_prefix}"] = user.user_id
         return user
 
     # -- seeding ------------------------------------------------------------
@@ -332,6 +337,7 @@ class PortalStore:
                 password=password,
                 role="admin",
                 status="active",
+                username="admin",
             )
 
     def seed_client(
@@ -343,6 +349,7 @@ class PortalStore:
         email: str,
         phone: str,
         password: str,
+        username: str | None = None,
     ) -> ClientUser:
         """Create an already-active client login (demo fixtures)."""
         with self._lock:
@@ -355,6 +362,7 @@ class PortalStore:
                 password=password,
                 role="client",
                 status="active",
+                username=username,
             )
 
     def seed_order(

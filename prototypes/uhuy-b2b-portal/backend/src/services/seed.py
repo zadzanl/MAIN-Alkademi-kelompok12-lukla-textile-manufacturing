@@ -26,6 +26,15 @@ DEMO_CLIENT_B_PASSWORD = "Klien#12345"
 DEMO_CLIENT_B_ID = "CL-B"
 DEMO_CLIENT_B_ORDER = "ORD-B-2001"
 
+# Simple test fixtures requested by user
+DEMO_CLIENT_1_USERNAME = "klien1"
+DEMO_CLIENT_1_PASSWORD = "klien12345"
+DEMO_CLIENT_1_EMAIL = "klien1@uhuy.local"
+
+DEMO_CLIENT_5_USERNAME = "klien5"
+DEMO_CLIENT_5_PASSWORD = "klien54321"
+DEMO_CLIENT_5_EMAIL = "klien5@uhuy.local"
+
 _seeded = False
 
 
@@ -37,6 +46,7 @@ def seed_demo(store: PortalStore | None = None) -> None:
 
     target.seed_admin(DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD)
 
+    # Client A / Nusantara Apparel (both klien.a@uhuy.local and simple user klien1)
     target.seed_client(
         client_id=DEMO_CLIENT_A_ID,
         company_name="Nusantara Apparel",
@@ -46,12 +56,32 @@ def seed_demo(store: PortalStore | None = None) -> None:
         password=DEMO_CLIENT_A_PASSWORD,
     )
     target.seed_client(
+        client_id=DEMO_CLIENT_A_ID,
+        company_name="Nusantara Apparel",
+        contact_name="Klien 1",
+        email=DEMO_CLIENT_1_EMAIL,
+        phone="081100000011",
+        password=DEMO_CLIENT_1_PASSWORD,
+        username=DEMO_CLIENT_1_USERNAME,
+    )
+
+    # Client B / Bumi Tekstil (both klien.b@uhuy.local and simple user klien5)
+    target.seed_client(
         client_id=DEMO_CLIENT_B_ID,
         company_name="Bumi Tekstil",
         contact_name="Andi Pratama",
         email=DEMO_CLIENT_B_EMAIL,
         phone="081100000002",
         password=DEMO_CLIENT_B_PASSWORD,
+    )
+    target.seed_client(
+        client_id=DEMO_CLIENT_B_ID,
+        company_name="Bumi Tekstil",
+        contact_name="Klien 5",
+        email=DEMO_CLIENT_5_EMAIL,
+        phone="081100000015",
+        password=DEMO_CLIENT_5_PASSWORD,
+        username=DEMO_CLIENT_5_USERNAME,
     )
 
     target.seed_order(
