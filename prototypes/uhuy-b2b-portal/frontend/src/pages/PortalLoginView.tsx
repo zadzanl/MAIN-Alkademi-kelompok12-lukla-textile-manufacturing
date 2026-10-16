@@ -42,7 +42,7 @@ const Feedback: React.FC<{ value: Feedback }> = ({ value }) => {
     <p
       role="status"
       aria-live="polite"
-      className="mt-4 rounded-[11px] px-4 py-3 text-[13px] leading-relaxed"
+      className="mt-4 rounded-[11px] px-3 py-2 text-[15px] leading-relaxed"
       style={FEEDBACK_STYLE[value.kind]}
     >
       {value.text}
@@ -57,12 +57,12 @@ const Field: React.FC<{ id: string; label: string; children: React.ReactNode; hi
   hint,
 }) => (
   <div>
-    <label htmlFor={id} className="block font-medium mb-2 text-[13px]" style={{ color: 'var(--c-ink)' }}>
+    <label htmlFor={id} className="block font-medium mb-2 text-[15px]" style={{ color: 'var(--c-ink)' }}>
       {label}
     </label>
     {children}
     {hint && (
-      <p className="mt-1.5 text-[12px]" style={{ color: 'var(--c-ink-muted)' }}>
+      <p className="mt-1.5 text-[14px]" style={{ color: 'var(--c-ink-muted)' }}>
         {hint}
       </p>
     )}
@@ -255,8 +255,8 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
       </div>
 
       <header className="border-b" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-4 py-5">
-          <span className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
+        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 flex items-center justify-between gap-3 py-5">
+          <span className="text-[24px] font-semibold tracking-tight" style={{ color: 'var(--c-ink)' }}>
             UHUY B2B
           </span>
           <PortalBadge />
@@ -264,29 +264,29 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
       </header>
 
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
-          <p className="text-[12px] font-semibold uppercase tracking-[.16em] mb-5" style={{ color: 'var(--c-brand)' }}>
+        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 pt-12 sm:pt-20 pb-12">
+          <p className="text-[14px] font-semibold uppercase tracking-[.16em] mb-5" style={{ color: 'var(--c-brand)' }}>
             Portal Klien · Eksternal
           </p>
-          <h1 className="text-[32px] font-semibold tracking-tight leading-tight mb-5" style={{ color: 'var(--c-ink)' }}>
+          <h1 className="text-[34px] font-semibold tracking-tight leading-tight mb-5" style={{ color: 'var(--c-ink)' }}>
             Selamat Datang di Portal Klien UHUY B2B
           </h1>
-          <p className="max-w-[660px] text-[18px] leading-relaxed mb-10" style={{ color: 'var(--c-ink-muted)' }}>
+          <p className="max-w-[660px] text-[19px] leading-relaxed mb-7" style={{ color: 'var(--c-ink-muted)' }}>
             Ajukan order dan permintaan desain/sample, pantau progres produksi, dan lihat saldo bahan titipan Anda —
             semua dalam satu portal mandiri.
           </p>
 
-          <section aria-label="Akses portal klien" className="surface max-w-[760px] mx-auto p-6 sm:p-9">
-            <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+          <section aria-label="Akses portal klien" className="surface max-w-[760px] mx-auto p-4 sm:p-7">
+            <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
               <div>
-                <h2 className="text-[24px] font-semibold mb-1" style={{ color: 'var(--c-ink)' }}>
+                <h2 className="text-[26px] font-semibold mb-1" style={{ color: 'var(--c-ink)' }}>
                   {mode === 'forgot' ? 'Lupa akses' : 'Akses portal klien'}
                 </h2>
-                <p className="text-[14px]" style={{ color: 'var(--c-ink-muted)' }}>
+                <p className="text-[15px]" style={{ color: 'var(--c-ink-muted)' }}>
                   {mode === 'forgot' ? 'Setel ulang password dengan kode verifikasi.' : 'Pilih cara untuk melanjutkan.'}
                 </p>
               </div>
-              <span className="inline-flex items-center gap-2 text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>
+              <span className="inline-flex items-center gap-2 text-[15px]" style={{ color: 'var(--c-ink-muted)' }}>
                 <span className="w-2 h-2 rounded-full" style={{ background: 'var(--c-brand)' }} aria-hidden="true" />
                 Khusus klien eksternal
               </span>
@@ -309,7 +309,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                     tabIndex={mode === tab ? 0 : -1}
                     onClick={() => selectMode(tab)}
                     onKeyDown={(e) => onTabKeyDown(e, index)}
-                    className="tab flex-1 py-2.5 px-4 font-semibold text-[16px]"
+                    className="tab flex-1 py-2.5 px-4 font-semibold text-[17px]"
                   >
                     {tab === 'login' ? 'Login' : 'Registrasi'}
                   </button>
@@ -350,7 +350,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                   </Field>
                 </div>
 
-                <div className="flex items-center justify-between flex-wrap gap-3 mt-5 mb-6">
+                <div className="flex items-center justify-between flex-wrap gap-3 mt-5 mb-4">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -359,19 +359,19 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                       checked={remember}
                       onChange={(e) => setRemember(e.target.checked)}
                     />
-                    <span className="text-[14px]" style={{ color: 'var(--c-ink)' }}>Ingat saya</span>
+                    <span className="text-[15px]" style={{ color: 'var(--c-ink)' }}>Ingat saya</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => selectMode('forgot')}
-                    className="text-[14px] font-medium hover:underline"
+                    className="text-[15px] font-medium hover:underline"
                     style={{ color: 'var(--c-brand)' }}
                   >
                     Lupa akses?
                   </button>
                 </div>
 
-                <button type="submit" className="btn-primary w-full justify-center text-[16px]" disabled={loggingIn}>
+                <button type="submit" className="btn-primary w-full justify-center text-[17px]" disabled={loggingIn}>
                   {loggingIn ? 'Memproses…' : 'Masuk ke Portal'}
                 </button>
                 <Feedback value={loginFeedback} />
@@ -381,7 +381,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
             {/* REGISTER */}
             {mode === 'register' && (
               <form onSubmit={handleRegister} noValidate>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-3">
                   <Field id="reg-company" label="Nama perusahaan">
                     <input id="reg-company" className="field" type="text" autoComplete="organization" maxLength={120}
                       value={reg.company_name} onChange={(e) => setReg({ ...reg, company_name: e.target.value })} />
@@ -408,18 +408,18 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                   </Field>
                 </div>
 
-                <label className="flex items-start gap-3 mt-6 mb-6 cursor-pointer">
+                <label className="flex items-start gap-3 mt-6 mb-4 cursor-pointer">
                   <input type="checkbox" className="w-4 h-4 mt-1 shrink-0" style={{ accentColor: 'var(--c-brand)' }}
                     checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-                  <span className="text-[14px] leading-relaxed" style={{ color: 'var(--c-ink)' }}>
+                  <span className="text-[15px] leading-relaxed" style={{ color: 'var(--c-ink)' }}>
                     Saya menyetujui pengajuan permintaan akses portal klien untuk diverifikasi tim internal Lukla.
                   </span>
                 </label>
 
-                <button type="submit" className="btn-primary w-full justify-center text-[16px]" disabled={registering}>
+                <button type="submit" className="btn-primary w-full justify-center text-[17px]" disabled={registering}>
                   {registering ? 'Mengirim…' : 'Ajukan Registrasi'}
                 </button>
-                <p className="mt-4 text-[13px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
+                <p className="mt-4 text-[15px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
                   Permintaan diverifikasi tim internal Lukla. Data akses disimpan aman.
                 </p>
                 <Feedback value={regFeedback} />
@@ -435,10 +435,10 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                       <input id="forgot-identity" className="field" type="text" maxLength={120}
                         value={forgotIdentifier} onChange={(e) => setForgotIdentifier(e.target.value)} />
                     </Field>
-                    <button type="submit" className="btn-primary w-full justify-center text-[16px] mt-6" disabled={resetting}>
+                    <button type="submit" className="btn-primary w-full justify-center text-[17px] mt-6" disabled={resetting}>
                       {resetting ? 'Mengirim…' : 'Kirim kode verifikasi'}
                     </button>
-                    <p className="mt-4 text-[13px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
+                    <p className="mt-4 text-[15px] leading-relaxed" style={{ color: 'var(--c-ink-muted)' }}>
                       Kode verifikasi dikirim ke email yang terdaftar.
                     </p>
                     <Feedback value={forgotFeedback} />
@@ -450,7 +450,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                         inputMode="numeric" maxLength={6} value={otp}
                         onChange={(e) => setOtp(formatOtp(e.target.value))} />
                     </Field>
-                    <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                    <div className="grid sm:grid-cols-2 gap-3 mt-4">
                       <Field id="forgot-new" label="Password baru">
                         <input id="forgot-new" className="field" type="password" autoComplete="new-password" maxLength={128}
                           value={resetPasswordValue} onChange={(e) => setResetPasswordValue(e.target.value)} />
@@ -460,7 +460,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                           value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} />
                       </Field>
                     </div>
-                    <button type="submit" className="btn-primary w-full justify-center text-[16px] mt-6" disabled={resetting}>
+                    <button type="submit" className="btn-primary w-full justify-center text-[17px] mt-6" disabled={resetting}>
                       {resetting ? 'Menyimpan…' : 'Setel ulang password'}
                     </button>
                     <Feedback value={forgotFeedback} />
@@ -469,7 +469,7 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
                 <button
                   type="button"
                   onClick={() => selectMode('login')}
-                  className="mt-5 text-[14px] font-medium hover:underline"
+                  className="mt-5 text-[15px] font-medium hover:underline"
                   style={{ color: 'var(--c-brand)' }}
                 >
                   ← Kembali ke Login
@@ -481,8 +481,8 @@ const PortalLoginView: React.FC<PortalLoginViewProps> = ({ onAuthenticated }) =>
       </main>
 
       <footer className="border-t" style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}>
-        <div className="mx-auto w-full max-w-[1120px] px-5 sm:px-8 lg:px-16 py-6">
-          <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>
+        <div className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-16 py-6">
+          <p className="text-[15px]" style={{ color: 'var(--c-ink-muted)' }}>
             © Lukla Manufacturing · Portal Klien Eksternal UHUY B2B
           </p>
         </div>

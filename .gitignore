@@ -111,4 +111,14 @@ db-data/
 # ==========================================
 /artifacts/
 DEPRECATED/
-.agents/teamwork/
+.agents/teamwork/
+
+# Git worktrees
+.worktrees/
+worktrees/
+*worktree*/
+
+# Transient agent planning & review artifacts
+*implementation*.md
+*research*.md
+*review*.md

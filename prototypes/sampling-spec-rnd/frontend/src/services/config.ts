@@ -16,10 +16,10 @@
 const env: Partial<ImportMetaEnv> = (import.meta as { env?: ImportMetaEnv }).env ?? {};
 
 export const SAMPLING_BASE =
-  env.VITE_API_URL || 'http://localhost:8009/api/sampling-spec-rnd';
+  env.VITE_API_URL || '/api/sampling-spec-rnd';
 
 export const AUTH_BASE =
-  env.VITE_AUTH_URL || 'http://localhost:8009/api/auth';
+  env.VITE_AUTH_URL || '/api/auth';
 
 export const LEDGER_BASE = env.VITE_LEDGER_API_URL || '/api/v1';
 
@@ -29,3 +29,14 @@ export const DATA_MODE: 'mock' | 'live' =
   env.VITE_LEDGER_MODE === 'live' ? 'live' : 'mock';
 
 export const isMockData = DATA_MODE === 'mock';
+
+/**
+ * Deployment environment shown on the ERP login badge. Build-time config only;
+ * never inferred from the host or URL (14-frontend-architecture.md §8).
+ */
+export const APP_ENV: 'dev' | 'test' | 'prod' =
+  env.VITE_APP_ENV === 'prod' ? 'prod'
+  : env.VITE_APP_ENV === 'test' || env.VITE_APP_ENV === 'uat' ? 'test'
+  : 'dev';
+
+export const APP_VERSION = env.VITE_APP_VERSION || '1.0.0';

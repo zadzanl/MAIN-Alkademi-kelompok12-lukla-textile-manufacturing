@@ -405,3 +405,26 @@ def test_bedrock_provider_initialization_and_mock(monkeypatch):
     finally:
         loop.close()
 
+
+def test_boss_system_prompt_contains_date_rules_kpis_and_safeguards():
+    """
+    Test 17: Verify build_boss_system_prompt injects WIB current date/time,
+    Boss-first persona, Lukla domain rules, garment KPIs, and security safeguards.
+    """
+    from datetime import datetime, timezone, timedelta
+    from backend.app.copilot.provider import build_boss_system_prompt, DEFAULT_BOSS_SYSTEM_PROMPT
+
+    fixed_dt = datetime(2026, 10, 16, 10, 0, tzinfo=timezone(timedelta(hours=7)))
+    prompt = build_boss_system_prompt(now=fixed_dt)
+
+    assert "Jumat, 2026-10-16 10:00 WIB (Periode: 2026-W42)" in prompt
+    assert "Factory Boss" in prompt
+    assert "Snøhund" in prompt
+    assert "CMT" in prompt and "Semi-CMT" in prompt and "Full Package" in prompt
+    assert "SMV/SAM" in prompt and "DHU" in prompt
+    assert "Mandor 1, Mandor 2, and Kepala Operasional" in prompt
+    assert "Read-Only Physical Barrier" in prompt
+    assert "Prompt-Injection & Redaction Safeguard" in prompt
+    assert len(DEFAULT_BOSS_SYSTEM_PROMPT) > 500
+
+

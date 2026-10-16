@@ -1,11 +1,10 @@
 /**
  * Sidebar — fixed 226px navigation, scrollable.
- * Chapter accordion ("bab"): nav items are grouped into collapsible chapters;
- * clicking a chapter reveals its items, clicking an item opens its view.
- * Exports LucideIcon for use in pages.
+ * Flat list of nav rows: every item is always visible and opens its view in a
+ * single click. Exports LucideIcon for use in pages.
  * Dark mode toggle button added at the bottom.
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 export interface NavItem {
   id: string;
@@ -14,32 +13,15 @@ export interface NavItem {
   view: string;
 }
 
-export interface NavChapter {
-  id: string;
-  label: string;
-  icon: string;
-  items: NavItem[];
-}
-
 interface SidebarProps {
   currentView: string;
-  chapters: NavChapter[];
+  items: NavItem[];
   onNavigate: (view: string) => void;
   isDark: boolean;
   onToggleDark: () => void;
 }
 
-const findChapterId = (chapters: NavChapter[], view: string): string | null =>
-  chapters.find(c => c.items.some(i => i.view === view))?.id ?? null;
-
-const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, isDark, onToggleDark }) => {
-  const [openChapter, setOpenChapter] = useState<string | null>(() => findChapterId(chapters, currentView));
-
-  // Keep the chapter of the active view open when navigation changes it.
-  useEffect(() => {
-    setOpenChapter(findChapterId(chapters, currentView));
-  }, [chapters, currentView]);
-
+const Sidebar: React.FC<SidebarProps> = ({ currentView, items, onNavigate, isDark, onToggleDark }) => {
   return (
   <aside
     className="flex flex-col w-[226px] flex-none border-r"
@@ -62,57 +44,32 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
           <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
         </svg>
       </div>
-      <p className="text-[11px] uppercase tracking-[.16em] font-bold" style={{ color: 'var(--c-ink)' }}>
+      <p className="text-[13px] uppercase tracking-[.16em] font-bold" style={{ color: 'var(--c-ink)' }}>
         UHUY B2B
       </p>
-      <p className="text-[10px] uppercase tracking-[.14em] font-semibold mt-0.5" style={{ color: 'var(--c-brand)' }}>
+      <p className="text-[12px] uppercase tracking-[.14em] font-semibold mt-0.5" style={{ color: 'var(--c-brand)' }}>
         Portal Klien · Eksternal
       </p>
     </div>
 
-    {/* Nav — chapter accordion; scrollable so every item stays reachable */}
-    <nav className="flex-1 overflow-y-auto px-3 pb-3" aria-label="Navigasi utama">
-      {chapters.map((chapter) => {
-        const isOpen = openChapter === chapter.id;
-        const hasActive = chapter.items.some(i => i.view === currentView);
+    {/* Nav — flat list of rows; scrollable so every item stays reachable */}
+    <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-1" aria-label="Navigasi utama">
+      {items.map((item) => {
+        const active = currentView === item.view;
         return (
-          <div key={chapter.id} className="mb-0.5">
-            {/* Chapter header — toggles the accordion */}
-            <button type="button"
-              onClick={() => setOpenChapter(open => (open === chapter.id ? null : chapter.id))}
-              aria-expanded={isOpen}
-              style={{ color: hasActive ? 'var(--c-brand)' : 'var(--c-ink-muted)' }}
-              className="w-full flex items-center gap-2.5 text-left rounded-[10px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[.08em] transition-colors">
-              <LucideIcon name={chapter.icon} className="w-[14px] h-[14px] shrink-0" />
-              <span className="flex-1 truncate">{chapter.label}</span>
-              <LucideIcon name="chevron-down"
-                className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`} />
-            </button>
-
-            {/* Chapter items — revealed on click/touch */}
-            {isOpen && (
-              <div className="animate-slideDown mt-0.5 space-y-0.5">
-                {chapter.items.map((item) => {
-                  const active = currentView === item.view;
-                  return (
-                    <button key={item.id} type="button"
-                      onClick={() => onNavigate(item.view)}
-                      aria-current={active ? 'page' : undefined}
-                      style={active
-                        ? { background: 'var(--c-brand-bg)', color: 'var(--c-brand)' }
-                        : { color: 'var(--c-ink-muted)' }
-                      }
-                      className={`w-full flex items-center gap-2.5 text-left rounded-[10px] pl-7 pr-3 py-2.5 text-[13px] font-medium transition-colors ${
-                        active ? 'font-semibold' : isDark ? 'hover:bg-panel-6 hover:text-ink' : 'hover:bg-page hover:text-ink'
-                      }`}>
-                      <LucideIcon name={item.icon} className="w-[15px] h-[15px] shrink-0" />
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <button key={item.id} type="button"
+            onClick={() => onNavigate(item.view)}
+            aria-current={active ? 'page' : undefined}
+            style={active
+              ? { background: 'var(--c-brand-bg)', color: 'var(--c-brand)' }
+              : { color: 'var(--c-ink-muted)' }
+            }
+            className={`w-full flex items-center gap-3 text-left rounded-[10px] px-3 py-3 text-[15px] font-medium transition-colors ${
+              active ? 'font-semibold' : isDark ? 'hover:bg-panel-6 hover:text-ink' : 'hover:bg-page hover:text-ink'
+            }`}>
+            <LucideIcon name={item.icon} className="w-[17px] h-[17px] shrink-0" />
+            <span className="truncate">{item.label}</span>
+          </button>
         );
       })}
     </nav>
@@ -126,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, chapters, onNavigate, is
         type="button"
         onClick={onToggleDark}
         aria-label={isDark ? 'Aktifkan light mode' : 'Aktifkan dark mode'}
-        className="w-full flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[13px] font-medium transition-colors"
+        className="w-full flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[15px] font-medium transition-colors"
         style={{
           background: 'var(--c-page)',
           color: 'var(--c-ink-muted)',
@@ -326,4 +283,4 @@ const LucideIcon: React.FC<{ name: string; className?: string; style?: React.CSS
 };
 
 export { LucideIcon };
-export default Sidebar;
+export default React.memo(Sidebar);
