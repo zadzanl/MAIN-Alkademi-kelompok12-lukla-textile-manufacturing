@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-25
+goal: Users can adjust and retain the dashboard text size at 75%, 100%, 125%, or
+  150%.
