@@ -38,6 +38,24 @@ import PayrollView         from './pages/PayrollView';
 import TimeStudiesView     from './pages/TimeStudiesView';
 import SpecVersionsView    from './pages/SpecVersionsView';
 import SettingsView        from './pages/SettingsView';
+
+export type FontScale = 75 | 100 | 125 | 150;
+
+const FONT_SCALES = [75, 100, 125, 150] as const;
+const FONT_SCALE_STORAGE_KEY = 'ui-font-scale';
+
+const isFontScale = (value: unknown): value is FontScale =>
+  typeof value === 'number' && FONT_SCALES.some(scale => scale === value);
+
+const readFontScale = (): FontScale => {
+  try {
+    const stored = window.localStorage.getItem(FONT_SCALE_STORAGE_KEY);
+    const parsed = Number(stored);
+    return isFontScale(parsed) ? parsed : 100;
+  } catch {
+    return 100;
+  }
+};
 import CopilotView         from './pages/CopilotView';
 import WarehouseInventoryView from './pages/WarehouseInventoryView';
 import ExecutiveDashboardView from './pages/ExecutiveDashboardView';
@@ -470,6 +488,16 @@ function App() {
     localStorage.setItem('ui-font', uiFont);
   }, [uiFont]);
 
+  const [fontScale, setFontScale] = useState<FontScale>(readFontScale);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, String(fontScale));
+    } catch {
+      // The preference is non-critical; keep the current session usable.
+    }
+  }, [fontScale]);
+
   // ── backend state ────────────────────────────────────────────────────────────
   const [isConnected, setIsConnected]   = useState(false);
   const [isLoading, setIsLoading]       = useState(true);
@@ -727,7 +755,11 @@ function App() {
   return (
     <div
       className="flex h-screen overflow-hidden font-sf-pro"
-      style={{ background: 'var(--bg-page)' }}
+      style={{
+        background: 'var(--bg-page)',
+        zoom: fontScale / 100,
+        height: `calc(100vh / ${fontScale / 100})`,
+      }}
     >
       {/* Mobile nav backdrop */}
       {mobileNavOpen && (
@@ -892,6 +924,10 @@ function App() {
             <SettingsView
               isDark={isDark}
               onToggleDark={toggleDark}
+              fontScale={fontScale}
+              onFontScaleChange={(scale) => {
+                if (isFontScale(scale)) setFontScale(scale);
+              }}
               onCheckHealth={checkHealth}
               onLoggedOut={handleLogout}
             />

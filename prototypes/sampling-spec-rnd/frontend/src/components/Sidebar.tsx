@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   <aside
     className="flex flex-col w-[226px] flex-none border-r"
     style={{
-      height: '100vh',
+      height: '100%',
       background: 'var(--bg-card)',
       borderColor: 'var(--c-hair)',
     }}
