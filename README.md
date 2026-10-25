@@ -12,6 +12,7 @@ The repository is organized following an OpenSpec contract-first, specification-
 - **OpenAPI 3.1 Contract:** Full API catalog with 69 HTTP operations and 111 component schemas at [`contracts/openapi.yaml`](./openspec/changes/lukla-ops-engine-planning/contracts/openapi.yaml).
 - **Core Requirements:** Canonical BRD v2.3.0 and PRD v2.0 defining 20 core Functional Requirements (`FR-1.1`..`FR-10.4`), 8 RBAC roles, and operational closing scenarios.
 - **Enterprise Modules Architecture:** Architectural reference for all 6 future core modules documented in [`docs/MODULES_ARCHITECTURE.md`](./docs/MODULES_ARCHITECTURE.md).
+- **User Operations Guide:** Complete role-based operational manual for factory staff, supervisors, and clients in [`USER_GUIDE.md`](./USER_GUIDE.md).
 
 ---
 
@@ -49,6 +50,7 @@ The repository is organized following an OpenSpec contract-first, specification-
 │       ├── ARCHITECTURE.md                  # Prototype layout & integration analysis
 │       └── APPLE_DESIGN.md                  # Apple design system tokens & guidelines
 │
+├── USER_GUIDE.md                            # Panduan Pengguna Operasional Pabrik (8 Roles & 6 Views)
 └── AGENTS.md                                # AI Agent pairing guidelines & engineering mode
 ```
 

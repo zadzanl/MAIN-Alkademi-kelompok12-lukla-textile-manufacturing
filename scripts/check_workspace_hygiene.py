@@ -14,6 +14,7 @@ from pathlib import Path
 ALLOWED_ROOT_FILES = {
     "README.md",
     "AGENTS.md",
+    "USER_GUIDE.md",
     "main.py",
     "requirements.txt",
     ".gitignore",
