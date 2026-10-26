@@ -1,11 +1,11 @@
 ## 1. Persistence and authenticated domain foundation
 
-- [ ] 1.1 Add `prototypes/sampling-spec-rnd/backend/src/services/ops_store.py` using stdlib `sqlite3`, WAL, foreign keys, busy timeout, schema initialization, and a documented single-server ceiling; stop if the runtime requires shared/multi-node storage.
-- [ ] 1.2 Define durable records for sample versions, append-only team/consent approvals, orders, order confirmations, audit events, and idempotency records; preserve accepted revision data in an immutable order snapshot.
-- [ ] 1.3 Add first-run import from the existing JSON seed state, make SQLite authoritative after import, and ensure the generated database/WAL/SHM files are ignored without changing unrelated ignore rules.
-- [ ] 1.4 Add `prototypes/sampling-spec-rnd/backend/src/api/auth_deps.py` or equivalent session dependency that resolves bearer sessions, tenant, client mapping, and role; reject missing/expired sessions and never trust query scope values.
-- [ ] 1.5 Extend prototype session/user context and seeded accounts with tenant/client mapping; map only verified client identities and deny records for unmapped clients.
-- [ ] 1.6 Add focused backend tests for authentication, role denial, client isolation, unmapped clients, invalid scope parameters, and restart persistence. Stop if current auth/session shapes differ from the inspected prototype; return evidence instead of weakening the boundary.
+- [x] 1.1 Add `prototypes/sampling-spec-rnd/backend/src/services/ops_store.py` using stdlib `sqlite3`, WAL, foreign keys, busy timeout, schema initialization, and a documented single-server ceiling; stop if the runtime requires shared/multi-node storage.
+- [x] 1.2 Define durable records for sample versions, append-only team/consent approvals, orders, order confirmations, audit events, and idempotency records; preserve accepted revision data in an immutable order snapshot.
+- [x] 1.3 Add first-run import from the existing JSON seed state, make SQLite authoritative after import, and ensure the generated database/WAL/SHM files are ignored without changing unrelated ignore rules.
+- [x] 1.4 Add `prototypes/sampling-spec-rnd/backend/src/api/auth_deps.py` or equivalent session dependency that resolves bearer sessions, tenant, client mapping, and role; reject missing/expired sessions and never trust query scope values.
+- [x] 1.5 Extend prototype session/user context and seeded accounts with tenant/client mapping; map only verified client identities and deny records for unmapped clients.
+- [x] 1.6 Add focused backend tests for authentication, role denial, client isolation, unmapped clients, invalid scope parameters, and restart persistence. Stop if current auth/session shapes differ from the inspected prototype; return evidence instead of weakening the boundary. Final backend-foundation repair also covers explicit scoped CAS writes, tenant-wide staff lineage, and concurrent lifecycle conflict handling.
 
 ## 2. Approval, consent, and handoff API
 

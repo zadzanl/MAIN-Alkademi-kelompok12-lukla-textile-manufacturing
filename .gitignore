@@ -109,7 +109,7 @@ db-data/
 # ==========================================
 # Documentation Clutter & Agent Orchestration
 # ==========================================
-/artifacts/
+artifacts/
 DEPRECATED/
 .agents/teamwork/
 
@@ -121,4 +121,8 @@ worktrees/
 # Transient agent planning & review artifacts
 *implementation*.md
 *research*.md
-*review*.md
+*review*.md
+
+/prototypes/sampling-spec-rnd/backend/data/*.db
+/prototypes/sampling-spec-rnd/backend/data/*.db-wal
+/prototypes/sampling-spec-rnd/backend/data/*.db-shm

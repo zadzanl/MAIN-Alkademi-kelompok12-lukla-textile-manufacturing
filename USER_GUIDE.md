@@ -3,13 +3,121 @@
 **Sistem Manajemen Produksi & Penggajian Konveksi Terpadu (Maklon & CMT)**  
 *Fasilitas Manufaktur Ciwidey — Lukla Manufacturing × Snøhund*
 
+> **User Guide Book — MAIN 2026**
+> Dokumen ini menjelaskan prototype kerja **Sampling & Spec R&D** pada `prototypes/sampling-spec-rnd/`. Prototype berjalan sebagai frontend React/Vite dan backend FastAPI, dengan backend Operations Engine utama sebagai layanan pendukung untuk endpoint `/api/v1`.
+
+## Persyaratan Sistem
+
+| Komponen | Persyaratan |
+|---|---|
+| Sistem operasi | Windows 10/11, Linux, atau macOS |
+| Python | Python 3.11 direkomendasikan; dependency backend didefinisikan di `prototypes/sampling-spec-rnd/backend/requirements.txt` |
+| Node.js | Node.js 20 atau lebih baru |
+| Browser | Google Chrome, Microsoft Edge, atau browser Chromium modern; Chrome diperlukan untuk mencetak dokumen PDF dengan langkah pada panduan ini |
+| Git | Git untuk mengambil source code dari repository |
+| Perangkat | RAM minimal 4 GB dan ruang disk minimal 2 GB untuk dependency lokal |
+
+## Instalasi
+
+Jalankan perintah berikut dari direktori root repository. Pada Windows gunakan PowerShell.
+
+### 1. Ambil source code
+
+```powershell
+git clone <URL-REPOSITORY>
+cd hackathon-MAIN-alkademi
+```
+
+**Pemeriksaan berhasil:** perintah `git status` menampilkan direktori repository tanpa pesan bahwa folder tidak ditemukan.
+
+### 2. Pasang dependency backend Sampling & Spec R&D
+
+```powershell
+cd prototypes\sampling-spec-rnd\backend
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+cd ..\..\..
+```
+
+Linux/macOS:
+
+```bash
+cd prototypes/sampling-spec-rnd/backend
+python3.11 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+cd ../../..
+```
+
+**Pemeriksaan berhasil:** `\.venv\Scripts\python.exe -m pip check` pada Windows, atau `.venv/bin/python -m pip check` pada Linux/macOS, menampilkan `No broken requirements found.`
+
+### 3. Pasang dependency frontend
+
+```powershell
+cd prototypes\sampling-spec-rnd\frontend
+npm install
+cd ..\..\..
+```
+
+**Pemeriksaan berhasil:** `npm` selesai tanpa error dan folder `prototypes/sampling-spec-rnd/frontend/node_modules` tersedia.
+
+## Menjalankan Aplikasi
+
+Prototype memakai tiga terminal. Backend utama port `8000` diperlukan oleh proxy `/api/v1`; backend Sampling port `8009` melayani endpoint prototype dan Copilot; frontend Vite berjalan di port `3009`.
+
+### Terminal 1 — Backend Operations Engine utama (port 8000)
+
+```powershell
+cd backend
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+**Pemeriksaan berhasil:** buka `http://localhost:8000/docs`. Jika halaman Swagger API tampil, layanan utama aktif.
+
+### Terminal 2 — Backend Sampling & Spec R&D (port 8009)
+
+```powershell
+cd prototypes\sampling-spec-rnd\backend
+.\.venv\Scripts\Activate.ps1
+uvicorn src.main:app --reload --port 8009
+```
+
+**Pemeriksaan berhasil:** buka `http://localhost:8009/health`; respons yang diharapkan memuat `"status":"healthy"` dan `"service":"sampling-spec-rnd-api"`. Dokumentasi API tersedia di `http://localhost:8009/docs`.
+
+### Terminal 3 — Frontend (port 3009)
+
+```powershell
+cd prototypes\sampling-spec-rnd\frontend
+npm run dev
+```
+
+**Pemeriksaan berhasil:** terminal Vite menampilkan alamat `http://localhost:3009/`. Buka alamat tersebut di browser.
+
+### Login dan akses awal
+
+1. Buka `http://localhost:3009/`.
+2. Pada field login **identifier**, masukkan `ADMIN-IT`.
+3. Masukkan password `Admin#12345`.
+4. Tekan tombol masuk dan pastikan dashboard tampil.
+
+Credential demo:
+
+| Field | Nilai |
+|---|---|
+| Identifier | `ADMIN-IT` |
+| Password | `Admin#12345` |
+
+Jika backend utama port `8000` tidak aktif, halaman prototype dan modul yang memanggil `/api/v1` dapat menampilkan error jaringan walaupun backend `8009` dan frontend sudah hidup.
+
 ---
 
 ## 📋 Daftar Isi
 
-1. [Konteks Bisnis & Model Kerja Pabrik](#1-konteks-bisnis--model-kerja-pabrik)
-2. [Akses Sistem & Navigasi Antarmuka](#2-akses-sistem--navigasi-antarmuka)
-3. [Playbook Operasional 8 Peran Pengguna (RBAC)](#3-playbook-operasional-8-peran-pengguna-rbac)
+1. [Persyaratan Sistem](#persyaratan-sistem)
+2. [Instalasi](#instalasi)
+3. [Menjalankan Aplikasi](#menjalankan-aplikasi)
+4. [Konteks Bisnis & Model Kerja Pabrik](#1-konteks-bisnis--model-kerja-pabrik)
+5. [Akses Sistem & Navigasi Antarmuka](#2-akses-sistem--navigasi-antarmuka)
+6. [Playbook Operasional 8 Peran Pengguna (RBAC)](#3-playbook-operasional-8-peran-pengguna-rbac)
    - [Peran 1: Owner / Eksekutif](#peran-1-owner--eksekutif)
    - [Peran 2: Tim Sample / Adis](#peran-2-tim-sample--adis)
    - [Peran 3: Gudang / Warehouse](#peran-3-gudang--warehouse)
@@ -78,7 +186,7 @@ Platform Lukla Operations Engine dapat diakses melalui peramban web (Google Chro
 
 ### Titik Akses Portal Sentral (`/`)
 
-Buka tautan utama di `http://localhost:3000/` (atau port 80 pada server produksi). Tampilan portal menyediakan 4 pintu gerbang utama:
+Buka tautan utama di `http://localhost:3009/` pada lingkungan lokal. Tampilan prototype menyediakan navigasi operasional dan modul pendukung:
 
 1. **Lukla Operations Dashboard (`/ui`):** Antarmuka utama operasional pabrik yang memuat 6 layar kerja harian.
 2. **Lukla Intelligence AI Copilot (`/copilot`):** Asisten AI interaktif untuk pengecekan data stok kain, efisiensi line, dan status order.
@@ -475,7 +583,7 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 
 ### Cara Membuka AI Copilot
 1. **Widget Melayang:** Klik tombol bundar hitam berikon bintang di sudut kanan bawah antarmuka pada layar mana pun. Drawer obrolan akan terbuka dari sisi kanan.
-2. **Laman Penuh:** Buka tautan langsung di `http://localhost:3000/copilot`.
+2. **Laman Penuh:** Buka tautan aplikasi `http://localhost:3009/`, lalu pilih menu Copilot dari antarmuka.
 
 ### Fitur Utama Copilot
 - **Pemilihan Peran Konteks:** Pengguna dapat memilih peran (Owner, Gudang, Mandor, dsb.) pada menu dropdown di bilah atas obrolan agar Copilot memberikan jawaban sesuai kewenangannya.

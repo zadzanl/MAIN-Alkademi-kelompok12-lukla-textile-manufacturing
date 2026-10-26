@@ -1,104 +1,104 @@
-# Lukla Operations Engine — Garment Manufacturing ERP Platform
+# Lukla - Textile Manufacturing Operations Platform
 
-Enterprise operations platform for garment and textile contract manufacturing (maklon / konveksi), integrating sample R&D, warehouse inventory, cutting batching, line sewing piece-rate production, multi-tier quality inspection, and tiered piece-rate payroll with financial controls.
+Lukla adalah platform operasi manufaktur tekstil untuk membantu tim mengelola
+proses produksi, gudang, quality control, sampling, dan payroll dalam satu
+aplikasi. Proyek ini dibuat oleh **Kelompok 12** untuk **MAIN Alkademi Hackathon
+2026**.
 
----
+## Fitur Utama
 
-## 📌 Architecture & Design Baseline
+- Dashboard operasional dan ringkasan aktivitas pabrik.
+- AI Copilot untuk pertanyaan operasional dengan bahasa natural.
+- Manajemen gudang, stok, dan transaksi inventory.
+- Monitoring produksi dan pencatatan pekerjaan line sewing.
+- Sampling, time study, spesifikasi, dan analisis quality control.
+- Payroll berbasis piece-rate serta kontrol finansial terkait.
+- Portal autentikasi pengguna internal.
 
-The repository is organized following an OpenSpec contract-first, specification-driven approach:
+## Struktur Repository
 
-- **Core Technical Blueprint:** Complete Phase A, B, and C planning baseline located in [`openspec/changes/lukla-ops-engine-planning/`](./openspec/changes/lukla-ops-engine-planning/).
-- **OpenAPI 3.1 Contract:** Full API catalog with 69 HTTP operations and 111 component schemas at [`contracts/openapi.yaml`](./openspec/changes/lukla-ops-engine-planning/contracts/openapi.yaml).
-- **Core Requirements:** Canonical BRD v2.3.0 and PRD v2.0 defining 20 core Functional Requirements (`FR-1.1`..`FR-10.4`), 8 RBAC roles, and operational closing scenarios.
-- **Enterprise Modules Architecture:** Architectural reference for all 6 future core modules documented in [`docs/MODULES_ARCHITECTURE.md`](./docs/MODULES_ARCHITECTURE.md).
-- **User Operations Guide:** Complete role-based operational manual for factory staff, supervisors, and clients in [`USER_GUIDE.md`](./USER_GUIDE.md).
+| Folder/File | Keterangan |
+| --- | --- |
+| `backend/` | Lukla Operations Engine API utama (port 8000) |
+| `prototypes/sampling-spec-rnd/backend/` | API prototype sampling dan operasi (port 8009) |
+| `prototypes/sampling-spec-rnd/frontend/` | Aplikasi web React + Vite (port 3009) |
+| `prototypes/uhuy-b2b-portal/` | Prototype portal B2B pendamping |
+| `USER_GUIDE.md` | Panduan penggunaan aplikasi |
 
----
+## Cara Menjalankan
 
-## 🗂️ Repository Structure
+### Prasyarat
 
-```text
-.
-├── openspec/                                # OpenSpec governance & specifications
-│   ├── changes/
-│   │   ├── lukla-ops-engine-planning/       # Approved planning change baseline
-│   │   │   ├── contracts/openapi.yaml       # OpenAPI 3.1 contract (69 operations)
-│   │   │   ├── specs/                       # 6 domain capability specifications
-│   │   │   ├── reviews/                     # Formal review approvals (Phase A, B, C)
-│   │   │   ├── research/                    # Architectural research & decisions
-│   │   │   ├── 00-deconstruction.md         # Pitch deck transcription register
-│   │   │   ├── 04-rbac-matrix.md            # 8 roles with IZIN / PEMBATASAN rules
-│   │   │   ├── 06-acceptance-tests.md       # Acceptance tests (AT-01..AT-10, AT-R01..AT-R08)
-│   │   │   ├── 10-technology-stack-and-decisions.md # Architecture Decision Records
-│   │   │   ├── 11-database-schema-spec.md   # PostgreSQL schema, DDL, and RLS policies
-│   │   │   ├── 16-test-harness-and-agent-verification.md # Test harness specification
-│   │   │   ├── validate-blueprint.py        # Planning contract validator
-│   │   │   └── verify-traceability.ps1      # Automated requirements traceability script
-│   │   └── archive/                         # Archived proposals & superseded drafts
-│   └── config.yaml                          # OpenSpec CLI configuration
-│
-├── prototypes/                              # Working prototypes & spikes
-│   └── sampling-spec-rnd/                   # Standalone Sampling & Spec R&D prototype
-│       ├── backend/                         # FastAPI backend (Port 8009)
-│       └── frontend/                        # React 18 + Vite + Tailwind (Port 3009)
-│
-├── docs/                                    # System & module documentation
-│   ├── MODULES_ARCHITECTURE.md              # 6-module system architecture specification
-│   └── sampling-spec-rnd/                   # Prototype setup & architecture guides
-│       ├── SETUP_GUIDE.md                   # Quickstart & team onboarding instructions
-│       ├── ARCHITECTURE.md                  # Prototype layout & integration analysis
-│       └── APPLE_DESIGN.md                  # Apple design system tokens & guidelines
-│
-├── USER_GUIDE.md                            # Panduan Pengguna Operasional Pabrik (8 Roles & 6 Views)
-└── AGENTS.md                                # AI Agent pairing guidelines & engineering mode
-```
+- Python 3.11 atau versi Python yang kompatibel dengan `requirements.txt`.
+- Node.js 20 atau lebih baru dan npm.
+- Git.
 
----
+Jalankan setiap service pada terminal terpisah. Semua perintah berikut dijalankan
+dari root repository, kecuali jika direktori kerja disebutkan.
 
-## 🧪 Planning Verification Commands
+### 1. Backend utama - port 8000
 
-To verify traceability and contract integrity of the Lukla Operations Engine blueprint:
+Install dependency backend satu kali:
 
 ```powershell
-# 1. Verify complete requirements traceability (FRs, RBAC roles, closing scenarios)
-pwsh -File openspec/changes/lukla-ops-engine-planning/verify-traceability.ps1
-
-# 2. Validate OpenAPI 3.1 contract references, paths, and examples
-python openspec/changes/lukla-ops-engine-planning/validate-blueprint.py
-
-# 3. Validate OpenSpec change integrity
-openspec validate lukla-ops-engine-planning
+python -m pip install -r prototypes/sampling-spec-rnd/backend/requirements.txt
 ```
 
----
+Jalankan API utama:
 
-## 🚀 Running the Sampling & Spec R&D Prototype
+```powershell
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
 
-A working reference prototype for the Sampling & Spec R&D workflow is available in `prototypes/sampling-spec-rnd/`:
+Berhasil jika dokumentasi API dapat dibuka di
+`http://localhost:8000/docs`.
 
-1. **Backend (FastAPI on Port 8009):**
-   ```bash
-   cd prototypes/sampling-spec-rnd/backend
-   python -m venv venv
-   .\venv\Scripts\activate
-   pip install -r requirements.txt
-   uvicorn src.main:app --reload --port 8009
-   ```
+### 2. Backend prototype - port 8009
 
-2. **Frontend (React + Vite on Port 3009):**
-   ```bash
-   cd prototypes/sampling-spec-rnd/frontend
-   npm install
-   npm run dev
-   ```
+```powershell
+Set-Location prototypes/sampling-spec-rnd/backend
+python -m uvicorn src.main:app --reload --host 127.0.0.1 --port 8009
+```
 
-For detailed setup, troubleshooting, and batch startup scripts, see the [Team Setup Guide](./docs/sampling-spec-rnd/SETUP_GUIDE.md).
+Berhasil jika health check mengembalikan status sehat:
 
----
+```powershell
+Invoke-RestMethod http://localhost:8009/health
+```
 
-## 🔒 Governance & Operational Principles
+### 3. Frontend - port 3009
 
-1. **Zero Silent Changes:** Business decisions subject to client clarification remain flagged as `PRODUCTION_BLOCKED` until authorized.
-2. **Multi-Tenant Isolation:** Enforced via PostgreSQL Row-Level Security (`FORCE ROW LEVEL SECURITY`) with `tenant_id` session variables.
-3. **Immutability & Audit Trails:** Financial ledgers and inventory transactions are append-only; reversals are recorded as explicit counter-entries.
+Pada terminal baru:
+
+```powershell
+Set-Location prototypes/sampling-spec-rnd/frontend
+npm install
+npm run dev
+```
+
+Berhasil jika halaman login terbuka di `http://localhost:3009`.
+
+Frontend menggunakan proxy Vite: request `/api/v1` diteruskan ke backend port
+8000, sedangkan request `/api` dan AI Copilot diteruskan ke backend port 8009.
+Karena itu, jalankan ketiga service untuk mendapatkan fungsi aplikasi secara
+lengkap.
+
+## Kredensial Demo
+
+- **Identifier:** `ADMIN-IT`
+- **Password:** `Admin#12345`
+
+Masukkan `ADMIN-IT` pada field login **identifier** di halaman
+`http://localhost:3009`.
+
+## Panduan Pengguna
+
+Lihat [USER_GUIDE.md](./USER_GUIDE.md) untuk panduan lengkap penggunaan fitur
+aplikasi.
+
+## Catatan Proyek
+
+Repository ini merupakan proyek hackathon **Kelompok 12 - MAIN Alkademi 2026**.
+Folder `frontend/` di root repository adalah harness pengujian Playwright untuk
+design mock, bukan aplikasi frontend utama. Aplikasi demo yang dijalankan adalah
+`prototypes/sampling-spec-rnd/`.
