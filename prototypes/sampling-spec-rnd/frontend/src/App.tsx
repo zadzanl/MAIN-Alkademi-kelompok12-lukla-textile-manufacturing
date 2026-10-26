@@ -675,19 +675,10 @@ function App() {
 
   // ── render ────────────────────────────────────────────────────────────────────
 
-  // Auth gate: unauthenticated users see the portal entry page only.
-  if (!session) {
-    return <PortalAuthView onAuthenticated={setSession} />;
-  }
-
-  const profileName = session.actor.displayName;
-  const profileInitials = profileName
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(w => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  // Rules of Hooks: every hook below must execute on the pre-login render too.
+  // Pre-login all role flags are false, so these memos fall through to neutral
+  // defaults; the auth gate return lives after the final hook.
+  const profileName = session?.actor.displayName ?? '';
 
   const brandLabel = useMemo(() => {
     if (isClient) return 'Lukla B2B Client Portal';
@@ -751,6 +742,19 @@ function App() {
     if (isTailor) return 'Sesuai Slide 04, peran Penjahit/Tailor hanya berwenang melihat tugas komponen dan lapor hasil kerja borongan. Dibatasi tidak dapat mengedit catatan output yang sudah diverifikasi mandor dan tidak memiliki akses manajerial/finansial.';
     return 'Modul ini dibatasi untuk staf dengan otorisasi khusus.';
   }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+
+  // Auth gate: unauthenticated users see the portal entry page only.
+  if (!session) {
+    return <PortalAuthView onAuthenticated={setSession} />;
+  }
+
+  const profileInitials = profileName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   return (
     <div
