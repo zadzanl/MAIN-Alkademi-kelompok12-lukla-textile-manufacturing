@@ -28,7 +28,7 @@ git clone <URL-REPOSITORY>
 cd hackathon-MAIN-alkademi
 ```
 
-**Pemeriksaan berhasil:** perintah `git status` menampilkan direktori repository tanpa pesan bahwa folder tidak ditemukan.
+Kalau berhasil, perintah `git status` menampilkan direktori repository dan tidak melaporkan folder yang tidak ditemukan.
 
 ### 2. Pasang dependency backend Sampling & Spec R&D
 
@@ -48,7 +48,7 @@ python3.11 -m venv .venv
 cd ../../..
 ```
 
-**Pemeriksaan berhasil:** `\.venv\Scripts\python.exe -m pip check` pada Windows, atau `.venv/bin/python -m pip check` pada Linux/macOS, menampilkan `No broken requirements found.`
+Langkah ini berhasil kalau `\.venv\Scripts\python.exe -m pip check` pada Windows, atau `.venv/bin/python -m pip check` pada Linux/macOS, menampilkan `No broken requirements found.`
 
 ### 3. Pasang dependency frontend
 
@@ -58,7 +58,7 @@ npm install
 cd ..\..\..
 ```
 
-**Pemeriksaan berhasil:** `npm` selesai tanpa error dan folder `prototypes/sampling-spec-rnd/frontend/node_modules` tersedia.
+Instalasi selesai kalau `npm` tidak menampilkan error dan folder `prototypes/sampling-spec-rnd/frontend/node_modules` tersedia.
 
 ## Menjalankan Aplikasi
 
@@ -71,7 +71,7 @@ cd backend
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-**Pemeriksaan berhasil:** buka `http://localhost:8000/docs`. Jika halaman Swagger API tampil, layanan utama aktif.
+Buka `http://localhost:8000/docs`. Kalau halaman Swagger API tampil, layanan utama sudah aktif.
 
 ### Terminal 2 — Backend Sampling & Spec R&D (port 8009)
 
@@ -81,7 +81,7 @@ cd prototypes\sampling-spec-rnd\backend
 uvicorn src.main:app --reload --port 8009
 ```
 
-**Pemeriksaan berhasil:** buka `http://localhost:8009/health`; respons yang diharapkan memuat `"status":"healthy"` dan `"service":"sampling-spec-rnd-api"`. Dokumentasi API tersedia di `http://localhost:8009/docs`.
+Buka `http://localhost:8009/health`. Respons yang benar memuat `"status":"healthy"` dan `"service":"sampling-spec-rnd-api"`. Dokumentasi API tersedia di `http://localhost:8009/docs`.
 
 ### Terminal 3 — Frontend (port 3009)
 
@@ -90,7 +90,7 @@ cd prototypes\sampling-spec-rnd\frontend
 npm run dev
 ```
 
-**Pemeriksaan berhasil:** terminal Vite menampilkan alamat `http://localhost:3009/`. Buka alamat tersebut di browser.
+Pastikan terminal Vite menampilkan alamat `http://localhost:3009/`, lalu buka alamat itu di browser.
 
 ### Login dan akses awal
 
@@ -106,45 +106,17 @@ Credential demo:
 | Identifier | `ADMIN-IT` |
 | Password | `Admin#12345` |
 
-Jika backend utama port `8000` tidak aktif, halaman prototype dan modul yang memanggil `/api/v1` dapat menampilkan error jaringan walaupun backend `8009` dan frontend sudah hidup.
-
----
-
-## 📋 Daftar Isi
-
-1. [Persyaratan Sistem](#persyaratan-sistem)
-2. [Instalasi](#instalasi)
-3. [Menjalankan Aplikasi](#menjalankan-aplikasi)
-4. [Konteks Bisnis & Model Kerja Pabrik](#1-konteks-bisnis--model-kerja-pabrik)
-5. [Akses Sistem & Navigasi Antarmuka](#2-akses-sistem--navigasi-antarmuka)
-6. [Playbook Operasional 8 Peran Pengguna (RBAC)](#3-playbook-operasional-8-peran-pengguna-rbac)
-   - [Peran 1: Owner / Eksekutif](#peran-1-owner--eksekutif)
-   - [Peran 2: Tim Sample / Adis](#peran-2-tim-sample--adis)
-   - [Peran 3: Gudang / Warehouse](#peran-3-gudang--warehouse)
-   - [Peran 4: Kepala Produksi / Mandor](#peran-4-kepala-produksi--mandor)
-   - [Peran 5: Penjahit / Tailor](#peran-5-penjahit--tailor)
-   - [Peran 6: QC Inspector](#peran-6-qc-inspector)
-   - [Peran 7: Finance & Payroll](#peran-7-finance--payroll)
-   - [Peran 8: Klien Maklon B2B](#peran-8-klien-maklon-b2b)
-4. [Panduan Operasional 6 Layar Utama ERP](#4-panduan-operasional-6-layar-utama-erp)
-   - [Layar 01: Executive Operations Dashboard](#layar-01-executive-operations-dashboard)
-   - [Layar 02: Sample & Time Study Tracker](#layar-02-sample--time-study-tracker)
-   - [Layar 03: Multi-Client Warehouse Inventory Grid](#layar-03-multi-client-warehouse-inventory-grid)
-   - [Layar 04: Floor Terminal (Tally 30 Menit)](#layar-04-floor-terminal-tally-30-menit)
-   - [Layar 05: QC Inspection Terminal](#layar-05-qc-inspection-terminal)
-   - [Layar 06: Payroll & Costing Workspace](#layar-06-payroll--costing-workspace)
-5. [Panduan Lukla Intelligence (AI Copilot)](#5-panduan-lukla-intelligence-ai-copilot)
-6. [Protokol Guardrails & Troubleshooting](#6-protokol-guardrails--troubleshooting)
+Backend utama port `8000` harus tetap aktif. Kalau tidak, halaman prototype dan modul yang memanggil `/api/v1` bisa menampilkan error jaringan meski backend `8009` dan frontend sudah berjalan.
 
 ---
 
 ## 1. Konteks Bisnis & Model Kerja Pabrik
 
-Lukla Manufacturing mengoperasikan fasilitas konveksi garmen terpadu di Ciwidey dengan kapasitas mesin dinamis hingga **±70 mesin jahit aktif**. Pabrik memproduksi pakaian untuk brand internal **Snøhund** sekaligus melayani berbagai **Klien Maklon B2B eksternal** secara paralel dalam satu atap.
+Di Ciwidey, Lukla Manufacturing menjalankan satu pabrik konveksi garmen terpadu. Kapasitas mesinnya dinamis, sampai sekitar **±70 mesin jahit aktif**. Dari satu atap itu, pabrik mengerjakan pakaian untuk brand internal **Snøhund** dan, pada saat yang sama, melayani berbagai **klien maklon B2B eksternal**.
 
 ### Tiga Skema Kerjasama Maklon
 
-Setiap Surat Perintah Kerja (Order) berjalan di bawah salah satu dari tiga skema yang menentukan kepemilikan dan penyedia bahan baku:
+Setiap Surat Perintah Kerja (Order) memakai salah satu dari tiga skema. Skema ini menentukan siapa pemilik bahan dan siapa yang menyediakan bahan baku:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -163,9 +135,9 @@ Setiap Surat Perintah Kerja (Order) berjalan di bawah salah satu dari tiga skema
 └─────────────────────┴───────────────────────────────────────────────────────┘
 ```
 
-> [!IMPORTANT]
+> **PENTING:**
 > **Prinsip Anti-Kontaminasi Silang (FR-6.2):**  
-> Bahan baku titipan milik Klien A (misal: Snøhund) berstatus titipan hukum (*custodial material*) dan **dilarang keras** dipakai untuk pesanan Klien B (misal: Brand-X). Sistem secara otomatis mengunci dan menolak pengeluaran bahan jika ID Klien dan ID Order tidak cocok.
+> Bahan baku titipan milik Klien A (misal: Snøhund) berstatus barang titipan (*custodial material*) dan **dilarang keras** dipakai untuk pesanan Klien B (misal: Brand-X). Sistem otomatis mengunci dan menolak pengeluaran bahan kalau ID Klien dan ID Order tidak cocok.
 
 ### Alur Operasional 6 Fase End-to-End
 
@@ -182,11 +154,11 @@ flowchart LR
 
 ## 2. Akses Sistem & Navigasi Antarmuka
 
-Platform Lukla Operations Engine dapat diakses melalui peramban web (Google Chrome, Safari, atau Microsoft Edge) pada alamat server lokal atau domain pabrik.
+Akses Lukla Operations Engine melalui peramban web seperti Google Chrome, Safari, atau Microsoft Edge pada alamat server lokal atau domain pabrik.
 
 ### Titik Akses Portal Sentral (`/`)
 
-Buka tautan utama di `http://localhost:3009/` pada lingkungan lokal. Tampilan prototype menyediakan navigasi operasional dan modul pendukung:
+Buka `http://localhost:3009/` di lingkungan lokal. Dari tampilan prototype, buka modul operasional dan pendukung berikut:
 
 1. **Lukla Operations Dashboard (`/ui`):** Antarmuka utama operasional pabrik yang memuat 6 layar kerja harian.
 2. **Lukla Intelligence AI Copilot (`/copilot`):** Asisten AI interaktif untuk pengecekan data stok kain, efisiensi line, dan status order.
@@ -195,7 +167,7 @@ Buka tautan utama di `http://localhost:3009/` pada lingkungan lokal. Tampilan pr
 
 ### Navigasi Sidebar Dashboard ERP
 
-Pada halaman `/ui`, menu navigasi berada di bilah sisi kiri (*sidebar*):
+Di halaman `/ui`, buka menu navigasi pada bilah sisi kiri (*sidebar*):
 
 | Tombol Navigasi | Kode Layar | Modul Operasional | Pengguna Utama |
 |---|---|---|---|
@@ -210,7 +182,7 @@ Pada halaman `/ui`, menu navigasi berada di bilah sisi kiri (*sidebar*):
 
 ## 3. Playbook Operasional 8 Peran Pengguna (RBAC)
 
-Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control (RBAC)** untuk mencegah kesalahan wewenang dan manipulasi data.
+Sistem membatasi akses berdasarkan matriks **Role-Based Access Control (RBAC)** agar wewenang tetap tepat dan data tidak mudah dimanipulasi.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -254,14 +226,14 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 1. **Pemeriksaan Pagi (08:30 WIB):**
    - Buka menu `01 Operations Dashboard`.
    - Periksa widget **Line Status** (contoh: target 62 dari 70 mesin aktif). Jika di bawah 80%, koordinasikan dengan Kepala Produksi.
-   - Periksa **Run-Rate Pabrik** (standar hijau ≥90%).
+   - Periksa **Run-Rate Pabrik** (target hijau ≥90%).
 2. **Evaluasi Kecepatan Line (Siang & Sore):**
    - Pantau grafik **30-Min Interval Factory Speed Output Graph**.
    - Identifikasi apakah terjadi *bottleneck* (penurunan drastis output) pada interval jam tertentu (misal jam 11:30–12:00 menjelang istirahat).
 3. **Pengelolaan Rate Card Borongan:**
    - Masuk ke menu `06 Payroll & Costing Workspace`.
    - Evaluasi usulan rate card komponen baru dari Mandor. Owner memiliki wewenang menyetujui perubahan tarif per komponen garmen.
-   - *Batasan Sistem:* Owner tidak dapat menghapus atau mengubah angka jurnal pembukuan yang telah diposting ke ledger keuangan.
+   - Owner tidak dapat menghapus atau mengubah angka jurnal pembukuan yang telah diposting ke ledger keuangan.
 
 ---
 
@@ -283,13 +255,13 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
    - Tentukan tarif borongan operator per potong (contoh: `Collar Stitch Rp 1.450/pc`, `Sleeve Assembly Rp 1.780/pc`).
 4. **Penguncian Versi Spesifikasi:**
    - Jika sampel telah disetujui klien, kunci spesifikasi menjadi versi aktif (contoh: `Active Version: v2 (Locked)`).
-   - *Batasan Sistem:* Tim Sample dilarang mengubah status order menjadi produksi massal tanpa Surat Persetujuan tertulis dari Klien.
+   - Tim Sample dilarang mengubah status order menjadi produksi massal tanpa Surat Persetujuan tertulis dari Klien.
 
 ---
 
 ### Peran 3: Gudang / Warehouse
 
-**Tanggung Jawab:** Menerima kiriman kain, menyimpan bahan berdasarkan lot kepemilikan klien, dan menerbitkan kain ke bagian pemotongan (*cutting*).
+**Tanggung Jawab:** Menerima kiriman kain, menyimpan bahan berdasarkan lot kepemilikan klien, dan mengeluarkan kain ke bagian pemotongan (*cutting*).
 
 #### SOP Penerimaan Bahan & Dispatch
 1. **Penerimaan & Registrasi Lot Bahan:**
@@ -304,9 +276,9 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
    - Temukan baris lot kain yang dialokasikan untuk Surat Perintah Kerja tertentu (contoh: Order `ORD-401`).
    - Klik tombol **"Dispatch"**.
 4. **Penanganan Guardrail Error FR-6.2 (Ownership Mismatch):**
-   - Jika muncul pop-up merah bertuliskan:  
+   - Kalau pop-up merah berikut muncul:
      `Dispatch Ditolak — Ownership Mismatch. Stock milik Client A tidak dapat diterbitkan ke Order Client B.`
-   - **Tindakan Wajib:** Batalkan pengeluaran! Periksa kembali Surat Perintah Kerja. Jangan pernah mencoba memotong kain milik klien lain untuk menutupi kekurangan bahan.
+   - Kalau begitu, batalkan pengeluaran! Periksa kembali Surat Perintah Kerja. Jangan pernah mencoba memotong kain milik klien lain untuk menutupi kekurangan bahan.
 
 ---
 
@@ -323,21 +295,21 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
      - **Mandor:** `Budi`
      - **Interval:** `13:30 – 14:00`
 2. **Pencatatan Hasil per Penjahit:**
-   - Pada grid penjahit, datangi setiap operator dan hitung bundel fisik jahitan yang selesai:
+   - Datangi setiap operator di grid penjahit, lalu hitung bundel jahitan yang sudah selesai:
      - `Tailor #14: Rudi S.` (Sleeve Assembly): Tekan tombol `+` atau `-` hingga angka menunjukkan output fisik (misal: `14` pcs).
      - `Tailor #18: Mira K.` (Collar Stitch): Atur angka (misal: `11` pcs).
      - `Tailor #22: Sari P.` (Hem Finish): Atur angka (misal: `16` pcs).
      - `Tailor #27: Dedi A.` (Front Panel): Atur angka (misal: `13` pcs).
 3. **Penguncian & Pengiriman Tally:**
-   - Setelah semua penjahit terverifikasi, klik tombol biru besar: **"SUBMIT INTERVAL BLOCK"**.
-   - Data otomatis tersimpan dan terkunci untuk interval tersebut.
-   - *Batasan Sistem:* Mandor dilarang mengubah hasil QC garmen atau rumus penggajian borongan.
+   - Setelah memeriksa semua penjahit, klik tombol biru besar: **"SUBMIT INTERVAL BLOCK"**.
+   - Sistem menyimpan data dan mengunci interval tersebut.
+   - Mandor dilarang mengubah hasil QC garmen atau rumus penggajian borongan.
 
 ---
 
 ### Peran 5: Penjahit / Tailor
 
-**Tanggung Jawab:** Menjahit komponen pakaian sesuai spesifikasi teknik dan melaporkan output fisik kepada mandor pada setiap pergantian interval.
+**Tanggung Jawab:** Menjahit komponen pakaian sesuai spesifikasi teknis dan melaporkan output fisik kepada mandor pada setiap pergantian interval.
 
 #### Pedoman Kerja Penjahit
 1. **Memulai Shift:**
@@ -346,7 +318,7 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 2. **Pelaporan Fisik per 30 Menit:**
    - Tumpuk garmen yang selesai dijahit rapi di samping mesin dengan kartu bundel kerja.
    - Saat mandor berkeliling pada akhir interval (tiap menit ke-30), tunjukkan bundel fisik untuk dihitung bersama.
-   - *Batasan Sistem:* Setelah mandor menekan submit dan memverifikasi tally, penjahit tidak dapat meminta pengubahan angka secara sepihak tanpa persetujuan Kepala Operasional.
+   - Setelah mandor menekan submit dan memverifikasi tally, penjahit tidak dapat meminta pengubahan angka secara sepihak tanpa persetujuan Kepala Operasional.
 
 ---
 
@@ -360,24 +332,24 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
    - Periksa informasi pesanan aktif pada bilah konteks (contoh: `Order: ORD-401 (Snøhund)`).
    - Identifikasi nomor seri barcode pada garmen (contoh: `Garment Unit Serial: SN-401-0891`).
 2. **Pemeriksaan Fisik Garmen:**
-   - Periksa jahitan kerah, kancing, simetri lengan, kerapian kelim, dan kebersihan bahan.
+   - Periksa jahitan kerah, kancing, simetri lengan, kerapian kelim, dan kebersihan bahan satu per satu.
 3. **Pemilihan Disposisi (Keputusan Mutu):**
    - Pilih salah satu dari tiga tombol utama:
      - 🟢 **`(A) PASS` (Tombol Hijau):** Garmen sempurna, lolos ke tahap packing dan masuk ke dalam kalkulasi bonus QC.
      - 🟡 **`(B) REPAIR` (Tombol Kuning):** Ada cacat minor yang bisa diperbaiki penjahit tanpa merusak bahan.
      - 🔴 **`(C) SCRAP / REJECT` (Tombol Merah):** Bahan rusak fatal/cacat potong yang tidak bisa diperbaiki.
 4. **Pencatatan Taksonomi Cacat (Jika Repair/Reject):**
-   - Centang jenis kerusakan yang ditemukan pada panel **Defect taxonomy**:
+   - Di panel **Defect taxonomy**, centang setiap jenis kerusakan yang ditemukan:
      - `[x] Broken Stitch` (Jahitan putus/loncat)
      - `[x] Puckering` (Kain mengkerut di garis jahitan)
      - `[x] Uneven Seam` (Sambungan jahitan melenceng/tidak rata)
-   - *Batasan Sistem:* QC Inspector tidak memiliki wewenang mengubah harga borongan penjahit atau mengubah data pesanan klien.
+   - QC Inspector tidak memiliki wewenang mengubah harga borongan penjahit atau mengubah data pesanan klien.
 
 ---
 
 ### Peran 7: Finance & Payroll
 
-**Tanggung Jawab:** Menghitung upah borongan mingguan penjahit, memproses uang makan, mendistribusikan bonus pool QC, dan memposting jurnal keuangan ke buku besar.
+**Tanggung Jawab:** Menghitung upah borongan mingguan penjahit, memproses uang makan, mendistribusikan bonus pool QC, dan mencatat jurnal keuangan ke buku besar.
 
 #### SOP Penggajian Mingguan (Setiap Sabtu Sore)
 1. **Buka Workspace Penggajian:**
@@ -388,36 +360,36 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
    - **Uang Makan (12.5%):** Tunjangan makan mingguan otomatis (contoh: `Rp 5.268.750`).
    - **Passed QC Units:** Jumlah fisik pakaian yang dinyatakan lolos inspeksi QC (contoh: `2.800 pcs`).
    - **QC Bonus Pool:** Bonus pencapaian target mutu pakaian lolos.  
-     *Aturan Pembagian 3-Arah:* Total bonus (contoh: `Rp 2.800.000`) dibagi rata secara adil ke 3 penanggung jawab:
+     *Aturan Pembagian 3-Arah:* Total bonus (contoh: `Rp 2.800.000`) dibagi rata ke 3 penanggung jawab:
      - Mandor 1: `Rp 933.333`
      - Mandor 2: `Rp 933.333`
      - Kepala Operasional: `Rp 933.334`
    - **Overhead Pabrik:** Alokasi beban bulanan pabrik per unit pakaian (contoh: `Rp 4.120 /pcs`).
 3. **Pemeriksaan Preview Jurnal Finansial (Double-Entry Ledger):**
-   - Periksa tabel pratinjau jurnal akuntansi:
+   - Periksa tabel pratinjau jurnal akuntansi berikut:
      - `Direct Labour Expense` (Debit: Rp 42.150.000) ↔ `Payroll Payable` (Kredit: Rp 42.150.000)
      - `QC Bonus Expense` (Debit: Rp 2.800.000) ↔ `QC Bonus Payable` (Kredit: Rp 2.800.000)
-   - Pastikan posisi debit dan kredit **seimbang mutlak (Zero-Sum Balance)**.
+   - Pastikan posisi debit dan kredit **seimbang mutlak (Zero-Sum Balance)** sebelum melanjutkan.
 4. **Eksekusi Penggajian:**
    - Klik tombol biru besar: **"EXECUTE PAYROLL RUN (SAT)"**.
-   - Sistem akan memposting transaksi ke ledger yang bersifat kekal (*append-only*).
-   - *Batasan Sistem:* Finance dilarang memanipulasi angka fisik stok kain di gudang secara manual.
+   - Sistem mencatat transaksi ke ledger *append-only*. Isinya hanya bisa ditambah, tidak bisa diubah.
+   - Finance tidak boleh mengubah angka fisik stok kain di gudang secara manual.
 
 ---
 
 ### Peran 8: Klien Maklon B2B
 
-**Tanggung Jawab:** Mitra pemesan yang memantau perkembangan produksi garmen dan stok bahan titipan secara transparan.
+**Tanggung Jawab:** Mitra pemesan yang memantau progres produksi dan stok bahan titipannya secara terbuka.
 
 #### Panduan Portal Klien
-1. **Login Portal Eksternal:** Klien masuk menggunakan kredensial khusus yang diberikan oleh tim Lukla.
+1. **Login Portal Eksternal:** Masuk dengan kredensial khusus yang diberikan oleh tim Lukla.
 2. **Monitoring Progres Order:**
-   - Klien dapat melihat persentase penyelesaian pesanan masing-masing secara langsung:
+   - Pantau persentase penyelesaian tiap pesanan:
      - Contoh: `Order ORD-401 (Snøhund)` berstatus `68%` selesai.
      - Contoh: `Order ORD-402 (Brand-X)` berstatus `42%` selesai.
 3. **Transparansi Stok Bahan Titipan:**
-   - Klien dapat melihat sisa meter kain miliknya yang tersimpan di gudang Lukla.
-   - *Batasan Sistem:* Berkat arsitektur *Multi-Tenant Row-Level Security*, Klien A tidak akan pernah bisa melihat nama klien lain, jenis bahan klien lain, maupun detail biaya internal pabrik.
+   - Pantau sisa meter kain milik sendiri yang tersimpan di gudang Lukla.
+   - Berkat arsitektur *Multi-Tenant Row-Level Security*, Klien A tidak akan pernah bisa melihat nama klien lain, jenis bahan klien lain, maupun detail biaya internal pabrik.
 
 ---
 
@@ -437,8 +409,8 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Memberikan visibilitas menyeluruh terhadap kapasitas mesin, output garmen per interval jam kerja, dan progres pesanan klien.
-- **Elemen Interaktif:**
+- Pantau kapasitas mesin, output garmen setiap interval kerja, dan progres pesanan klien dari satu layar.
+- Perhatikan bagian-bagian ini:
   - Status Strip 3 Kotak di bagian atas menampilkan status instan fasilitas.
   - Grafik batang dan garis memperlihatkan lonjakan atau penurunan produktivitas per jam.
   - Tabel progres pesanan dilengkapi batang persentase visual berwarna biru.
@@ -463,8 +435,8 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Mengukur waktu kerja per komponen garmen dengan presisi tinggi sebelum menetapkan harga borongan.
-- **Elemen Interaktif:**
+- Ukur waktu kerja tiap komponen garmen sebelum menetapkan harga borongan.
+- Bagian pentingnya:
   - Baris status spesifikasi menampilkan status versi aktif yang terkunci.
   - Modul stopwatch digital dengan pencatatan waktu menit, detik, dan milidetik.
   - Tabel pembanding waktu standar vs waktu aktual beserta tarif rupiah per komponen.
@@ -489,10 +461,10 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Memastikan tidak ada kain titipan klien yang tertukar atau salah dikeluarkan ke ruang potong (*cutting*).
-- **Elemen Interaktif:**
+- Cegah kain titipan klien tertukar atau salah dikirim ke ruang potong (*cutting*).
+- Yang bisa dipakai:
   - Filter cepat berdasarkan nama Klien atau pencarian nomor Rol / Lot Kain.
-  - Tombol **Dispatch** untuk menerbitkan surat pengeluaran bahan.
+  - Tombol **Dispatch** untuk mengeluarkan bahan dari gudang.
   - Modal pengaman otomatis jika operator memilih order yang tidak berhak atas kain tersebut.
 
 ---
@@ -515,8 +487,8 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Input cepat hasil kerja penjahit berbasis interval 30 menit langsung dari lantai produksi pabrik.
-- **Elemen Interaktif:**
+- Catat hasil kerja penjahit setiap 30 menit langsung dari lantai produksi.
+- Yang perlu diketahui:
   - Tombol stepper ukuran besar (`+` dan `-`) yang ramah sentuhan jari operator.
   - Kotak angka besar bertipe monospaced tabular untuk mencegah salah baca.
   - Tombol submit interval selebar layar untuk konfirmasi akhir mandor.
@@ -539,8 +511,8 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Menetapkan kelulusan garmen per lembar fisik serta mencatat jenis cacat untuk evaluasi bagian sewing.
-- **Elemen Interaktif:**
+- Tetapkan kelulusan tiap garmen dan catat cacatnya untuk evaluasi bagian sewing.
+- Detail yang menonjol:
   - Tiga tombol aksi besar dengan pembedaan warna standar internasional.
   - Kotak centang taksonomi cacat standar garmen (jahitan putus, kerutan, atau sambungan miring).
 
@@ -569,8 +541,8 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Fungsi Utama:** Verifikasi akhir seluruh hak upah pekerja dan pencatatan akuntansi sebelum pembayaran dilakukan.
-- **Elemen Interaktif:**
+- Verifikasi hak upah pekerja dan catatan akuntansi sebelum pembayaran diproses.
+- Yang perlu dicek:
   - Rincian matematis borongan, uang makan, dan pembagian bonus mutu.
   - Pratinjau mutasi debit-kredit buku besar yang memastikan kepatuhan akuntansi.
   - Tombol eksekusi penggajian mingguan.
@@ -586,9 +558,9 @@ Akses sistem diatur secara ketat berdasarkan matriks **Role-Based Access Control
 2. **Laman Penuh:** Buka tautan aplikasi `http://localhost:3009/`, lalu pilih menu Copilot dari antarmuka.
 
 ### Fitur Utama Copilot
-- **Pemilihan Peran Konteks:** Pengguna dapat memilih peran (Owner, Gudang, Mandor, dsb.) pada menu dropdown di bilah atas obrolan agar Copilot memberikan jawaban sesuai kewenangannya.
-- **Suggestion Chips:** Klik tombol saran cepat di bawah bilah atas (contoh: `"Cek stok bahan Poly-Oxford"`, `"Tampilkan status order"`, `"Cek performa Line 03"`).
-- **Action Shortcut Cards:** Jika jawaban Copilot menyarankan aksi tertentu, Copilot akan menampilkan kartu navigasi langsung ke layar yang bersangkutan.
+- **Pemilihan Peran Konteks:** Pilih peran (Owner, Gudang, Mandor, dsb.) dari menu dropdown di bilah atas obrolan supaya Copilot menjawab sesuai kewenangan tersebut.
+- **Suggestion Chips:** Pilih saran cepat di bawah bilah atas (contoh: `"Cek stok bahan Poly-Oxford"`, `"Tampilkan status order"`, `"Cek performa Line 03"`).
+- **Action Shortcut Cards:** Saat jawaban Copilot menyarankan tindakan, kartu navigasi menuju layar terkait akan muncul.
 
 ### Contoh Pertanyaan Operasional yang Didukung
 
@@ -612,11 +584,11 @@ Copilot  : "Nol insiden kontaminasi silang. Seluruh permohonan dispatch bahan te
 
 ### Peringatan FR-6.2: Ownership Mismatch pada Gudang
 
-> [!CAUTION]
-> **Penyebab:** Tombol *Dispatch* ditekan untuk rol kain milik Klien A, tetapi Surat Perintah Kerja yang dipilih milik Klien B.  
-> **Solusi:**  
+> **PERINGATAN:**
+> **Penyebab:** Tombol *Dispatch* ditekan untuk rol kain milik Klien A, padahal Surat Perintah Kerja yang dipilih milik Klien B.
+> **Lakukan langkah berikut:**
 > 1. Klik tombol **"Mengerti"** untuk menutup modal peringatan.  
-> 2. Periksa kembali fisik kain dan nomor rol.  
+> 2. Periksa kembali kondisi fisik kain dan nomor rol.
 > 3. Jangan melanjutkan proses potong jika identitas pemilik kain tidak identik dengan pemesan.
 
 ### Koreksi Kesalahan Tally Jahit oleh Mandor
@@ -631,9 +603,9 @@ Copilot  : "Nol insiden kontaminasi silang. Seluruh permohonan dispatch bahan te
 
 ### Prinsip Imutabilitas Finansial (Buku Besar)
 
-Sistem Lukla menggunakan standar akuntansi **Double-Entry Append-Only Ledger**:
+Sistem Lukla mencatat transaksi dengan standar akuntansi **Double-Entry Append-Only Ledger**:
 - Data mutasi yang sudah disetujui **tidak dapat diubah (UPDATE) atau dihapus (DELETE)** oleh siapa pun, termasuk Owner.
-- Jika terjadi kesalahan administratif dalam pembayaran, Finance harus menerbitkan **Transaksi Pembalik Kompensasi (*Compensating Reversal*)** baru yang membalikkan posisi debit dan kredit secara formal dengan alasan tercatat di audit trail.
+- Jika terjadi kesalahan administratif dalam pembayaran, Finance harus menerbitkan **Transaksi Pembalik Kompensasi (*Compensating Reversal*)** baru yang membalikkan posisi debit dan kredit, dengan alasan yang tercatat di audit trail.
 
 ---
 
