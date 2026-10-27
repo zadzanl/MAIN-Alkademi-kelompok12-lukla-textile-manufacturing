@@ -7,19 +7,16 @@ import ChangePasswordCard from '../components/ChangePasswordCard';
 import { SAMPLING_BASE, DATA_MODE } from '../services/config';
 import { toast } from '../services/toast';
 import { TENANT_ID } from '../services/identity';
-import type { FontScale } from '../App';
 
 interface SettingsViewProps {
   isDark: boolean;
   onToggleDark: () => void;
-  fontScale: FontScale;
-  onFontScaleChange: (scale: FontScale) => void;
   onCheckHealth: () => Promise<boolean>;
   onLoggedOut: () => void;
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({
-  isDark, onToggleDark, fontScale, onFontScaleChange, onCheckHealth, onLoggedOut,
+  isDark, onToggleDark, onCheckHealth, onLoggedOut,
 }) => (
   <div className="space-y-6 max-w-3xl">
 
@@ -59,41 +56,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             }}
           />
         </button>
-      </div>
-    </div>
-
-    <div
-      className="border rounded-[18px] p-6"
-      style={{ background: 'var(--bg-card)', borderColor: 'var(--c-hair)' }}
-    >
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--c-ink)' }}>
-            Ukuran Teks
-          </h3>
-          <p className="text-[13px]" style={{ color: 'var(--c-ink-muted)' }}>
-            Perbesar seluruh antarmuka agar lebih nyaman dibaca.
-          </p>
-        </div>
-        <output className="text-[13px] font-semibold tabular-nums" style={{ color: 'var(--c-brand)' }}>
-          {fontScale}%
-        </output>
-      </div>
-      <label htmlFor="global-font-scale" className="sr-only">Ukuran teks global</label>
-      <input
-        id="global-font-scale"
-        type="range"
-        min="75"
-        max="150"
-        step="25"
-        value={fontScale}
-        onChange={(event) => onFontScaleChange(Number(event.target.value) as FontScale)}
-        className="mt-5 w-full accent-[var(--c-brand)]"
-        aria-valuetext={`${fontScale}% dari ukuran normal`}
-      />
-      <div className="mt-2 flex justify-between text-[11px]" style={{ color: 'var(--c-ink-muted)' }} aria-hidden="true">
-        <span>Normal</span>
-        <span>Lebih besar</span>
       </div>
     </div>
 
