@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from fastapi import Depends, Header, HTTPException
 
-from ..services.auth_store import PortalUser, get_store
+from ..services.auth_store import CANONICAL_ROLES, PortalUser, get_store
 from ..services.ops_store import StoreScope
 
 
@@ -62,6 +62,10 @@ def session_context(authorization: str | None = Header(None, alias="Authorizatio
     user: PortalUser | None = get_store().get_session_user(bearer_token(authorization))
     if user is None:
         raise HTTPException(status_code=401, detail="Sesi tidak valid atau telah berakhir.")
+    if user.role not in CANONICAL_ROLES:
+        raise HTTPException(
+            status_code=403, detail="Peran akun tidak dikenali. Hubungi Admin IT."
+        )
     if user.role == "client" and user.client_id not in SUPPORTED_CLIENT_IDS:
         raise HTTPException(status_code=403, detail="Client mapping is not supported.")
     return SessionContext(user.user_id, user.tenant_id, user.client_id, user.role)

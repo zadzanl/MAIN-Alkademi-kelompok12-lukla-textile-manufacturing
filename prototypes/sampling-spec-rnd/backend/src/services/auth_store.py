@@ -123,6 +123,29 @@ class AuthError(Exception):
         self.message = message
 
 
+# ── Role catalog ─────────────────────────────────────────────────────────────
+
+# Every role a session may carry. Anything outside this set is treated as an
+# unknown role and denied at the API boundary (deny-by-default).
+CANONICAL_ROLES: frozenset[str] = frozenset(
+    {
+        "admin",
+        "Owner",
+        "Sample",
+        "Warehouse",
+        "Mandor",
+        "Tailor",
+        "QCInspector",
+        "FinancePayroll",
+        "client",
+    }
+)
+
+# Roles an Admin IT may assign when approving an internal account. ``client``
+# is excluded: client accounts are provisioned, never self-registered/approved.
+ASSIGNABLE_ROLES: frozenset[str] = CANONICAL_ROLES - {"client"}
+
+
 # ── Records ──────────────────────────────────────────────────────────────────
 
 
@@ -480,11 +503,19 @@ class AuthStore:
                 key=lambda u: u.created_at,
             )
 
-    def set_status(self, user_id: str, status: str) -> PortalUser:
+    def set_status(self, user_id: str, status: str, role: str | None = None) -> PortalUser:
         with self._lock:
             user = self._users.get(user_id)
             if user is None:
                 raise AuthError("NOT_FOUND", "Pengajuan tidak ditemukan.")
+            if status == "active":
+                if role is None:
+                    raise AuthError("ROLE_REQUIRED", "Peran wajib dipilih saat menyetujui akun.")
+                if role not in ASSIGNABLE_ROLES:
+                    raise AuthError(
+                        "INVALID_ROLE", "Peran tidak valid untuk persetujuan internal."
+                    )
+                user.role = role
             user.status = status
             user.updated_at = time.time()
             if status != "active":

@@ -18,7 +18,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api import auth_routes
+from src.api.auth_deps import session_context
 from src.main import app
+from src.services.auth_store import AuthError, get_store
 
 PREFIX = "/api/auth"
 
@@ -69,20 +71,23 @@ def _admin_token(client: TestClient) -> str:
     return response.json()["accessToken"]
 
 
-def _approve(client: TestClient, registration_id: str) -> None:
+def _approve(client: TestClient, registration_id: str, role: str = "Sample") -> None:
     token = _admin_token(client)
     approved = client.post(
         f"{PREFIX}/admin/registrations/{registration_id}/approve",
         headers={"Authorization": f"Bearer {token}"},
+        json={"role": role},
     )
     assert approved.status_code == 200, approved.text
     assert approved.json()["status"] == "active"
 
 
-def _register_and_approve(client: TestClient, identity: dict[str, str]) -> None:
+def _register_and_approve(
+    client: TestClient, identity: dict[str, str], role: str = "Sample"
+) -> None:
     created = client.post(f"{PREFIX}/register", json=identity)
     assert created.status_code == 201, created.text
-    _approve(client, created.json()["registration_id"])
+    _approve(client, created.json()["registration_id"], role=role)
 
 
 # ─── Registration ─────────────────────────────────────────────────────────────
@@ -134,7 +139,7 @@ def test_login_blocked_until_approved(client: TestClient) -> None:
         json={"identifier": identity["employee_id"], "password": identity["password"]},
     )
     assert ok.status_code == 200, ok.text
-    assert ok.json()["actor"]["role"] == "employee"
+    assert ok.json()["actor"]["role"] == "Sample"
 
 
 def test_login_rejects_wrong_password(client: TestClient) -> None:
@@ -290,5 +295,145 @@ def test_all_slide_04_demo_logins(client: TestClient) -> None:
         body = res.json()
         assert body["actor"]["role"] == expected_role, f"Role mismatch for {username}"
         assert body["actor"]["displayName"] == expected_name, f"Name mismatch for {username}"
+
+
+# ─── RBAC: approval requires an assignable role ──────────────────────────────
+
+
+def _pending_registration(client: TestClient) -> str:
+    identity = _unique_identity()
+    created = client.post(f"{PREFIX}/register", json=identity)
+    assert created.status_code == 201, created.text
+    return created.json()["registration_id"]
+
+
+def _approve_raw(client: TestClient, registration_id: str, body: dict[str, object]):
+    token = _admin_token(client)
+    return client.post(
+        f"{PREFIX}/admin/registrations/{registration_id}/approve",
+        headers={"Authorization": f"Bearer {token}"},
+        json=body,
+    )
+
+
+def test_approve_without_role_is_rejected(client: TestClient) -> None:
+    registration_id = _pending_registration(client)
+    response = _approve_raw(client, registration_id, {})
+    assert response.status_code == 422, response.text
+    assert get_store().get_user(registration_id).status == "pending"
+
+
+def test_approve_with_client_role_is_rejected(client: TestClient) -> None:
+    registration_id = _pending_registration(client)
+    response = _approve_raw(client, registration_id, {"role": "client"})
+    assert response.status_code == 422, response.text
+
+
+def test_approve_with_arbitrary_role_is_rejected(client: TestClient) -> None:
+    registration_id = _pending_registration(client)
+    response = _approve_raw(client, registration_id, {"role": "SuperUser"})
+    assert response.status_code == 422, response.text
+
+
+def test_approved_account_logs_in_with_assigned_role(client: TestClient) -> None:
+    identity = _unique_identity()
+    _register_and_approve(client, identity, role="Warehouse")
+    login = client.post(
+        f"{PREFIX}/login",
+        json={"identifier": identity["email"], "password": identity["password"]},
+    )
+    assert login.status_code == 200, login.text
+    assert login.json()["actor"]["role"] == "Warehouse"
+
+
+def test_store_rejects_client_role_on_activation() -> None:
+    user = get_store().seed_user(
+        email=f"store.{uuid.uuid4().hex[:8]}@luka.local",
+        password="Rahasia123",
+        employee_id=f"STORE-{uuid.uuid4().hex[:8].upper()}",
+        full_name="Store Level",
+    )
+    with pytest.raises(AuthError) as excinfo:
+        get_store().set_status(user.user_id, "active", "client")
+    assert excinfo.value.code == "INVALID_ROLE"
+
+
+# ─── RBAC: roleless sessions are denied on every protected endpoint ──────────
+
+SAMPLING_PREFIX = "/api/sampling-spec-rnd"
+
+
+def _roleless_token() -> str:
+    store = get_store()
+    user = store.seed_user(
+        email=f"roleless.{uuid.uuid4().hex[:8]}@luka.local",
+        password="Rahasia123",
+        employee_id=f"ROLELESS-{uuid.uuid4().hex[:8].upper()}",
+        full_name="Roleless Session",
+        role="employee",
+    )
+    token, _ = store.create_session(user.user_id, 3600)
+    return token
+
+
+def _iter_sampling_routes(routes, prefix: str = "") -> list[tuple[str, object]]:
+    """Flatten FastAPI 0.141's nested ``_IncludedRouter`` tree into full paths.
+
+    Included routers are no longer flattened into ``app.routes``; each nested
+    router carries its parent prefix in ``include_context.prefix`` while leaf
+    paths stay relative. Direct routes on a prefixed router already carry the
+    full path, so only prepend when the leaf path is relative.
+    """
+    collected: list[tuple[str, object]] = []
+    for route in routes:
+        nested = getattr(route, "original_router", None)
+        if nested is not None:
+            context = route.include_context
+            collected.extend(
+                _iter_sampling_routes(nested.routes, prefix + (context.prefix or ""))
+            )
+        elif hasattr(route, "dependant"):
+            full_path = (
+                route.path
+                if not prefix or route.path.startswith(prefix)
+                else prefix + route.path
+            )
+            collected.append((full_path, route))
+    return collected
+
+
+def _sampling_routes() -> list[tuple[str, object]]:
+    return [
+        (path, route)
+        for path, route in _iter_sampling_routes(app.routes)
+        if path.startswith(SAMPLING_PREFIX) and path != f"{SAMPLING_PREFIX}/health"
+    ]
+
+
+def test_protected_routes_include_session_context() -> None:
+    routes = _sampling_routes()
+    assert routes, "no protected sampling routes discovered"
+    for path, route in routes:
+        calls = [dependency.call for dependency in route.dependant.dependencies]
+        assert session_context in calls, f"{path} is missing session_context"
+
+
+def test_roleless_token_forbidden_on_every_protected_route(client: TestClient) -> None:
+    token = _roleless_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    routes = _sampling_routes()
+    assert routes, "no protected sampling routes discovered"
+    for path, route in routes:
+        method = next(iter(route.methods - {"HEAD", "OPTIONS"}))
+        url = re.sub(r"\{[^}]+\}", str(uuid.uuid4()), path)
+        response = client.request(method, url, headers=headers, json={})
+        assert response.status_code == 403, (
+            f"{method} {url} returned {response.status_code}: {response.text}"
+        )
+
+
+def test_health_route_is_public(client: TestClient) -> None:
+    response = client.get(f"{SAMPLING_PREFIX}/health")
+    assert response.status_code == 200, response.text
 
 

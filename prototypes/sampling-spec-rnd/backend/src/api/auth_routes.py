@@ -26,6 +26,7 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from ..services.auth_store import (
+    ASSIGNABLE_ROLES,
     AuthError,
     PortalUser,
     get_store,
@@ -101,6 +102,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
+class ApproveRequest(BaseModel):
+    role: str = Field(min_length=1, max_length=40)
+
+
 # ── Validation helpers ───────────────────────────────────────────────────────
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -157,6 +162,8 @@ def _actor_context(user: PortalUser) -> dict[str, object]:
         "email": mask_email(user.email),
         "role": user.role,
         "status": user.status,
+        "tenantId": user.tenant_id,
+        "clientId": user.client_id,
     }
     # Prototype-only bridge to the in-memory sewing operator fixture. Production
     # must resolve this relation server-side from the authenticated actor.
@@ -195,6 +202,7 @@ def create_auth_router() -> APIRouter:
         employee_id="klien1",
         full_name="Klien 1 (Nusantara Apparel)",
         role="client",
+        client_id=None,
     )
     store.seed_user(
         email="klien5@luka.local",
@@ -202,6 +210,7 @@ def create_auth_router() -> APIRouter:
         employee_id="klien5",
         full_name="Klien 5 (Bumi Tekstil)",
         role="client",
+        client_id=None,
     )
     store.seed_user(
         email="qc1@luka.local",
@@ -395,9 +404,10 @@ def create_auth_router() -> APIRouter:
     @router.post("/admin/registrations/{registration_id}/approve")
     def approve_registration(
         registration_id: str,
+        payload: ApproveRequest,
         authorization: str | None = Header(None, alias="Authorization"),
     ) -> dict[str, object]:
-        return _decide(registration_id, "active", authorization)
+        return _decide(registration_id, "active", authorization, role=payload.role)
 
     @router.post("/admin/registrations/{registration_id}/reject")
     def reject_registration(
@@ -407,13 +417,24 @@ def create_auth_router() -> APIRouter:
         return _decide(registration_id, "rejected", authorization)
 
     def _decide(
-        registration_id: str, status: str, authorization: str | None
+        registration_id: str,
+        status: str,
+        authorization: str | None,
+        role: str | None = None,
     ) -> dict[str, object]:
         user = _current_user(authorization)
         if user.role != "admin":
             raise HTTPException(status_code=403, detail="Akses hanya untuk Admin IT.")
         try:
-            updated = get_store().set_status(registration_id, status)
+            if status == "active":
+                if role not in ASSIGNABLE_ROLES:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Peran tidak valid untuk persetujuan internal.",
+                    )
+                updated = get_store().set_status(registration_id, status, role=role)
+            else:
+                updated = get_store().set_status(registration_id, status)
         except AuthError as exc:
             raise HTTPException(status_code=404, detail=exc.message) from exc
         return {"success": True, "registration_id": updated.user_id, "status": updated.status}
