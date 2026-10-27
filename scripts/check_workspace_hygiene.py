@@ -13,6 +13,7 @@ from pathlib import Path
 # Explicit allowed files in repository root
 ALLOWED_ROOT_FILES = {
     "README.md",
+    "README.en.md",
     "AGENTS.md",
     "USER_GUIDE.md",
     "main.py",
