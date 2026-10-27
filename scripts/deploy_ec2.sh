@@ -91,6 +91,7 @@ LUKLA_APP_DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:54
 
 # LLM configuration (free model default + Bedrock support)
 COPILOT_DEFAULT_PROVIDER=openrouter
+# API key removed prior to release; supplied from the deployment environment.
 OPENROUTER_API_KEY=$configured_openrouter_key
 COPILOT_MODEL_NAME=nvidia/nemotron-3-super-120b-a12b:free
 AWS_REGION=us-east-1

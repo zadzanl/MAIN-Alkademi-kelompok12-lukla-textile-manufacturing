@@ -31,6 +31,8 @@ class CopilotSettings(BaseModel):
     BEDROCK_MODEL_ID: str = Field(
         default_factory=lambda: os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-micro-v1:0")
     )
+    # API key removed prior to release; supply at runtime via COPILOT_API_KEY
+    # or OPENROUTER_API_KEY. No embedded fallback is permitted.
     COPILOT_API_KEY: str = Field(
         default_factory=lambda: os.getenv("COPILOT_API_KEY") or os.getenv("OPENROUTER_API_KEY", "")
     )

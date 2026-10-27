@@ -412,6 +412,8 @@ async def demo_chat_turn(
 ) -> ChatTurnResponse:
     """
     Dedicated spare/redundant chat endpoint using the configured provider.
+
+    No embedded API key: supply COPILOT_API_KEY or OPENROUTER_API_KEY at runtime.
     """
     return await _execute_copilot_turn(
         request=request,
