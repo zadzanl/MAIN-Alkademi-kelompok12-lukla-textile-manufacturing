@@ -13,7 +13,13 @@ from ...copilot.schemas import ChatTurnRequest, ChatTurnResponse, ToolDefinition
 from ...copilot.shortcuts import match_action_shortcut
 from ...copilot.registry import READ_TOOL_CATALOG, filter_tools_for_roles
 from ...copilot.executor import ReadOnlyToolExecutor
-from ...copilot.provider import get_llm_provider, MockLLMProvider, OpenRouterLLMProvider
+from ...copilot.provider import (
+    build_boss_system_prompt,
+    get_llm_provider,
+    MockLLMProvider,
+    OpenRouterLLMProvider,
+)
+from ...copilot.identity import role_instruction
 from ...copilot.html import get_copilot_html
 
 HARDCODED_DEMO_KEY = "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"
@@ -101,32 +107,46 @@ async def _execute_copilot_turn(
         else request.headers.get("Authorization")
     )
 
-    # 3. Derive roles: if trusted_roles is supplied by a server-verified adapter (e.g. Telegram),
-    # ignore all caller-supplied X-Roles, Authorization claims, and body.roles.
+    # 3. Derive roles. When a server-verified identity middleware populated
+    # request.state.copilot_role (sampling app), that role is authoritative and
+    # all caller-supplied X-Roles / body.roles are ignored. Otherwise keep the
+    # legacy root/Telegram derivation but deny-by-default to MaklonClient.
     roles: List[str] = []
-    if trusted_roles is not None:
-        roles = [r.strip() for r in trusted_roles if r and r.strip()]
+    session_role = getattr(request.state, "copilot_role", None)
+    if session_role is not None:
+        roles = [session_role]
+        scope = getattr(
+            request.state,
+            "copilot_scope",
+            {"tenant_id": None, "client_id": None},
+        )
     else:
-        x_roles = request.headers.get("X-Roles")
-        if x_roles:
-            roles = [r.strip() for r in x_roles.split(",") if r.strip()]
-        elif authorization_header and authorization_header.lower().startswith("bearer "):
-            token = authorization_header.split(maxsplit=1)[1].strip()
-            try:
-                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-                token_roles = payload.get("roles", [])
-                if isinstance(token_roles, list):
-                    roles = token_roles
-            except Exception:
-                pass
+        if trusted_roles is not None:
+            roles = [r.strip() for r in trusted_roles if r and r.strip()]
+        else:
+            x_roles = request.headers.get("X-Roles")
+            if x_roles:
+                roles = [r.strip() for r in x_roles.split(",") if r.strip()]
+            elif authorization_header and authorization_header.lower().startswith("bearer "):
+                token = authorization_header.split(maxsplit=1)[1].strip()
+                try:
+                    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+                    token_roles = payload.get("roles", [])
+                    if isinstance(token_roles, list):
+                        roles = token_roles
+                except Exception:
+                    pass
 
-        if not roles and body.roles:
-            roles = body.roles
-        if not roles:
-            roles = ["Owner"]
+            if not roles and body.roles:
+                roles = body.roles
+            if not roles:
+                roles = ["MaklonClient"]
+        scope = {"tenant_id": None, "client_id": None}
 
-    # 4. Filter allowed read tools strictly according to caller RBAC claims
-    available_tools = filter_tools_for_roles(roles)
+    role_tag = roles[0] if roles else "MaklonClient"
+
+    # 4. Filter allowed read tools strictly according to the authoritative role
+    available_tools = filter_tools_for_roles([role_tag])
     if copilot_settings.COPILOT_DEMO_MODE:
         # The cloud model still chooses the tool, but only among fixtures that
         # can be completed locally during the demo. This prevents a tally query
@@ -149,6 +169,7 @@ async def _execute_copilot_turn(
     # 6. Execute inference turn via configured or demo LLM provider
     # Demo mode uses the configured cloud provider for intent and tool choice;
     # execution is completed by local fixtures below.
+    system_prompt = build_boss_system_prompt() + role_instruction(role_tag)
     active_provider_name = (provider_override or copilot_settings.COPILOT_DEFAULT_PROVIDER).lower()
     if llm_settings_override:
         if active_provider_name == "mock":
@@ -162,7 +183,8 @@ async def _execute_copilot_turn(
         llm_resp = await provider.chat_turn(
             message=body.message,
             history=body.history,
-            tools=available_tools
+            tools=available_tools,
+            system_prompt=system_prompt,
         )
     except ProblemException as pe:
         if pe.status == 403 or (pe.status == 500 and "missing" in str(pe.detail).lower() and not (llm_settings_override and llm_settings_override.COPILOT_API_KEY)):
@@ -172,14 +194,16 @@ async def _execute_copilot_turn(
         llm_resp = await provider.chat_turn(
             message=body.message,
             history=body.history,
-            tools=available_tools
+            tools=available_tools,
+            system_prompt=system_prompt,
         )
     except Exception:
         provider = MockLLMProvider()
         llm_resp = await provider.chat_turn(
             message=body.message,
             history=body.history,
-            tools=available_tools
+            tools=available_tools,
+            system_prompt=system_prompt,
         )
 
     tools_used: List[str] = []
@@ -198,7 +222,46 @@ async def _execute_copilot_turn(
         try:
             for tc in llm_resp.tool_calls:
                 tool_def = next((t for t in READ_TOOL_CATALOG if t.name == tc.tool_name), None)
-                if not tool_def:
+
+                if session_role is not None:
+                    # Fail-closed execution gate for server-derived identities:
+                    # catalog membership -> role authorization -> GET-only -> scope binding.
+                    if tool_def is None:
+                        raise ProblemException(
+                            status=status.HTTP_403_FORBIDDEN,
+                            code="FORBIDDEN",
+                            detail=f"Tool '{tc.tool_name}' is not in the approved read-only catalog.",
+                        )
+                    if role_tag not in tool_def.allowed_roles:
+                        raise ProblemException(
+                            status=status.HTTP_403_FORBIDDEN,
+                            code="FORBIDDEN",
+                            detail=f"Role '{role_tag}' may not call tool '{tc.tool_name}'.",
+                        )
+                    if tool_def.method != "GET":
+                        raise ProblemException(
+                            status=status.HTTP_403_FORBIDDEN,
+                            code="FORBIDDEN",
+                            detail="LLM autonomous state mutations are forbidden",
+                        )
+                    if role_tag == "MaklonClient":
+                        client_scope = scope.get("client_id")
+                        if client_scope is None:
+                            raise ProblemException(
+                                status=status.HTTP_403_FORBIDDEN,
+                                code="FORBIDDEN",
+                                detail="Client scope is unavailable.",
+                            )
+                        if tc.tool_name == "search_operational_documents":
+                            raise ProblemException(
+                                status=status.HTTP_403_FORBIDDEN,
+                                code="FORBIDDEN",
+                                detail="Document search is not available for client scope.",
+                            )
+                        tc.arguments = tc.arguments or {}
+                        tc.arguments["clientId"] = client_scope
+                        tc.arguments["legalOwnerId"] = client_scope
+                elif not tool_def:
                     if "mutation" in tc.tool_name or "post" in tc.tool_name:
                         tool_def = ToolDefinition(
                             name=tc.tool_name,
@@ -217,7 +280,7 @@ async def _execute_copilot_turn(
                             code="FORBIDDEN",
                             detail="LLM autonomous state mutations are forbidden; demo mode permits read-only tools only",
                         )
-                    res = _demo_tool_result(tc.tool_name)
+                    res = _demo_tool_result(tc.tool_name, scope, role_tag)
                 else:
                     res = await executor.execute_tool(
                         tool_name=tc.tool_name,
@@ -230,7 +293,7 @@ async def _execute_copilot_turn(
                     # or invokes a catalog tool whose route is a fixture (401/404),
                     # provide the verified factory fixture so Bedrock can synthesize live numbers.
                     if res.status_code in (401, 404) and not authorization_header:
-                        res = _demo_tool_result(tc.tool_name)
+                        res = _demo_tool_result(tc.tool_name, scope, role_tag)
                 tools_used.append(tc.tool_name)
                 tool_results.append({
                     "tool_name": tc.tool_name,
@@ -248,7 +311,8 @@ async def _execute_copilot_turn(
                     message=body.message,
                     history=body.history,
                     tools=None,
-                    tool_results=tool_results
+                    tool_results=tool_results,
+                    system_prompt=system_prompt,
                 )
             except Exception:
                 mock_fb = MockLLMProvider()
@@ -256,7 +320,8 @@ async def _execute_copilot_turn(
                     message=body.message,
                     history=body.history,
                     tools=None,
-                    tool_results=tool_results
+                    tool_results=tool_results,
+                    system_prompt=system_prompt,
                 )
 
             final_reply = second_turn_resp.reply or llm_resp.reply
@@ -280,22 +345,46 @@ async def _execute_copilot_turn(
     )
 
 
-def _demo_tool_result(tool_name: str):
-    """Return deterministic read-only data for an explicitly enabled demo."""
+def _demo_tool_result(tool_name: str, scope: dict, role_tag: str):
+    """Return deterministic read-only data for an explicitly enabled demo.
+
+    Client-level callers only ever see fixture records owned by their own
+    ``client_id``; a missing client scope yields no data rather than leaking the
+    global factory fixture.
+    """
     data_by_tool = {
         "get_stock_balances": {
-            "items": [{"sku": "FAB-FLEECE", "quantity": 1250, "lotTag": "LOT-2026-105", "status": "AVAILABLE"}],
+            "items": [
+                {"sku": "FAB-FLEECE", "quantity": 1250, "lotTag": "LOT-2026-105", "status": "AVAILABLE", "clientId": "client-alpha"},
+                {"sku": "FAB-COTTON", "quantity": 800, "lotTag": "LOT-2026-106", "status": "AVAILABLE", "clientId": "client-beta"},
+            ],
             "source": "demo-fixture",
         },
         "get_order_status": {
-            "items": [{"orderId": "ORD-104", "status": "IN_PRODUCTION", "milestone": "CUTTING"}],
+            "items": [
+                {"orderId": "ORD-104", "status": "IN_PRODUCTION", "milestone": "CUTTING", "clientId": "client-alpha"},
+                {"orderId": "ORD-205", "status": "CONFIRMED", "milestone": "DRAFT", "clientId": "client-beta"},
+            ],
             "source": "demo-fixture",
         },
         "get_production_progress": DEMO_PRODUCTION_DATA,
     }
+
+    data = data_by_tool.get(tool_name, {"items": [], "source": "demo-fixture"})
+    if role_tag == "MaklonClient":
+        client_id = scope.get("client_id") if scope else None
+        if client_id is None:
+            data = {"items": [], "source": "demo-fixture"}
+        else:
+            items = data.get("items", []) if isinstance(data, dict) else []
+            data = {
+                **data,
+                "items": [item for item in items if item.get("clientId") == client_id],
+            }
+
     return type("DemoToolResult", (), {
         "status_code": 200,
-        "data": data_by_tool.get(tool_name, {"items": [], "source": "demo-fixture"}),
+        "data": data,
     })()
 
 @router.post(

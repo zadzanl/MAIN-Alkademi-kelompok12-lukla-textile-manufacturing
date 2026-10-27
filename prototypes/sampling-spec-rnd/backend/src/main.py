@@ -4,8 +4,9 @@ Sampling & Spec R&D Module
 """
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .api.auth_routes import create_auth_router
 from .api.routes import create_api_router
@@ -43,6 +44,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
 app = create_app()
 
 # Mount Lukla Intelligence Copilot router so port 8009 can also serve /api/v1/copilot/chat directly
+_copilot_identity = None
 try:
     import sys
     import types
@@ -72,6 +74,7 @@ try:
             sys.modules["backend.app.api.v1"] = _v1_pkg
 
         from backend.app.api.v1.copilot import router as copilot_v1_router
+        from backend.app.copilot.identity import copilot_identity as _copilot_identity
         from backend.app.schemas.problem import Problem, ProblemException
 
         @app.exception_handler(ProblemException)
@@ -106,9 +109,38 @@ except Exception as _exc:
     print(f"[WARN] Could not mount copilot router on sampling backend: {_exc}")
 
 
+@app.middleware("http")
+async def _copilot_identity_middleware(request: Request, call_next):
+    """Resolve the Copilot caller role from the authenticated session.
+
+    Only the two chat POST routes are gated. The HTML GET pages, the root
+    ``backend/app`` mount, and the Telegram adapter keep their current behaviour.
+    """
+    if request.method == "POST" and request.url.path in (
+        "/api/v1/copilot/chat",
+        "/api/v1/copilot/demo/chat",
+    ):
+        if _copilot_identity is None:
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Copilot authorization is unavailable."},
+            )
+        try:
+            _copilot_identity(request, request.headers.get("Authorization"))
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return await call_next(request)
+
+
 # Health check endpoint (at root level for backward compatibility).
 # The /api/sampling-spec-rnd/health route is provided by the API router.
 @app.get("/health")
 def health_check() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy", "service": "sampling-spec-rnd-api"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8009, reload=True)

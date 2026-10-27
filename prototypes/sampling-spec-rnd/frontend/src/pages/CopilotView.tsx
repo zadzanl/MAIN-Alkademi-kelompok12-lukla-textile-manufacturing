@@ -11,7 +11,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { LucideIcon } from '../components/Sidebar';
-import { getToken } from '../services/authSession';
+import { getToken, getActor } from '../services/authSession';
 
 export interface ActionShortcut {
   id: string;
@@ -44,10 +44,12 @@ function configuredCopilotToken(): string | null {
 }
 
 function copilotAuthorization(): string | null {
-  const token = configuredCopilotToken() ?? getToken();
-  // The root API accepts signed JWTs. Prototype auth sessions are opaque tokens
-  // and must not be presented as JWTs because they cannot carry tenant claims.
-  if (!token || token.split('.').length !== 3) return null;
+  const override = configuredCopilotToken();
+  if (override) return `Bearer ${override}`;
+  const token = getToken();
+  // Sampling-app sessions are opaque tokens resolved server-side; the backend
+  // derives the caller role from this session, never from client-supplied data.
+  if (!token) return null;
   return `Bearer ${token}`;
 }
 
@@ -60,7 +62,7 @@ const PRESET_SUGGESTIONS = [
 ];
 
 const CopilotView: React.FC<CopilotViewProps> = ({ isDark, onNavigate }) => {
-  const [selectedRole, setSelectedRole] = useState('Owner');
+  const sessionRole = getActor()?.role ?? 'MaklonClient';
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -105,14 +107,13 @@ const CopilotView: React.FC<CopilotViewProps> = ({ isDark, onNavigate }) => {
       const authorization = copilotAuthorization();
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Roles': selectedRole,
       };
       if (authorization) headers.Authorization = authorization;
 
       const resp = await fetch(COPILOT_ENDPOINT, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ message: textToSend, history, roles: [selectedRole], stream: false }),
+        body: JSON.stringify({ message: textToSend, history, stream: false }),
       });
 
       if (!resp.ok) {
@@ -202,29 +203,22 @@ const CopilotView: React.FC<CopilotViewProps> = ({ isDark, onNavigate }) => {
             </div>
           </div>
 
-          {/* Role Filter Selector */}
+          {/* Read-only session role (resolved server-side) */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium" style={{ color: isDark ? '#a1a1aa' : '#71717a' }}>
-              Peran:
+              Peran Sesi:
             </span>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              aria-label="Pilih Peran Operasional"
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors outline-none cursor-pointer"
+            <span
+              aria-label="Peran Sesi Terverifikasi"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold border"
               style={{
                 background: isDark ? '#1f1f23' : '#f4f4f5',
                 color: isDark ? '#f4f4f5' : '#18181b',
                 borderColor: isDark ? '#3f3f46' : '#d4d4d8',
               }}
             >
-              <option value="Owner">Owner</option>
-              <option value="Warehouse">Warehouse</option>
-              <option value="ProductionHead">ProductionHead</option>
-              <option value="QCInspector">QCInspector</option>
-              <option value="FinancePayroll">FinancePayroll</option>
-              <option value="MaklonClient">MaklonClient</option>
-            </select>
+              {sessionRole}
+            </span>
           </div>
         </div>
 
