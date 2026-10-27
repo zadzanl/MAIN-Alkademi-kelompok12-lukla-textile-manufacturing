@@ -147,7 +147,7 @@ The hackathon template provides a `t3.micro` instance with 1 GiB physical RAM. R
 PostgreSQL 15 runs locally on loopback `127.0.0.1:5432`. It is isolated by the EC2 Security Group (port 5432 is not exposed externally).
 
 ### Migration Pipeline
-[`scripts/init_ec2_db.py`](../../../scripts/init_ec2_db.py) applies the full schema sequence idempotently and seeds the default factory tenant/actor/accounts:
+[`scripts/init_ec2_db.py`](../../../../scripts/init_ec2_db.py) applies the full schema sequence idempotently and seeds the default factory tenant/actor/accounts:
 1. `001_identities.sql`: Tenants, actors, audit events, idempotency records, and `lukla_app` role.
 2. `006_payroll_rate_cards.sql`: Operation codes, piece rates, rate cards (`btree_gist` pre-enabled by superuser).
 3. `007_payroll_qc_inputs.sql`: Garment assemblies, component allocations, QC inspections, and defect logs.
