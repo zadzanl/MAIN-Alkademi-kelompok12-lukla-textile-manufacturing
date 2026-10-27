@@ -127,4 +127,4 @@ Single source of truth: **`src/index.css`** (Tailwind layers are declared last t
 
 ## License
 
-Lukla Operations Engine
+Proprietary — Alkademi
