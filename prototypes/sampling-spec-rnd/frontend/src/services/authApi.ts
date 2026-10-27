@@ -175,8 +175,10 @@ export async function decideRegistration(
   token: string,
   registrationId: string,
   decision: 'approve' | 'reject',
+  role?: string,
 ): Promise<ApiResult<{ status: string }>> {
-  return postJson<{ status: string }>(`/admin/registrations/${registrationId}/${decision}`, {}, token);
+  const body = decision === 'approve' ? { role } : {};
+  return postJson<{ status: string }>(`/admin/registrations/${registrationId}/${decision}`, body, token);
 }
 
 export const authApi = {

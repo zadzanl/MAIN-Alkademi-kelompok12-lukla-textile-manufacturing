@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as authApi from '../services/authApi';
 import type { RegistrationView } from '../services/authApi';
+import { ASSIGNABLE_ROLES, roleLabel } from '../services/access';
 import { clearSession, getToken } from '../services/authSession';
 import { toast } from '../services/toast';
 
@@ -13,6 +14,7 @@ const PortalAdminView: React.FC = () => {
   const [items, setItems] = useState<RegistrationView[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const token = getToken();
@@ -31,11 +33,26 @@ const PortalAdminView: React.FC = () => {
   const decide = async (id: string, decision: 'approve' | 'reject') => {
     const token = getToken();
     if (!token) return;
+    const role = roles[id];
+    if (decision === 'approve' && !role) {
+      toast.error('Pilih peran sebelum menyetujui pengajuan.');
+      return;
+    }
     setBusyId(id);
-    const res = await authApi.decideRegistration(token, id, decision);
+    const res = await authApi.decideRegistration(
+      token,
+      id,
+      decision,
+      decision === 'approve' ? role : undefined,
+    );
     setBusyId(null);
     if (res.success) {
       toast.success(decision === 'approve' ? 'Pengajuan disetujui.' : 'Pengajuan ditolak.');
+      setRoles((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
       void load();
     } else if (res.status === 401) {
       clearSession();
@@ -78,6 +95,7 @@ const PortalAdminView: React.FC = () => {
                 <th>No. Karyawan</th>
                 <th>Departemen</th>
                 <th>No. HP</th>
+                <th>Peran</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -90,11 +108,26 @@ const PortalAdminView: React.FC = () => {
                   <td>{item.department}</td>
                   <td>{item.phone}</td>
                   <td>
+                    <select
+                      aria-label={`Peran untuk ${item.full_name}`}
+                      value={roles[item.registration_id] ?? ''}
+                      onChange={(e) => setRoles((prev) => ({ ...prev, [item.registration_id]: e.target.value }))}
+                      disabled={busyId === item.registration_id}
+                      className="rounded-[8px] px-2 py-1.5 text-[12px] border"
+                      style={{ background: 'var(--bg-card)', color: 'var(--c-ink)', borderColor: 'var(--c-hair)' }}
+                    >
+                      <option value="" disabled>Pilih peran…</option>
+                      {ASSIGNABLE_ROLES.map((r) => (
+                        <option key={r} value={r}>{roleLabel(r)}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
                     <div className="flex gap-2">
                       <button
                         type="button"
                         className="btn-pill btn-pill-green"
-                        disabled={busyId === item.registration_id}
+                        disabled={busyId === item.registration_id || !roles[item.registration_id]}
                         onClick={() => void decide(item.registration_id, 'approve')}
                       >
                         Setujui

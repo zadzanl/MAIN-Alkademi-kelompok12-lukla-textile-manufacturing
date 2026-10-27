@@ -64,6 +64,7 @@ import PortalAdminView     from './pages/PortalAdminView';
 import type { TimeStudy, SpecVersion, WorkflowSummary, ExportCSV } from './types';
 import * as api from './services/api';
 import { logout as authLogout } from './services/authApi';
+import { allowedViewsForRole, isKnownRole, landingViewForRole, navKeyForRole } from './services/access';
 import { clearSession, getSession, subscribe as subscribeAuth, type AuthSession } from './services/authSession';
 import { toast } from './services/toast';
 import { TENANT_ID, actor } from './services/identity';
@@ -119,6 +120,19 @@ const chapters: NavChapter[] = [
   },
   {
     id: 'sistem', label: 'Sistem', icon: 'settings',
+    items: [
+      { id: 'settings', label: 'Pengaturan', icon: 'settings', view: 'settings' },
+    ],
+  },
+];
+
+// Roleless/unknown accounts get no operational navigation. Settings is the
+// authorized landing view so the redirect effect cannot loop.
+const rolelessChapters: NavChapter[] = [
+  {
+    id: 'roleless-akun',
+    label: 'Akun & Profil',
+    icon: 'settings',
     items: [
       { id: 'settings', label: 'Pengaturan', icon: 'settings', view: 'settings' },
     ],
@@ -378,33 +392,16 @@ function App() {
   const isMandor = role === 'Mandor' || role === 'mandor' || role === 'kepala_produksi';
   const isTailor = role === 'Tailor' || role === 'tailor' || role === 'penjahit';
 
-  // Role default landing view
-  const defaultLandingView = useMemo(() => {
-    if (isClient) return 'sample-versions';
-    if (isQcInspector) return 'quality';
-    if (isFinancePayroll) return 'payroll';
-    if (isOwner) return 'overview';
-    if (isSample) return 'sample-versions';
-    if (isWarehouse) return 'warehouse';
-    if (isMandor) return 'production';
-    if (isTailor) return 'production';
-    return 'overview';
-  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+  // Role default landing view — exact canonical role, roleless lands on settings.
+  const defaultLandingView = useMemo(() => landingViewForRole(role), [role]);
 
-  // Explicit view authorization matrix based strictly on Slide 04 IZIN & PEMBATASAN
+  // Explicit view authorization matrix based strictly on Slide 04 IZIN & PEMBATASAN.
+  // Authorization uses exact canonical roles; alias flags are cosmetic only.
   const isViewAuthorized = useMemo(() => {
-    if (isAdmin) return true;
-    if (currentView === 'copilot' || currentView === 'settings') return true;
-    if (isClient) return ['sample-versions', 'production', 'warehouse'].includes(currentView);
-    if (isQcInspector) return ['quality', 'production', 'spec-list'].includes(currentView);
-    if (isFinancePayroll) return ['payroll', 'reports', 'ledger', 'overview'].includes(currentView);
-    if (isOwner) return ['overview', 'reports', 'ledger', 'payroll', 'warehouse', 'spec-versions'].includes(currentView);
-    if (isSample) return ['sample-versions', 'stopwatch', 'active-studies', 'time-studies', 'study-list', 'spec-versions', 'spec-list', 'drift-analysis'].includes(currentView);
-    if (isWarehouse) return ['warehouse'].includes(currentView);
-    if (isMandor) return ['production', 'spec-list', 'active-studies'].includes(currentView);
-    if (isTailor) return ['production'].includes(currentView);
-    return true;
-  }, [isAdmin, currentView, isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor]);
+    const allowed = allowedViewsForRole(role);
+    if (allowed === 'all') return true;
+    return allowed.has(currentView);
+  }, [role, currentView]);
 
   // Automatically switch away from unauthorized views upon login
   // Note: 'copilot' and 'settings' are allowed across all roles for demo purposes.
@@ -415,29 +412,31 @@ function App() {
     }
   }, [isViewAuthorized, defaultLandingView]);
 
-  // Role-based navigation chapters:
+  // Role-based navigation chapters — driven by the same exact role keys as the
+  // authorization matrix. Unknown roles must not fall through to full `chapters`.
   const navChapters = useMemo<NavChapter[]>(() => {
-    if (isClient) return clientChapters;
-    if (isQcInspector) return qcInspectorChapters;
-    if (isFinancePayroll) return financePayrollChapters;
-    if (isOwner) return ownerChapters;
-    if (isSample) return sampleChapters;
-    if (isWarehouse) return warehouseChapters;
-    if (isMandor) return mandorChapters;
-    if (isTailor) return tailorChapters;
-    if (isAdmin) {
-      return [
-        ...chapters,
-        {
-          id: 'administrasi', label: 'Administrasi', icon: 'badge-check',
-          items: [
-            { id: 'access-approvals', label: 'Persetujuan Akses', icon: 'check-circle', view: 'access-approvals' },
-          ],
-        },
-      ];
+    switch (navKeyForRole(role)) {
+      case 'client': return clientChapters;
+      case 'qc': return qcInspectorChapters;
+      case 'finance': return financePayrollChapters;
+      case 'owner': return ownerChapters;
+      case 'sample': return sampleChapters;
+      case 'warehouse': return warehouseChapters;
+      case 'mandor': return mandorChapters;
+      case 'tailor': return tailorChapters;
+      case 'admin':
+        return [
+          ...chapters,
+          {
+            id: 'administrasi', label: 'Administrasi', icon: 'badge-check',
+            items: [
+              { id: 'access-approvals', label: 'Persetujuan Akses', icon: 'check-circle', view: 'access-approvals' },
+            ],
+          },
+        ];
+      default: return rolelessChapters;
     }
-    return chapters;
-  }, [isClient, isQcInspector, isFinancePayroll, isOwner, isSample, isWarehouse, isMandor, isTailor, isAdmin]);
+  }, [role]);
 
   // ── dark mode ────────────────────────────────────────────────────────────────
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -824,6 +823,28 @@ function App() {
             className={`page-turn ${currentView === 'production' ? 'page-turn-static' : ''}`}
           >
             <ErrorBoundary>
+
+          {/* ── ROLELESS NOTICE (DEF-002) ────────────────────────────────────── */}
+          {!isKnownRole(role) && (
+            <div
+              role="status"
+              className="surface p-4 mb-4 rounded-[12px] flex items-start gap-3"
+              style={{ borderColor: '#d97706', background: 'rgba(217, 119, 6, 0.08)' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" x2="12" y1="8" y2="12" />
+                <line x1="12" x2="12.01" y1="16" y2="16" />
+              </svg>
+              <p className="text-[13px] font-medium" style={{ color: 'var(--c-ink)' }}>
+                Akun Anda belum memiliki peran operasional. Hubungi Admin IT untuk penetapan peran.
+              </p>
+            </div>
+          )}
 
           {/* ── ROLE ACCESS RESTRICTION BARRIER (Slide 04) ──────────────────── */}
           {!isViewAuthorized && (
