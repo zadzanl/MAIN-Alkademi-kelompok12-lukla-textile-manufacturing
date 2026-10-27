@@ -79,15 +79,19 @@ pip install -r requirements.txt
 
 # 4. Generate Production .env (No secret AWS keys; IAM Role auto-auth)
 echo "--> Generating .env configuration..."
-cat << 'EOF' > .env
+configured_openrouter_key="${OPENROUTER_API_KEY:-}"
+if [ -z "$configured_openrouter_key" ] && [ -f .env ]; then
+    configured_openrouter_key="$(sed -n 's/^OPENROUTER_API_KEY=//p' .env | head -n 1)"
+fi
+
+cat << EOF > .env
 # Database configuration
 DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:5432/myappdb
 LUKLA_APP_DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:5432/myappdb
 
-# LLM configuration (Proven OpenRouter free model + Bedrock support)
+# LLM configuration (free model default + Bedrock support)
 COPILOT_DEFAULT_PROVIDER=openrouter
-# Restricted demo credential: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=$configured_openrouter_key
 COPILOT_MODEL_NAME=nvidia/nemotron-3-super-120b-a12b:free
 AWS_REGION=us-east-1
 BEDROCK_MODEL_ID=us.amazon.nova-micro-v1:0

@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.schemas.problem import ProblemException
-from backend.app.copilot.config import copilot_settings
+from backend.app.copilot.config import CopilotSettings, copilot_settings
 from backend.app.copilot.schemas import ToolDefinition
 from backend.app.copilot.registry import filter_tools_for_roles, READ_TOOL_CATALOG
 from backend.app.copilot.shortcuts import match_action_shortcut
@@ -198,6 +198,29 @@ def test_openrouter_provider_requires_api_key(client, monkeypatch):
     assert response.headers["content-type"] == "application/problem+json"
     data = response.json()
     assert "OpenRouter API key is missing" in data["detail"]
+
+def test_copilot_api_key_uses_runtime_alias_precedence(monkeypatch):
+    """Configuration accepts either runtime alias without an embedded fallback."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "alias-test-key")
+    monkeypatch.delenv("COPILOT_API_KEY", raising=False)
+    assert CopilotSettings().COPILOT_API_KEY == "alias-test-key"
+
+    monkeypatch.setenv("COPILOT_API_KEY", "primary-test-key")
+    assert CopilotSettings().COPILOT_API_KEY == "primary-test-key"
+
+    monkeypatch.delenv("COPILOT_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert CopilotSettings().COPILOT_API_KEY == ""
+
+def test_demo_endpoint_requires_configured_key(client, monkeypatch):
+    """The demo route must not bypass missing runtime OpenRouter configuration."""
+    monkeypatch.setattr(copilot_settings, "COPILOT_API_KEY", "")
+    response = client.post(
+        "/api/v1/copilot/demo/chat",
+        json={"message": "Berapa stok kain fleece?"},
+    )
+    assert response.status_code == 500
+    assert "OpenRouter API key is missing" in response.json()["detail"]
 
 def test_openrouter_provider_mocked_turn(monkeypatch):
     """

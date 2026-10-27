@@ -22,19 +22,6 @@ from ...copilot.provider import (
 from ...copilot.identity import role_instruction
 from ...copilot.html import get_copilot_html
 
-# Owner-reported restriction: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
-HARDCODED_DEMO_KEY = "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"
-HARDCODED_DEMO_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
-HARDCODED_DEMO_URL = "https://openrouter.ai/api/v1"
-
-DEMO_COPILOT_SETTINGS = CopilotSettings(
-    COPILOT_DEFAULT_PROVIDER="openrouter",
-    COPILOT_API_KEY=HARDCODED_DEMO_KEY,
-    COPILOT_MODEL_NAME=HARDCODED_DEMO_MODEL,
-    COPILOT_BASE_URL=HARDCODED_DEMO_URL,
-    COPILOT_TIMEOUT_SECONDS=15.0
-)
-
 router = APIRouter(prefix="/copilot", tags=["copilot"])
 
 # Generated once when this backend process starts; restart run_backend.bat to get
@@ -424,12 +411,11 @@ async def demo_chat_turn(
     provider: Optional[str] = Query(None, description="Explicit provider override: 'mock' or 'openrouter'")
 ) -> ChatTurnResponse:
     """
-    Dedicated spare/redundant chat endpoint with hardcoded proven configuration.
-    Features automatic fallback to MockLLMProvider for guaranteed demonstration reliability.
+    Dedicated spare/redundant chat endpoint using the configured provider.
     """
     return await _execute_copilot_turn(
         request=request,
         body=body,
-        provider_override=provider,
-        llm_settings_override=DEMO_COPILOT_SETTINGS
+        provider_override=provider or "openrouter",
+        llm_settings_override=copilot_settings
     )
