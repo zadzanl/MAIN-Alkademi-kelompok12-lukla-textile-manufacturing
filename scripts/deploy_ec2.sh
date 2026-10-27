@@ -3,7 +3,7 @@ set -e
 
 # ==============================================================================
 # Lukla Operations Engine — Automated EC2 Deployment Script
-# Targets: Amazon Linux 2023 (Alkademi Hackathon EC2 Template)
+# Targets: Amazon Linux 2023 deployment template
 # ==============================================================================
 
 echo "=========================================="
@@ -86,6 +86,7 @@ LUKLA_APP_DATABASE_URL=postgresql://myappuser:password_rahasia_kamu@127.0.0.1:54
 
 # LLM configuration (Proven OpenRouter free model + Bedrock support)
 COPILOT_DEFAULT_PROVIDER=openrouter
+# Restricted demo credential: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
 OPENROUTER_API_KEY=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
 COPILOT_MODEL_NAME=nvidia/nemotron-3-super-120b-a12b:free
 AWS_REGION=us-east-1

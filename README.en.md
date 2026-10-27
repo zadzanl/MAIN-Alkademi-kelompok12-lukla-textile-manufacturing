@@ -1,6 +1,6 @@
 # Lukla - Textile Manufacturing Operations Platform
 
-Lukla is a textile manufacturing operations platform that brings production, warehouse, quality control, sampling, and payroll together in a single application. Teams no longer need to switch between tools. This project was built by **Group 12** for the **MAIN Alkademi Hackathon 2026**.
+Lukla is a textile manufacturing operations platform that brings production, warehouse, quality control, sampling, and payroll together in a single application. Teams no longer need to switch between tools.
 
 **Language:** [Bahasa Indonesia](./README.md) · English
 
@@ -90,4 +90,4 @@ See [USER_GUIDE.md](./USER_GUIDE.md) for the full guide to every application fea
 
 ## Project Notes
 
-This repository is a hackathon project by **Group 12 - MAIN Alkademi 2026**. The `frontend/` folder at the root is not the main frontend application; it is a Playwright test harness for the design mock. The demo application runs from `prototypes/sampling-spec-rnd/`.
+The `frontend/` folder at the root is not the main frontend application; it is a Playwright test harness for the design mock. The demo application runs from `prototypes/sampling-spec-rnd/`.

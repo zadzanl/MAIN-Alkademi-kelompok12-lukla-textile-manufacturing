@@ -6,7 +6,7 @@
 
 ## Context
 
-The Lukla Operations Engine is an event-driven apparel manufacturing MES with an immutable double-entry ledger. During a comprehensive multi-vector architectural review by three Principal Systems Architects (Veteran Engineers), 14 critical endpoint gaps were discovered in the OpenAPI baseline ([`contracts/openapi.yaml`](file:///C:/Users/lenovo/.gemini/antigravity/worktrees/hackathon-MAIN-alkademi/review_openapi_endpoints_gaps/openspec/changes/lukla-ops-engine-planning/contracts/openapi.yaml)):
+The Lukla Operations Engine is an event-driven apparel manufacturing MES with an immutable double-entry ledger. During a comprehensive multi-vector architectural review by three Principal Systems Architects (Veteran Engineers), 14 critical endpoint gaps were discovered in the OpenAPI baseline ([`contracts/openapi.yaml`](../../../openspec/changes/lukla-ops-engine-planning/contracts/openapi.yaml)):
 - Shop floor Mandors could verify tallies (`POST /sewing-tallies/{tallyId}/verification`), but could not list unverified tallies by line and date.
 - Sewing terminal operators required `cutBatchId` to record tallies, but could not discover available cut batches produced by cutting.
 - Orders created directly via `POST /orders` were permanently stranded in `DRAFT` because no state machine confirmation or cancellation routes existed.

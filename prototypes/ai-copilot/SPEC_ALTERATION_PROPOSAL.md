@@ -2,7 +2,7 @@
 
 ## Executive Context & Wagile Discipline
 
-The Lukla Operations Engine repository operates under a strict **Wagile** governance model ([PRD §A / §B](file:///C:/Projects/hackathon-MAIN-alkademi/openspec/changes/lukla-ops-engine-planning/PRD%20-%20Lukla%20Operations%20Engine%20-%20v2.0%20-%20Wagile.md#L16-L20)):
+The Lukla Operations Engine repository operates under a strict **Wagile** governance model ([PRD §A / §B](../../openspec/changes/lukla-ops-engine-planning/PRD%20-%20Lukla%20Operations%20Engine%20-%20v2.0%20-%20Wagile.md#L16-L20)):
 - **Bagian A (Kontrak Ruang Lingkup)** is frozen upon stakeholder sign-off.
 - **Bagian B (Product Backlog)** is a living backlog that evolves across Sprints.
 

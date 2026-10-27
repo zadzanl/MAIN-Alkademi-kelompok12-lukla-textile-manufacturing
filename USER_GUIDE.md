@@ -25,7 +25,7 @@ Jalankan perintah berikut dari direktori root repository. Pada Windows gunakan P
 
 ```powershell
 git clone <URL-REPOSITORY>
-cd hackathon-MAIN-alkademi
+cd <repo-root>
 ```
 
 Kalau berhasil, perintah `git status` menampilkan direktori repository dan tidak melaporkan folder yang tidak ditemukan.

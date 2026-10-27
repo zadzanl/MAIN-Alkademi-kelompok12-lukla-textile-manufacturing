@@ -53,7 +53,7 @@ This prototype scaffolds a foundational model chatbot (ChatGPT-like interface) t
 
 ### 1. Strictly Read-Only Assistant (Zero Ledger Risk)
 - The model **never** executes state-mutating endpoints (`POST`, `PUT`, `DELETE`).
-- Invariant: [ReadOnlyToolExecutor](file:///C:/Users/lenovo/.gemini/antigravity/worktrees/hackathon-MAIN-alkademi/scaffold_ai_ops_chatbot/prototypes/ai-copilot/backend/executor.py) explicitly rejects any non-`GET` method and restricts calls strictly to [`READ_TOOL_CATALOG`](file:///C:/Users/lenovo/.gemini/antigravity/worktrees/hackathon-MAIN-alkademi/scaffold_ai_ops_chatbot/prototypes/ai-copilot/backend/registry.py).
+- Invariant: [ReadOnlyToolExecutor](./backend/executor.py) explicitly rejects any non-`GET` method and restricts calls strictly to [`READ_TOOL_CATALOG`](./backend/registry.py).
 - Result: Impossible for hallucinated arguments to create unvouched double-entry transactions or cross-contaminate client fabric inventory.
 
 ### 2. Action Shortcuts Navigation (Deep-Links)
@@ -61,11 +61,11 @@ This prototype scaffolds a foundational model chatbot (ChatGPT-like interface) t
 - The human clicks the link and executes the transaction on the audited UI form with full client-side validation, `Idempotency-Key` generation, and audit logging.
 
 ### 3. Dynamic Multi-Role Tool Filtering
-- Instead of exposing all 69 endpoints at once (which explodes token cost and causes hallucination), [`filter_tools_for_roles`](file:///C:/Users/lenovo/.gemini/antigravity/worktrees/hackathon-MAIN-alkademi/scaffold_ai_ops_chatbot/prototypes/ai-copilot/backend/registry.py) inspects the caller's verified JWT roles (`AuthContext.roles`) and supplies only authorized query tools.
+- Instead of exposing all 69 endpoints at once (which explodes token cost and causes hallucination), [`filter_tools_for_roles`](./backend/registry.py) inspects the caller's verified JWT roles (`AuthContext.roles`) and supplies only authorized query tools.
 - A Maklon Client sees only order status and their own stock; a Mandor sees sewing lines and defect tallies; an Owner sees macro financial entries.
 
 ### 4. Provider Agnosticism
-- Through [`BaseLLMClient`](file:///C:/Users/lenovo/.gemini/antigravity/worktrees/hackathon-MAIN-alkademi/scaffold_ai_ops_chatbot/prototypes/ai-copilot/backend/provider.py), the prototype can run against local offline models (e.g., Ollama running `qwen2.5:7b` or `llama3.1:8b` for cost and privacy) or hosted cloud endpoints (OpenAI / Anthropic).
+- Through [`BaseLLMClient`](./backend/provider.py), the prototype can run against local offline models (e.g., Ollama running `qwen2.5:7b` or `llama3.1:8b` for cost and privacy) or hosted cloud endpoints (OpenAI / Anthropic).
 
 ---
 

@@ -1,6 +1,6 @@
 # Lukla - Textile Manufacturing Operations Platform
 
-Lukla adalah platform operasi manufaktur tekstil yang menyatukan produksi, gudang, quality control, sampling, hingga payroll dalam satu aplikasi. Tim tidak perlu berpindah-pindah tool lagi. Proyek ini dikerjakan **Kelompok 12** untuk **MAIN Alkademi Hackathon 2026**.
+Lukla adalah platform operasi manufaktur tekstil yang menyatukan produksi, gudang, quality control, sampling, hingga payroll dalam satu aplikasi. Tim tidak perlu berpindah-pindah tool lagi.
 
 **Bahasa:** Indonesia · [English](./README.en.md)
 
@@ -90,4 +90,4 @@ Buka [USER_GUIDE.md](./USER_GUIDE.md) untuk panduan lengkap seluruh fitur aplika
 
 ## Catatan Proyek
 
-Repository ini merupakan proyek hackathon **Kelompok 12 - MAIN Alkademi 2026**. Folder `frontend/` di root bukan aplikasi frontend utama, melainkan harness pengujian Playwright untuk design mock. Aplikasi demo yang dijalankan berada di `prototypes/sampling-spec-rnd/`.
+Folder `frontend/` di root bukan aplikasi frontend utama, melainkan harness pengujian Playwright untuk design mock. Aplikasi demo yang dijalankan berada di `prototypes/sampling-spec-rnd/`.

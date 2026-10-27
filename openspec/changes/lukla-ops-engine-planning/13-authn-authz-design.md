@@ -170,7 +170,7 @@ Until resolved, these are `PROPOSED` and implementation remains gated. None chan
 
 ## 10. Verification commands
 
-From `C:\Projects\hackathon-MAIN-alkademi`:
+From the repository root:
 
 ```powershell
 python -c "import yaml; d=yaml.safe_load(open('openspec/changes/lukla-ops-engine-planning/artifacts/contracts/openapi.yaml')); ids=[o['operationId'] for item in d['paths'].values() for o in item.values() if isinstance(o,dict) and 'operationId' in o]; assert len(ids)==len(set(ids)); print('operationIds=PASS', len(ids))"

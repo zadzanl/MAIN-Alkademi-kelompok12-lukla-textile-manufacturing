@@ -406,11 +406,11 @@ def get_portal_html() -> str:
         </div>
       </a>
     </div>
-  </div>
+    </div>
 
-  <footer class="max-w-4xl mx-auto w-full pt-6 border-t border-neutral-850 text-center text-xs text-neutral-500">
-    PT Lukla Textile Manufacturing &middot; Alkademi Hackathon Deployment
-  </footer>
+    <footer class="max-w-4xl mx-auto w-full pt-6 border-t border-neutral-850 text-center text-xs text-neutral-500">
+        PT Lukla Textile Manufacturing &middot; Operations Platform
+    </footer>
 </body>
 </html>"""
 

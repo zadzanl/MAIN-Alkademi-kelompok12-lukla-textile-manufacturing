@@ -22,6 +22,7 @@ from ...copilot.provider import (
 from ...copilot.identity import role_instruction
 from ...copilot.html import get_copilot_html
 
+# Restricted demo credential: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
 HARDCODED_DEMO_KEY = "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"
 HARDCODED_DEMO_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 HARDCODED_DEMO_URL = "https://openrouter.ai/api/v1"
