@@ -127,4 +127,4 @@ Single source of truth: **`src/index.css`** (Tailwind layers are declared last t
 
 ## License
 
-Proprietary — Alkademi
+AGPL-3.0. See [LICENSE](../../../LICENSE) at the repository root.

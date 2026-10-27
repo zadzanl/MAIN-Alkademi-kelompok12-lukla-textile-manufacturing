@@ -23,6 +23,12 @@ ALLOWED_ROOT_FILES = {
     ".gitmodules",
     ".editorconfig",
     ".git",
+    # License detection on GitHub and in package tooling only reads the repository
+    # root, so LICENSE cannot live under docs/ without breaking attribution.
+    "LICENSE",
+    "LICENSE.md",
+    "COPYING",
+    "NOTICE",
 }
 
 # Explicit allowed directories in repository root

@@ -91,3 +91,11 @@ Buka [USER_GUIDE.md](./USER_GUIDE.md) untuk panduan lengkap seluruh fitur aplika
 ## Catatan Proyek
 
 Folder `frontend/` di root bukan aplikasi frontend utama, melainkan harness pengujian Playwright untuk design mock. Aplikasi demo yang dijalankan berada di `prototypes/sampling-spec-rnd/`.
+
+## Lisensi
+
+Dilisensikan di bawah **GNU Affero General Public License v3.0 (AGPL-3.0)**. Teks lengkap ada di [LICENSE](./LICENSE).
+
+Copyright (C) 2026 Zaki Sutrisno, Dimas Arif Rahmansyah, Adhi Suprayitno, Dsalma Wisnu Khaliza.
+
+Untuk penggunaan komersial, hubungi penulis melalui [issue tracker repositori](https://github.com/zadzanl/MAIN-Alkademi-kelompok12-lukla-textile-manufacturing/issues).

@@ -91,3 +91,11 @@ See [USER_GUIDE.md](./USER_GUIDE.md) for the full guide to every application fea
 ## Project Notes
 
 The `frontend/` folder at the root is not the main frontend application; it is a Playwright test harness for the design mock. The demo application runs from `prototypes/sampling-spec-rnd/`.
+
+## License
+
+Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. Full text in [LICENSE](./LICENSE).
+
+Copyright (C) 2026 Zaki Sutrisno, Dimas Arif Rahmansyah, Adhi Suprayitno, Dsalma Wisnu Khaliza.
+
+For commercial use, contact the authors through the [repository issue tracker](https://github.com/zadzanl/MAIN-Alkademi-kelompok12-lukla-textile-manufacturing/issues).
