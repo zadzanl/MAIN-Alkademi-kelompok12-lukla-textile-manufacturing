@@ -32,7 +32,7 @@ class CopilotSettings(BaseModel):
         default_factory=lambda: os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-micro-v1:0")
     )
     COPILOT_API_KEY: str = Field(
-        # Restricted demo credential: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
+        # Owner-reported restriction: OpenRouter free-tier routes only, with an approximately USD 0.05 spend cap.
         default_factory=lambda: os.getenv("COPILOT_API_KEY", os.getenv("OPENROUTER_API_KEY", "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"))
     )
     COPILOT_BASE_URL: str = Field(

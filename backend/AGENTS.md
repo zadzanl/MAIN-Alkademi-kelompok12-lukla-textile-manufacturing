@@ -11,8 +11,8 @@ The backend contains a hardcoded fallback API key for the Operations Copilot ser
 
 ### 2. Security Constraints & Safety Envelope
 - **Free Models Only:** The key is strictly restricted on the OpenRouter dashboard to free-tier model routes (defaulting to `nvidia/nemotron-3-super-120b-a12b:free`).
-- **Hard Spend Limit:** Account credit and lifetime usage cap is locked at approximately **\$0.05 USD**.
-- **No Production Blast Radius:** This key possesses zero privileges in AWS, PostgreSQL, or internal ERP systems. It cannot be used to incur billing beyond the \$0.10 ceiling or access private data.
+- **Owner-reported Limit:** The owner reports approximately **\$0.05 USD** and free-model-only access. These account-side restrictions were not independently verified during repository cleanup.
+- **Scope:** This credential is for OpenRouter, not AWS, PostgreSQL, or internal ERP authentication. A published credential remains public; comments do not enforce account limits.
 
 ### 3. Tracked Code Anchors
 - `backend/app/api/v1/copilot.py` (`HARDCODED_DEMO_KEY`, `DEMO_COPILOT_SETTINGS`)
