@@ -141,6 +141,8 @@ class PortalUser:
     status: str  # pending | active | rejected
     created_at: float
     updated_at: float
+    tenant_id: str = "tenant-001"
+    client_id: str | None = None
 
 
 @dataclass
@@ -260,6 +262,8 @@ class AuthStore:
         full_name: str,
         role: str = "employee",
         department: str = "Production",
+        tenant_id: str = "tenant-001",
+        client_id: str | None = None,
     ) -> PortalUser:
         """Create (or return) an active employee user account."""
         with self._lock:
@@ -283,6 +287,8 @@ class AuthStore:
                 status="active",
                 created_at=now,
                 updated_at=now,
+                tenant_id=tenant_id,
+                client_id=client_id,
             )
             self._users[user.user_id] = user
             self._index[f"email:{normalized}"] = user.user_id

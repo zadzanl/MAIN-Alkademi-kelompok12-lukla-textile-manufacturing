@@ -9,35 +9,38 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.auth_routes import create_auth_router
 from .api.routes import create_api_router
+from .services.ops_store import OpsStore
+from .services.ops_store import SnapshotError
+from .services.seed import _get_storage_path
+from pathlib import Path
+import os
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Create FastAPI app
-app = FastAPI(
-    title="Sampling & Spec R&D API",
-    description="Time Study Recording and Specification Version Tracking",
-    version="1.0.0",
-)
+_data_dir = Path(__file__).resolve().parents[1] / "data"
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3009",
-        "http://127.0.0.1:3009",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# Include API routers
-router = create_api_router()
-app.include_router(router)
+def create_app(db_path: str | None = None) -> FastAPI:
+    app = FastAPI(title="Sampling & Spec R&D API",
+                  description="Time Study Recording and Specification Version Tracking",
+                  version="1.0.0")
+    app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3009", "http://127.0.0.1:3009"],
+                       allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+    @app.exception_handler(SnapshotError)
+    async def _snapshot_error_handler(request, exc: SnapshotError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=422, content={"detail": str(exc)})
+    selected_db = db_path or os.getenv("OPS_DB_PATH", str(_data_dir / "ops.db"))
+    store = OpsStore(selected_db)
+    # Import legacy sample JSON only when SQLite is empty; SQLite is authoritative afterward.
+    store.import_seed_once(_get_storage_path())
+    app.include_router(create_api_router(store=store))
+    app.include_router(create_auth_router())
+    return app
 
-# Portal authentication router (register/login/change/forgot password)
-app.include_router(create_auth_router())
+
+app = create_app()
 
 # Mount Lukla Intelligence Copilot router so port 8009 can also serve /api/v1/copilot/chat directly
 try:
@@ -109,9 +112,3 @@ except Exception as _exc:
 def health_check() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy", "service": "sampling-spec-rnd-api"}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8009, reload=True)

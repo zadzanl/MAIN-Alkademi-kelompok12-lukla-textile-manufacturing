@@ -1,446 +1,4 @@
 {
-  "version": "1.0",
-  "saved_at": "2026-10-16T01:59:51.430033+00:00",
-  "specs": [
-    {
-      "version_id": "spec-adis-v2",
-      "tenant_id": "tenant-001",
-      "spec_id": "SPEC-ADIS-001",
-      "spec_name": "Adis Technical Running Tee — Seam Assembly v2",
-      "version_number": "2.0",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030",
-      "status": "active",
-      "parameters": {
-        "kerapatan_setik_spi": 12.0,
-        "lebar_kampuh_jahitan_mm": 10.0,
-        "tegangan_benang_jarum_cn": 120.0,
-        "panjang_langkah_setik_mm": 2.5,
-        "kemiringan_obras_skew_pct": 2.0
-      },
-      "tolerances": {
-        "kerapatan_setik_spi": {
-          "min": 11.5,
-          "max": 12.5
-        },
-        "lebar_kampuh_jahitan_mm": {
-          "min": 9.0,
-          "max": 11.0
-        },
-        "tegangan_benang_jarum_cn": {
-          "min": 110.0,
-          "max": 130.0
-        },
-        "panjang_langkah_setik_mm": {
-          "min": 2.3,
-          "max": 2.7
-        },
-        "kemiringan_obras_skew_pct": {
-          "min": 0.0,
-          "max": 2.5
-        }
-      },
-      "materials": [
-        "Dry-Fit Microfiber 140gsm",
-        "Rib Cotton 2x2 Pre-shrunk",
-        "Spun Polyester 40/2"
-      ],
-      "process_steps": [
-        "Potong Pola",
-        "Jahit Kerah Rib & Kerung Leher",
-        "Bahu Double Stitch (Mobilon Tape)",
-        "Pasang Lengan & Obras 4-Thread",
-        "Jahit Samping & Belahan Bawah",
-        "Kelim Bawah Hemming"
-      ],
-      "changes": [
-        {
-          "change_id": "e81980e1-4cd1-42fa-a966-a8e6a550c3c3",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "change_type": "parameter_update",
-          "parameter_name": "kerapatan_setik_spi",
-          "old_value": "10.0",
-          "new_value": "12.0",
-          "changed_by": "Budi Time-Study (IE)",
-          "reason": "Peningkatan tensile strength jahitan dan elastisitas kain atletik",
-          "impact_assessment": "Kuat tarik seam meningkat +20%, bebas puckering"
-        },
-        {
-          "change_id": "6c0d6ee3-2a4e-48db-b9b7-041f2697d48e",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "change_type": "process_change",
-          "parameter_name": "proses_obras",
-          "old_value": "3-Thread Overlock",
-          "new_value": "4-Thread Safety Stitch",
-          "changed_by": "Ahmad Designer (R&D)",
-          "reason": "Mencegah jahitan lepas saat pergerakan intensif atlet lari",
-          "impact_assessment": "Durabilitas jahitan terstandarisasi ISO 4915"
-        }
-      ],
-      "drifts": [
-        {
-          "drift_id": "drf-adis-001",
-          "timestamp": "2026-10-16T01:59:51.427030+00:00",
-          "parameter_name": "kerapatan_setik_spi",
-          "specification_limit": 12.0,
-          "measured_value": 10.5,
-          "deviation_percent": 12.5,
-          "severity": "medium",
-          "corrective_action": "Kalibrasi feed dog dan tension dial mesin jahit #04",
-          "resolved": true,
-          "resolved_at": "2026-10-16T01:59:51.427030+00:00"
-        },
-        {
-          "drift_id": "drf-adis-002",
-          "timestamp": "2026-10-16T01:59:51.427030+00:00",
-          "parameter_name": "lebar_kampuh_jahitan_mm",
-          "specification_limit": 10.0,
-          "measured_value": 12.2,
-          "deviation_percent": 22.0,
-          "severity": "high",
-          "corrective_action": "Setel ulang guide plate pembatas kampuh lini obras",
-          "resolved": false,
-          "resolved_at": null
-        },
-        {
-          "drift_id": "drf-adis-003",
-          "timestamp": "2026-10-16T01:59:51.427030+00:00",
-          "parameter_name": "kemiringan_obras_skew_pct",
-          "specification_limit": 2.0,
-          "measured_value": 2.8,
-          "deviation_percent": 40.0,
-          "severity": "critical",
-          "corrective_action": "Periksa kelurusan feeding kain pada roll penarik",
-          "resolved": false,
-          "resolved_at": null
-        }
-      ],
-      "total_drifts": 3,
-      "critical_drifts": 1,
-      "created_by": "Budi Time-Study (IE)",
-      "approved_by": "manager-001",
-      "approved_at": "2026-10-16T01:59:51.427030+00:00",
-      "notes": "Spesifikasi jahitan v2 hasil validasi digital stopwatch time study Adis Sample.",
-      "parent_version_id": "spec-adis-v1",
-      "supersedes_version_id": "spec-adis-v1"
-    },
-    {
-      "version_id": "spec-adis-v1",
-      "tenant_id": "tenant-001",
-      "spec_id": "SPEC-ADIS-001",
-      "spec_name": "Adis Technical Running Tee — Baseline v1",
-      "version_number": "1.0",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
-      "status": "superseded",
-      "parameters": {
-        "kerapatan_setik_spi": 10.0,
-        "lebar_kampuh_jahitan_mm": 10.0,
-        "tegangan_benang_jarum_cn": 110.0,
-        "panjang_langkah_setik_mm": 2.8,
-        "kemiringan_obras_skew_pct": 2.5
-      },
-      "tolerances": {
-        "kerapatan_setik_spi": {
-          "min": 9.0,
-          "max": 11.0
-        },
-        "lebar_kampuh_jahitan_mm": {
-          "min": 8.5,
-          "max": 11.5
-        },
-        "tegangan_benang_jarum_cn": {
-          "min": 100.0,
-          "max": 120.0
-        }
-      },
-      "materials": [
-        "Cotton Single Jersey 24s",
-        "Rib Cotton 1x1"
-      ],
-      "process_steps": [
-        "Potong Pola",
-        "Jahit Kerah",
-        "Obras Lengan",
-        "Kelim Bawah"
-      ],
-      "changes": [],
-      "drifts": [],
-      "total_drifts": 0,
-      "critical_drifts": 0,
-      "created_by": "Ahmad Designer (R&D)",
-      "approved_by": "manager-001",
-      "approved_at": "2026-10-16T01:59:51.427030+00:00",
-      "notes": "Baseline prototype awal. Terdeteksi puckering di kerung leher.",
-      "parent_version_id": null,
-      "supersedes_version_id": null
-    },
-    {
-      "version_id": "spec-bomber-v1",
-      "tenant_id": "tenant-001",
-      "spec_id": "SPEC-BOMB-001",
-      "spec_name": "Jaket Bomber Maklon — R&D Sample",
-      "version_number": "1.0.0",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
-      "status": "review",
-      "parameters": {
-        "kerapatan_setik_spi": 9.0,
-        "lebar_kampuh_jahitan_mm": 12.0,
-        "tegangan_benang_jarum_cn": 140.0
-      },
-      "tolerances": {
-        "kerapatan_setik_spi": {
-          "min": 8.0,
-          "max": 10.0
-        },
-        "lebar_kampuh_jahitan_mm": {
-          "min": 11.0,
-          "max": 13.0
-        }
-      },
-      "materials": [
-        "Poly-Oxford 600D",
-        "Dacron 4oz Padding",
-        "Zipper YKK Metal #5"
-      ],
-      "process_steps": [
-        "Cutting Pola",
-        "Quilting Padding",
-        "Pasang Ritsleting",
-        "Obras Badan"
-      ],
-      "changes": [],
-      "drifts": [],
-      "total_drifts": 0,
-      "critical_drifts": 0,
-      "created_by": "Ahmad Designer (R&D)",
-      "approved_by": null,
-      "approved_at": null,
-      "notes": "Draft spesifikasi sampel jaket bomber anti-angin.",
-      "parent_version_id": null,
-      "supersedes_version_id": null
-    }
-  ],
-  "studies": [
-    {
-      "study_id": "study-adis-001",
-      "tenant_id": "tenant-001",
-      "process_id": "PROC-ADIS-SEW",
-      "process_name": "Adis Running Tee — Standard Seam Protocol",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
-      "started_at": "2026-10-16T01:59:51.427030+00:00",
-      "completed_at": "2026-10-16T01:59:51.427030+00:00",
-      "status": "completed",
-      "target_sample_size": 30,
-      "samples": [
-        {
-          "sample_id": "68cfce8d-aead-4ad7-bab5-a771e2c6e80b",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 19200.0,
-          "element_name": "Kerah Rib & Kerung Leher",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "584d6b6c-9404-4ce1-8ac2-6da2b82ee25e",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 19500.0,
-          "element_name": "Kerah Rib & Kerung Leher",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "3329da8b-26fd-4a8d-bfd6-863bc3bf1f2e",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 19800.0,
-          "element_name": "Kerah Rib & Kerung Leher",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "a412be63-818d-4773-8262-78b4b29046b3",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 13800.0,
-          "element_name": "Jahit Bahu Double Stitch",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "5507fb39-8505-484d-945a-38d4f9a2ee7c",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 14200.0,
-          "element_name": "Jahit Bahu Double Stitch",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "3830d758-9d88-47a0-aec3-a3d8569d7b95",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 24100.0,
-          "element_name": "Pasang Lengan & Obras",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "1104c5e6-ab85-4342-9b8c-569eff7665ac",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 24800.0,
-          "element_name": "Pasang Lengan & Obras",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "f873e871-9990-4fca-9adf-a98b8d08be39",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 22900.0,
-          "element_name": "Jahit Samping & Belahan Bawah",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "5c3a01b8-21fa-4a1d-ba03-b73bc5d6e6bb",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 23200.0,
-          "element_name": "Jahit Samping & Belahan Bawah",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "4657db68-1758-4f00-b119-124b3c733bcb",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 16300.0,
-          "element_name": "Kelim Bawah Hemming",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        },
-        {
-          "sample_id": "8e84ef52-d29e-4390-8ed4-8a8e004be099",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 16700.0,
-          "element_name": "Kelim Bawah Hemming",
-          "observations": {},
-          "operator_id": "OPR-SITI-01",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Ritme kerja normal"
-        }
-      ],
-      "confidence_level": 0.95,
-      "allowance_percent": 15.0,
-      "operator_id": "OPR-SITI-01",
-      "department_id": "DEPT-SEW-01",
-      "shift": "Shift Pagi",
-      "product_id": "ART-ADIS-001",
-      "notes": "Studi waktu resmi lini percontohan Adis Sample.",
-      "total_cycles": 11,
-      "mean_cycle_time": 19500.0,
-      "std_dev_cycle_time": 3915.8651662180605,
-      "min_cycle_time": 13800.0,
-      "max_cycle_time": 24800.0
-    },
-    {
-      "study_id": "study-adis-cut",
-      "tenant_id": "tenant-001",
-      "process_id": "PROC-ADIS-CUT",
-      "process_name": "Adis Running Tee — Pola Cutting & Bundling",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
-      "started_at": "2026-10-16T01:59:51.427030+00:00",
-      "completed_at": null,
-      "status": "in_progress",
-      "target_sample_size": 20,
-      "samples": [
-        {
-          "sample_id": "45512cb7-6d22-4688-9142-013c6d708aa8",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 45000.0,
-          "element_name": "Potong Kain & Bundling Tiket",
-          "observations": {},
-          "operator_id": "OPR-AGUS-02",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Operator berpengalaman"
-        },
-        {
-          "sample_id": "c9c77cc7-b80a-4197-bbd1-3d3cdb366996",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 43200.0,
-          "element_name": "Potong Kain & Bundling Tiket",
-          "observations": {},
-          "operator_id": "OPR-AGUS-02",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Operator berpengalaman"
-        },
-        {
-          "sample_id": "2b797dc0-4232-4c51-bb66-cc9a247424bc",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 46100.0,
-          "element_name": "Potong Kain & Bundling Tiket",
-          "observations": {},
-          "operator_id": "OPR-AGUS-02",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Operator berpengalaman"
-        },
-        {
-          "sample_id": "89aa1df0-44b3-4474-ad3d-be57f91823c3",
-          "timestamp": "2026-10-16T01:59:51.427030",
-          "cycle_time_ms": 44000.0,
-          "element_name": "Potong Kain & Bundling Tiket",
-          "observations": {},
-          "operator_id": "OPR-AGUS-02",
-          "machine_id": null,
-          "is_abnormal": false,
-          "notes": "Operator berpengalaman"
-        }
-      ],
-      "confidence_level": 0.95,
-      "allowance_percent": 12.0,
-      "operator_id": "OPR-AGUS-02",
-      "department_id": "DEPT-CUT-01",
-      "shift": "Shift Pagi",
-      "product_id": "ART-ADIS-001",
-      "notes": "Pengukuran efisiensi bundling meja potong otomatis.",
-      "total_cycles": 4,
-      "mean_cycle_time": 44575.0,
-      "std_dev_cycle_time": 1255.3220038433699,
-      "min_cycle_time": 43200.0,
-      "max_cycle_time": 46100.0
-    }
-  ],
   "sample_versions": [
     {
       "version_id": "sv-adis-v2",
@@ -453,10 +11,10 @@
       "parent_version_id": "sv-adis-v1",
       "status": "approved",
       "created_by": "Budi Time-Study (IE)",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
+      "created_at": "2026-10-16T08:59:51.42703+07:00",
+      "updated_at": "2026-10-16T08:59:51.42703+07:00",
       "approved_by": "manager-001",
-      "approved_at": "2026-10-16T01:59:51.427030+00:00",
+      "approved_at": "2026-10-16T08:59:51.42703+07:00",
       "converted_to_order_id": null,
       "notes": "v2 Optimasi: Hasil digital stopwatch time-study Adis Sample. Upgrade ke 4-thread safety overlock, SPI 12 (+20% tensile), pangkas waktu siklus total -11.5 detik per pcs.",
       "components": [
@@ -562,19 +120,19 @@
         {
           "action": "created",
           "by": "Budi Time-Study (IE)",
-          "at": "2026-10-16T01:59:51.427030+00:00",
+          "at": "2026-10-16T08:59:51.42703+07:00",
           "note": "Revisi v2 dibuat dari v1 berdasarkan hasil time-study stopwatch digital Adis Sample."
         },
         {
           "action": "revised",
           "by": "Budi Time-Study (IE)",
-          "at": "2026-10-16T01:59:51.427030+00:00",
+          "at": "2026-10-16T08:59:51.42703+07:00",
           "note": "Pembaruan rate card dan waktu standar per komponen jahitan."
         },
         {
           "action": "approved",
           "by": "manager-001",
-          "at": "2026-10-16T01:59:51.427030+00:00",
+          "at": "2026-10-16T08:59:51.42703+07:00",
           "note": "Disetujui untuk dipromosikan ke Order Produksi Massal (Mass Order)."
         }
       ]
@@ -590,10 +148,10 @@
       "parent_version_id": null,
       "status": "approved",
       "created_by": "Ahmad Designer (R&D)",
-      "created_at": "2026-10-16T01:59:51.427030+00:00",
-      "updated_at": "2026-10-16T01:59:51.427030+00:00",
+      "created_at": "2026-10-16T08:59:51.42703+07:00",
+      "updated_at": "2026-10-16T08:59:51.42703+07:00",
       "approved_by": "manager-001",
-      "approved_at": "2026-10-16T01:59:51.427030+00:00",
+      "approved_at": "2026-10-16T08:59:51.42703+07:00",
       "converted_to_order_id": null,
       "notes": "Spesifikasi v1 awal: jahitan reguler SPI 10, kerah single needle standard, kampuh 10mm.",
       "components": [
@@ -689,13 +247,13 @@
         {
           "action": "created",
           "by": "Ahmad Designer (R&D)",
-          "at": "2026-10-16T01:59:51.427030+00:00",
+          "at": "2026-10-16T08:59:51.42703+07:00",
           "note": "Initial prototype sample v1 untuk Adis Technical Tee."
         },
         {
           "action": "approved",
           "by": "manager-001",
-          "at": "2026-10-16T01:59:51.427030+00:00",
+          "at": "2026-10-16T08:59:51.42703+07:00",
           "note": "Approved for sampling production review."
         }
       ]

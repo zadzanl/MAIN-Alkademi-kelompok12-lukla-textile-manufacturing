@@ -15,6 +15,7 @@ Run:  pytest -q        (from the backend/ directory)
 from __future__ import annotations
 
 from collections.abc import Iterator
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,12 +23,20 @@ from fastapi.testclient import TestClient
 from src.main import app
 
 PREFIX = "/api/sampling-spec-rnd"
-TENANT = "tenant-contract"
+TENANT = "tenant-001"
 
 
 @pytest.fixture(scope="module")
 def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:
+        login = test_client.post(
+            "/api/auth/login",
+            json={"identifier": "ADMIN-IT", "password": "Admin#12345"},
+        )
+        assert login.status_code == 200, login.text
+        test_client.headers.update(
+            {"Authorization": f"Bearer {login.json()['accessToken']}"}
+        )
         yield test_client
 
 
@@ -71,7 +80,6 @@ def _create_sample_version(client: TestClient, article_id: str) -> str:
             "tenant_id": TENANT,
             "article_id": article_id,
             "article_name": "Artikel CT",
-            "client_id": "client-ct",
             "created_by": "tester",
         },
     )
@@ -259,7 +267,8 @@ def test_spec_error_paths(client: TestClient) -> None:
 
 
 def test_sample_version_lifecycle(client: TestClient) -> None:
-    version_id = _create_sample_version(client, "ART-FLOW")
+    article_id = f"ART-FLOW-{uuid4()}"
+    version_id = _create_sample_version(client, article_id)
 
     listing = client.get(f"{PREFIX}/sample-versions/all", params={"tenant_id": TENANT})
     assert listing.status_code == 200
@@ -270,7 +279,7 @@ def test_sample_version_lifecycle(client: TestClient) -> None:
     assert detail.json()["data"]["version_label"] == "v1"
 
     history = client.get(
-        f"{PREFIX}/sample-versions/article/ART-FLOW/history",
+        f"{PREFIX}/sample-versions/article/{article_id}/history",
         params={"tenant_id": TENANT},
     )
     assert history.status_code == 200
@@ -324,7 +333,7 @@ def test_sample_version_lifecycle(client: TestClient) -> None:
 def test_sample_version_error_paths(client: TestClient) -> None:
     assert client.get(f"{PREFIX}/sample-versions/does-not-exist").status_code == 404
 
-    version_id = _create_sample_version(client, "ART-ERR")
+    version_id = _create_sample_version(client, f"ART-ERR-{uuid4()}")
 
     # approve while still draft
     assert (
